@@ -624,7 +624,6 @@ var path = [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0
 }*/
 function recalcPath() {
     var walkables = [30];
-
     pathfinder.setGrid(map.layers[0].data, walkables);
 
     pathfinder.setCallbackFunction(function(p) {
@@ -638,6 +637,17 @@ function recalcPath() {
 
         }
         path = p;
+        if (incTower.pathGraphic !== undefined) { incTower.pathGraphic.destroy(); }
+        incTower.pathGraphic = game.add.graphics(0,0);
+        var colour = "0x80080";
+        incTower.pathGraphic.beginFill(colour);
+        incTower.pathGraphic.lineStyle(2, colour, 0.5);
+        for (var i = 0;i < p.length - 1;i++) {
+            incTower.pathGraphic.moveTo(p[i].x * 32 + 16, p[i].y * 32 + 16);
+            incTower.pathGraphic.lineTo(p[i+1].x * 32 + 16, p[i+1].y * 32 + 16);
+        }
+        incTower.pathGraphic.endFill();
+        game.world.bringToTop(enemys);
         enemys.forEachAlive(function(enemy) {
             //console.log("CALLED FUNC");
             var valid = true;
@@ -830,6 +840,7 @@ function create() {
      * Enemy
      */
     enemys = game.add.group();
+
     /*enemys.enableBody = true;
     enemys.physicsBodyType = Phaser.Physics.ARCADE;
 */
