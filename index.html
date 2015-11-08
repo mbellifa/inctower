@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="css/incTower.css">
+        <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
+        <script src="js/jquery-1.11.2.min.js"></script>
+        <script src="js/jquery.tooltipster.min.js"></script>
+        <script src="js/vex.combined.min.js"></script>
+        <script src="js/bignumber.min.js"></script>
+        <script src="js/moment.js"></script>
+        <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
+        <link rel="stylesheet" href="css/vex.css">
+        <link rel="stylesheet" href="css/vex-theme-wireframe.css">
+    </head>
+    <body>
+        <h1>Incremental Tower Defense</h1>
+        <div id="center">
+            <div id="gameContainer"></div>
+        </div>
+        <div id="right_container">
+            <div id="right">
+                <div class="panel_container">
+                    <div class="panel_header">Status</div>
+                    <div class="panel_contents">
+                        <div>Wave: <span data-bind="text: wave"></span></div>
+                        <div id="goldText">Gold: <span data-bind="text: humanizeNumber(gold())"></span></div>
+
+                        <p><b>Currently Training:</b> <span data-bind="text: getActiveSkillName()"></span><br>
+                            Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span>.</p>
+                        <div class="progressBar" style="width: 90%; height: 16px;"><div class="internalProgress" style="background-color: #333; height:16px; transition:width 1s;" data-bind="style: {width: percentageUntilSkillUp() + '%' }"></div></div>
+
+                    </div>
+                </div>
+
+
+                <p><b>Skills:</b></p>
+                <ul data-bind="foreach: skills.items()">
+
+                    <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'title': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><button data-bind="click: function () { incTower.switchActiveSkill($data.key()); }">Train</button></span></li>
+                </ul>
+
+                <div id="buyTower" data-bind="visible: buyingCursor() == false">
+                    <b>Buy:</b><br>
+                    <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
+                    <span data-bind="foreach: availableTowers">
+                        <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
+                    </span>
+                    <div id="cheapestUpgrade" data-bind="if: numTowers() > 0">
+                        <b>Upgrade Towers:</b><br>
+                        <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button>
+                        <button data-bind="click: function () { cheapestUpgradeAll(); }">Upgrade Using All Gold</button>
+                    </div>
+                </div>
+                <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
+                    <p>Click on the map to place your block.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
+                <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
+                    <p>Click on a tile with a block to build your tower.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
+                <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
+                    <p><b>Currently Selected Tower:</b></p>
+                    <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
+                    <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
+                    <div>Range: <span data-bind="text: currentlySelected().range"></span></div>
+                    <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
+                    <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
+                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent.times(incTower.sellTowerPer()))"></span>g)</button>
+                </div>
+                <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
+                    <p><b>Currently Selected Enemy:</b></p>
+                    <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
+                    <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span></div>
+                    <div data-bind="if: currentlySelected().powers">
+                        Powers:
+                        <span data-bind="foreach: Object.keys(currentlySelected().powers)">
+                            <span data-bind="text: $data, attr: {'title': incTower.bossPowers[$data].describe(incTower.currentlySelected().powers[$data])}" style="text-transform: capitalize;" class="tooltip"></span>
+                        </span>
+                    </div>
+                    <div>Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().instabilityCap())"></span> (<span data-bind="text: humanizeNumber(currentlySelected().totalInstability())"></span>)</div>
+                </div>
+            </div>
+
+
+
+        </div>
+        <div id="changelog">
+            <p>Pseudo-changelog:</p>
+            <ul>
+                <li>2015-07-26: Implemented a couple more skills under initial engineering and fixed a layout issue that would prevent clicks on the right side of the game (whoops).</li>
+                <li>2015-07-24: Made the timing system for background timers more robust.</li>
+                <li>2015-07-03: Removed upgrade system and science system and replaced it with time based training.</li>
+                <li>2015-06-29: BigNumber.js errors mostly abated.</li>
+                <li>2015-06-13: Added bignumber.js to allow the total health and gold value of a wave exceed the max javascript value.</li>
+                <li>2015-06-07: Fire and earth towers are implented. Fire towers cause a slight burn and increase damage from all towers, earth towers drop boulders from the sky and deal AoE damage.</li>
+                <li>2015-06-07: Air tower is implemented. It knocks back single enemies, when those enemies hit other enemies they take damage.</li>
+                <li>2015-06-06: Can no longer put a block at 0,0 for obvious reasons.</li>
+                <li>2015-06-05: Removed the regular map with the fixed path, added blocks and A* pathing. Towers must now be built on blocks.</li>
+                <li>2015-06-04: Elemental towers are in, however only the water tower has its effects currently.</li>
+                <li>2015-06-03: Tower damage is now shown humanized.</li>
+                <li>2015-06-03: Boss powers now show on click and have tool tips explaining what they do and how powerful they are.</li>
+                <li>2015-06-01: Fixed a bug where multi-spawn boss fights weren't clearing after one reached the edge.</li>
+                <li>2015-06-01: Fixed a bug where one bullet could hit two enemies when spaced close together.</li>
+                <li>2015-06-01: Added an event timer that fires every second and refactored regenerating to use it.</li>
+                <li>2015-05-30: Updated the boss generation to use an an algorithm based on the idea of 'powers' instead of using pre generated boss fights.</li>
+                <li>2015-05-30: Changed upgrade UI to show random left and right choices instead of a big select box.</li>
+                <li>2015-05-25: Added floating damage text.</li>
+                <li>2015-05-12: Added an upgrade system. For every 5 science levels you can choose to either increase the science bonus of science towers or regular towers. More to come.</li>
+                <li>2015-05-09: Implented <b>beta</b> saving feature. It saves the game after the conclusion of each wave.</li>
+                <li>2015-05-07: Science levels now increase the effectiveness of towers by a percentage (e.g. 44 science levels = +44% damage).</li>
+                <li>2015-05-07: Finally fixed range indicators on towers.</li>
+                <li>2015-05-07: Nerfed the amount of range gained on tower upgrade.</li>
+                <li>2015-05-07: Added an indicator for the current unit selected (tower or enemy).</li>
+                <li>2015-05-07: Added a button to spend all of your gold on upgrades (it does this in the most efficient way possible)..</li>
+                <li>2015-05-07: Added a dialog box explaining the current functionality of science.</li>
+                <li>2015-05-07: Bosses now drop an amount of science equivalent to their wave number.</li>
+                <li>2015-05-07: Every 10 levels a towers damage doubles. Made a dialog to explain this.</li>
+                <li>2015-05-07: Added an "Upgrade Least Upgraded" button.</li>
+                <li>2015-05-07: Made a slight gold penalty (10%) when a regular enemy is allowed to go through the entire path.</li>
+                <li>2015-05-07: Nerfed the fast dog boss (1.5x speed to 1.3x speed).</li>
+                <li>2015-05-07: Boosted gold from killing enemies. Massively nerfed gold from reaching new science levels.</li>
+                <li>2015-05-07: Fixed a bug where the game loop was looping through all enemies instead of all alive enemies. Woops.</li>
+
+            </ul>
+            <p>Todo:</p>
+            <ul>
+                <li>Add power display for bosses with tool tips.</li>
+                <li>Implement elemental mechanic</li>
+            </ul>
+        </div>
+        <script src="phaser.min.js"></script>
+        <script src="js/easystar-0.2.1.min.js"></script>
+        <script src="js/PathFinderPlugin.js"></script>
+
+        <script src="js/knockout-3.3.0.js"></script>
+        <script src="js/ko.observableDictionary.js"></script>
+
+        <script src="inc_tower.js"></script>
+        <script type="text/javascript" src="js/Enemy.class.js"></script>
+        <script type="text/javascript" src="js/Tower.class.js"></script>
+    </body>
+</html>

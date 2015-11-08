@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="ko.observableDictionary.js" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/js/ko.observableDictionary.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/js/ko.observableDictionary.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>

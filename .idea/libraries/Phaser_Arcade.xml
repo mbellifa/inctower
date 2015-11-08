@@ -1,0 +1,8 @@
+<component name="libraryTable">
+  <library name="Phaser Arcade" type="javaScript">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/phaser-arcade-physics.min.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>

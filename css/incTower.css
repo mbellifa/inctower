@@ -1,0 +1,84 @@
+#gameContainer {
+    /*float: left;*/
+    z-index: 5;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+#sidebar {
+    float: left;
+    max-width: 300px;
+    padding: 10px;
+}
+#changelog {
+    clear: both;
+}
+.science-text {
+    color: #0066FF;
+}
+body {
+    font-family: 'PT Sans Narrow', sans-serif;
+}
+.vex-dialog-buttons {
+    text-align: center;
+    clear: both;
+}
+.vex-dialog-button-right {
+    float: right !important;
+}
+.vex-dialog-button-left {
+    float: left !important;
+}
+.vex-dialog-button-cancel {
+    float: none !important;
+}
+.left-choice {
+    float: left;
+    width: 50%;
+    padding: 0px 10px 20px;
+}
+.right-choice {
+    float: right;
+    width: 50%;
+    padding: 0px 0px 20px 10px;
+}
+/*.vex.vex-theme-wireframe {
+    text-align:center;
+}
+.vex.vex-theme-wireframe .vex-content {
+    width: auto !important;
+    display: inline-block;
+}*/
+
+#left_container {
+    width:50%;
+    float:left;
+    margin-right:-400px; /* minus half of the center container width */
+    z-index: -5;
+
+}
+#center {
+    width:800px; /* size of the fixed width */
+    float:left;
+
+    /* not important */
+    color: #FFF;
+    margin-right: 10px;
+
+    height: 610px;
+}
+#right_container {
+    z-index: -5;
+
+}
+#right {
+    margin-left:800px; /* half of the center container width */
+    padding-left: 10px;
+    z-index: -5;
+}
+.progressBar {
+    border: 1px black solid;
+}
+.tooltip {
+    color: cornflowerblue;
+}
