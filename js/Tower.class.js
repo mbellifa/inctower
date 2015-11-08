@@ -42,7 +42,7 @@ function UpgradeTower(tower) {
     TowerInputDown(tower);
 }
 function SellTower(tower) {
-    incrementObservable(incTower.gold,tower.goldSpent.times(incTower.sellTowerPer()));
+    incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
     incrementObservable(incTower.numTowers,-1);
     tileForbidden[tower.tileX][tower.tileY] = false;
     tower.destroy();
@@ -55,7 +55,7 @@ function PayToUpgradeTower(tower) {
     if (tower === null) { return; }
     var cost = tower.upgradeCost();
     if (incTower.gold().gte(cost)) {
-        tower.goldSpent.add(cost);
+        incrementObservable(tower.goldSpent,cost);
         incrementObservable(incTower.gold, new BigNumber(-1).times(cost));
         UpgradeTower(tower);
     }
@@ -83,7 +83,7 @@ Tower = function(opt) {
         if ('icon' in incTower.towerAttributes[this.towerType]) {
              this.icon = game.add.sprite(worldX+tileSquare/2, worldY+tileSquare/2, 'incTower', incTower.towerAttributes[this.towerType].icon);
         }
-        this.goldSpent = new BigNumber(opt.goldSpent || opt.cost || 0);
+        this.goldSpent = ko.observable(new BigNumber(opt.goldSpent || opt.cost || 0));
         this.worldX = worldX;
         this.worldY = worldY;
         this.tileX = tileX;

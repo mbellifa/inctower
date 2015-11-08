@@ -377,6 +377,10 @@ var incTower = {
             incTower.buyingCursor('block');
         }
     },
+    sellBlock: function () {
+        'use strict';
+        incTower.buyingCursor('sellBlock');
+    },
     buyTower: function(type) {
         'use strict';
         if (type === undefined) { type = 'kinetic'; }
@@ -795,6 +799,26 @@ function create() {
                 map.putTile(game.rnd.integerInRange(5,8),tileX,tileY,"Ground");
                 incTower.blocks.push({x:tileX, y:tileY});
                 recalcPath();
+                incTower.buyingCursor(false);
+            }
+            return;
+        }
+        if (incTower.buyingCursor() === 'sellBlock') {
+            if (tileX === 0 && tileY === 0) { return; }
+            var tileIndex = map.layers[0].data[tileY][tileX].index;
+            if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
+                map.putTile(30,tileX,tileY,"Ground");
+                incrementObservable(incTower.numBlocks,-1);
+                incrementObservable(incTower.gold,incTower.blockCost());
+                recalcPath();
+                for (var i = 0; i < incTower.blocks.length; i++) {
+                    var curBlock = incTower.blocks[i];
+                    if (curBlock.x === tileX && curBlock.y === tileY) {
+                        incTower.blocks.splice(i,1);
+                        break;
+                    }
+                }
+
                 incTower.buyingCursor(false);
             }
             return;

@@ -42,6 +42,7 @@
                 <div id="buyTower" data-bind="visible: buyingCursor() == false">
                     <b>Buy:</b><br>
                     <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
+                    <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button>
                     <span data-bind="foreach: availableTowers">
                         <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
                     </span>
@@ -55,6 +56,10 @@
                     <p>Click on the map to place your block.</p>
                     <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
                 </div>
+                <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
+                    <p>Click on a tower-less block to sell it.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
                 <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
                     <p>Click on a tile with a block to build your tower.</p>
                     <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
@@ -66,7 +71,7 @@
                     <div>Range: <span data-bind="text: currentlySelected().range"></span></div>
                     <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
                     <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
-                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent.times(incTower.sellTowerPer()))"></span>g)</button>
+                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
                 </div>
                 <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
                     <p><b>Currently Selected Enemy:</b></p>
@@ -88,6 +93,7 @@
         <div id="changelog">
             <p>Pseudo-changelog:</p>
             <ul>
+                <li>2015-11-07: Added the ability to sell blocks without towers currently on them.</li>
                 <li>2015-11-07: Added trace line for the path of the mobs.</li>
                 <li>2015-11-04: Added shield power and sprite.</li>
                 <li>2015-07-26: Implemented a couple more skills under initial engineering and fixed a layout issue that would prevent clicks on the right side of the game (whoops).</li>
