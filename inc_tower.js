@@ -139,20 +139,72 @@ var incTower = {
             baseCost: 300,
             growth: 1.15,
             maxLevel: 10,
-            description: ''
-
-
+            description: 'Increases the damage that kinetic towers deal by 1% per level.'
         },
         kineticAmmo:{
             fullName: 'Kinetic Ammunition',
             baseCost: 15,
             growth: 1.1,
             description: 'Optimizes the damage caused by kinetic towers, increasing damage by 1% per level.'
+        },
+        magicalAffinity: {
+            fullName: 'Magical Affinity',
+            baseCost: 300,
+            growth: 1.1,
+            maxLevel: 1,
+            description: "Grants magical affinity opening the path to casting spells and elemental towers.",
+            grants: {
+                1: ['fireAffinity', 'waterAffinity','airAffinity','earthAffinity']
+            }
+        },
+        fireAffinity: {
+            fullName: 'Fire Affinity',
+            baseCost: 900,
+            growth: 1.1,
+            maxLevel: 1,
+            description: "Attunes yourself with fire which allows you to build fire towers which burn enemies over time, causing them to take increased damage from all sources.",
+            onMax: function () {
+                if (incTower.availableTowers.indexOf('fire') < 0) { incTower.availableTowers.push('fire'); }
+            }
+        },
+        waterAffinity: {
+            fullName: 'Water Affinity',
+            baseCost: 900,
+            growth: 1.1,
+            maxLevel: 1,
+            description: "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.",
+            onMax: function () {
+                if (incTower.availableTowers.indexOf('water') < 0) { incTower.availableTowers.push('water'); }
+            }
+        },
+        earthAffinity: {
+            fullName: 'Earth Affinity',
+            baseCost: 900,
+            growth: 1.1,
+            maxLevel: 1,
+            description: "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.",
+            onMax: function () {
+                if (incTower.availableTowers.indexOf('earth') < 0) { incTower.availableTowers.push('earth'); }
+            }
 
+        },
+        airAffinity: {
+            fullName: 'Air Affinity',
+            baseCost: 900,
+            growth: 1.1,
+            maxLevel: 1,
+            description: "Attunes yourself with air which allows you to build air towers which knock enemies back.",
+            onMax: function () {
+                if (incTower.availableTowers.indexOf('air') < 0) { incTower.availableTowers.push('air'); }
+            }
         }
 
+
+
     },
+    startingSkills: ['kineticTowers', 'construction', 'magicalAffinity'],
     gainSkill: function (name, opt) {
+        'use strict';
         if (typeof opt === 'undefined') { opt = {}; }
         if (!(name in incTower.skillAttributes)) { console.log(name + " is not in our skills list."); }
         /*if (incTower.getSkillLevel(name) !== -1) { return; } //We already know the skill*/
@@ -167,14 +219,43 @@ var incTower = {
         }));
     },
     describeSkill: function (name) {
+        'use strict';
         if (!(name in incTower.skillAttributes)) { console.log(name); return ''; }
         return incTower.skillAttributes[name].description;
     },
     getSkillLevel: function(name) {
+        'use strict';
         if (incTower.skills.get(name)() === null) { return 0; }
         return incTower.skills.get(name)().get('skillLevel')();
     },
+    checkSkills: function () {
+        'use strict';
+        var skillKeys = incTower.skills.keys();
+        for (var h = 0; h < skillKeys.length; h++) {
+            var skill = skillKeys[h];
+            if (incTower.skillAttributes[skill].onMax !== undefined && incTower.skillIsMaxed(skill)) {
+                incTower.skillAttributes[skill].onMax();
+            }
+            if (incTower.skillAttributes[skill].grants !== undefined) {
+                var levels = Object.keys(incTower.skillAttributes[skill].grants);
+                var currentLevel = incTower.getSkillLevel(skill);
+                for (var i = 0; i < levels.length;i++) {
+                    if (currentLevel >= parseInt(levels[i])) {
+                        var skillsToAdd = incTower.skillAttributes[skill].grants[levels[i]];
+                        for (var j = 0;j < skillsToAdd.length; j++) {
+                            if (!incTower.haveSkill(skillsToAdd[j])) {
+                                incTower.gainSkill(skillsToAdd[j]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+    },
     haveSkill: function (name) {
+        'use strict';
         if (incTower.skills.get(name)() === null) { return false; }
         return true;
     },
@@ -265,26 +346,31 @@ var incTower = {
         },
         regenerating: {
             describe: function (mult) {
+                'use strict';
                 return "Regenerates " + (0.5 * mult) + "% of its max health a second.";
             }
         },
         healthy: {
             describe: function (mult) {
+                'use strict';
                 return "Has " + (10 * mult) + "% bonus health.";
             }
         },
         fast: {
             describe: function (mult) {
+                'use strict';
                 return "Moves " + (10 * mult) + "% faster.";
             }
         },
         teleport: {
             describe: function (mult) {
+                'use strict';
                 return "Has a 10% chance each second to teleport " + mult + " space(s).";
             }
         },
         shielding: {
             describe: function (mult) {
+                'use strict';
                 return "This unit gets a shield that stops the next source of damage every " + humanizeNumber(4 / mult) + " seconds.";
             }
         }
@@ -579,11 +665,7 @@ incTower.currentlySelected.subscribe(function (value) {
     incTower.currentlySelectedIndicator.y = value.y; //+ (tileSquare / 2);
 
 });
-var skillKeys = incTower.skills.keys();
-if (skillKeys.length === 0) {
-    incTower.gainSkill('kineticTowers');
-    incTower.gainSkill('construction');
-}
+
 
 
 /*
@@ -666,30 +748,20 @@ function recalcPath() {
             if (!valid) {
                 var curPathTile = enemy.path[enemy.curTile];
                 enemy.path = p.slice(0);
-
-                /*var score = Math.abs(curPathTile.x - enemy.path[enemy.curTile].x) + Math.abs(curPathTile.y - enemy.path[enemy.curTile].y);
-                if (score >= 0) {
-                    for (var i = 0;i < enemy.path.length;++i) {
-                        var newScore = Math.abs(curPathTile.x - enemy.path[i].x) + Math.abs(curPathTile.y - enemy.path[i].y);
-                        if (newScore < score) {
-                            score = newScore;
-                            enemy.curTile = i;
-                        }
-                    }
-                }*/
-
-
             }
         });
-        /*for(var i = 0, ilen = path.length; i < ilen; i++) {
-         map.putTile(46, path[i].x, path[i].y);
-         }*/
 
     });
 
     pathfinder.preparePathCalculation([0,0], [24,18]);
     pathfinder.calculatePath();
 
+}
+
+for (var i = 0;i < incTower.startingSkills.length; i++) {
+    if (!incTower.haveSkill(incTower.startingSkills[i])) {
+        incTower.gainSkill(incTower.startingSkills[i]);
+    }
 }
 var enemysAnimation = [{'name': 'duck', 'length': 8}, {'name': 'panda', 'length': 3}, {'name': 'dog', 'length': 6}, {'name': 'penguin', 'length': 4}];
 var car, car2, duck;
@@ -892,17 +964,9 @@ function create() {
         var worker = new Worker('incTower-Worker.js');
         worker.postMessage({'cmd':'start'});
         worker.addEventListener('message', function(e) {
-
             if (e.data === "update") {
-                //console.log("Update (worker) check!" + incTower.lastUpdateRealTime);
-            /*    if ((Date.now() - incTower.lastUpdateRealTime) > 1000) {
-                    //console.log("CALLING (worker) UPDATE");
-                    update();
-                }*/
                 convergeUpdate();
-                //game.update(Math.floor(new Date()));
             }
-
         }, false);
     }
     var save = localStorage.getItem("save");
@@ -936,14 +1000,6 @@ function create() {
                         //should be a big number if we're getting here.
                         incTower[prop](new BigNumber(save[prop]));
                     }
-                    /*if (typeof(save[prop]) !== 'object') {
-                        incTower[prop](save[prop]);
-                    } else if (typeof(save[prop]) === 'object') {
-                        console.log(save[prop]);
-                        for (var i = 0;i < save[prop].length;i++) {
-                            incTower[prop].push(save[prop][i]);
-                        }
-                    }*/
                     continue;
                 }
                 incTower[prop] = save[prop];
@@ -964,16 +1020,7 @@ function create() {
             for (var i = 0; i < keys.length;i++) {
                 incTower.gainSkill(keys[i],save.skills[keys[i]]);
             }
-            //save[prop] = {};
-            //var keys = obj[prop].keys();
-            //for (key in keys) {
-            //    var value = obj[prop].get(keys[key])();
-            //    save[prop][keys[key]] = {
-            //        skillLevel: value.get('skillLevel')(),
-            //        skillPoints: value.get('skillPoints')().toJSON(),
-            //        skillPointsCap: value.get('skillPointsCap')().toJSON()
-            //    };
-            //}
+            incTower.checkSkills();
         }
         if ('towers' in save) {
             for (var i = 0;i < save.towers.length;++i) {
@@ -1081,6 +1128,7 @@ function createSaveObj(obj) {
                     }
                 } else {
                     //Should be a big number if we get to ehre
+                    if (obj[prop]().toJSON === undefined) { console.log(prop + " ERROR"); }
                     save[prop] = obj[prop]().toJSON();
                 }
                 continue;
@@ -1136,25 +1184,7 @@ function everySecond() {
         skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
         incrementObservable(skill.get('skillLevel'));
         skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost,skill.get('skillLevel')(),incTower.skillAttributes[incTower.activeSkill()].growth));
-        console.log(incTower.skillAttributes[incTower.activeSkill()].grants);
-        if (incTower.skillAttributes[incTower.activeSkill()].grants !== undefined) {
-            var levels = Object.keys(incTower.skillAttributes[incTower.activeSkill()].grants);
-            console.log(levels);
-            for (var i = 0; i < levels.length;i++) {
-                console.log(parseInt(levels[i]));
-                console.log(skill.get('skillLevel')());
-                if (skill.get('skillLevel')() >= parseInt(levels[i])) {
-                    console.log("Blah");
-                    var skillsToAdd = incTower.skillAttributes[incTower.activeSkill()].grants[levels[i]];
-                    console.log(skillsToAdd);
-                    for (var j = 0;j < skillsToAdd.length; j++) {
-                        if (!incTower.haveSkill(skillsToAdd[j])) {
-                            incTower.gainSkill(skillsToAdd[j]);
-                        }
-                    }
-                }
-            }
-        }
+        incTower.checkSkills();
         console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
         if (incTower.skillAttributes[incTower.activeSkill()].maxLevel !== undefined && skill.get('skillLevel')() >= incTower.skillAttributes[incTower.activeSkill()].maxLevel) {
             incTower.activeSkill(false);
@@ -1167,7 +1197,7 @@ function everySecond() {
             var healAmount = enemy.maxHealth.times(enemy.regenerating * 0.01);
             if (healAmount.add(curHealth).gt(enemy.maxHealth)) { healAmount = enemy.maxHealth.minus(curHealth); }
             if (enemy.statusEffects.burning() > 0) {
-                enemy.statusEffects.burning(enemy.statusEffects.burning() * 0.9); //Reduces the burning instead of allowing a full regen tick
+                enemy.statusEffects.burning(enemy.statusEffects.burning().times(0.8)); //Reduces the burning instead of allowing a full regen tick
             } else if (healAmount > 0) {
                 incTower.createFloatingText({'color':'green', 'around':enemy,'amount':healAmount, 'type':'regenerating'});
                 incrementObservable(enemy.health,healAmount);
@@ -1203,10 +1233,7 @@ function everySecond() {
                 effect(effect().times(0.8));
                 if (effectName === 'burning') {
                     enemy.assignDamage(effect(),'fire');
-                    /*incTower.createFloatingText({'color':'red', 'around':enemy,'amount':-reduction, 'type':'burn'});
-                    incrementObservable(enemy.health,-reduction);*/
                 }
-                //effect(effect() * 0.8);
                 if (effect().lt(3)) { effect(new BigNumber(0)); }
                 if (statusEffects[i] === 'chilled' && effect().lt(100) && enemy.speedX === 0 && enemy.speedY === 0) {
                     enemy.nextTile();
@@ -1365,8 +1392,8 @@ function collisionHandler(bullet, enemy) {
             incrementObservable(enemy.instabilityCap,enemy.instabilityCap()); //Double the cap
             incrementObservable(enemy.totalInstability);
             var totalInstability = enemy.totalInstability();
-            var elementalDamage = enemy.health().times(totalInstability * 0.01) ; //Deals 1% of current health for each time we've had an elemental event
-            enemy.assignDamage(elementalDamage,bullet.tower.towerType);
+            /*var elementalDamage = enemy.health().times(totalInstability * 0.01) ; //Deals 1% of current health for each time we've had an elemental event
+            enemy.assignDamage(elementalDamage,bullet.tower.towerType);*/
            //incTower.createFloatingText({'scatter':0,'around':enemy,'amount':-elementalDamage, 'type':'elemental'});
             if (bullet.tower.towerType === 'water') {
                 incrementObservable(enemy.statusEffects.chilled,20 * totalInstability);
