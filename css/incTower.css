@@ -11,7 +11,12 @@
     padding: 10px;
 }
 #changelog {
-    clear: both;
+    display: none;
+
+}
+.vex-dialog-message {
+    overflow: auto;
+    max-height: 400px;
 }
 .science-text {
     color: #0066FF;
@@ -82,3 +87,33 @@ body {
 .tooltip {
     color: cornflowerblue;
 }
+.topnav {
+    font-size: 2em;
+    font-weight: bold;
+    height: 1.5em;
+}
+.topnav .header {
+    float: left;
+    margin-right: 1.5em;
+}
+.toplinks button {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    border: 0;
+    float: left;
+    margin: 0 0 0 0.5em;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.5em;
+    line-height: 1em;
+    padding: 0.75em 2em;
+}
+
+.toplinks button:hover {
+    background-color: #999;
+}
+#skills { display: none; }

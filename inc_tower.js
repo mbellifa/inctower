@@ -5,6 +5,10 @@ BigNumber.config({ ERRORS: false });
 $(document).ready(function () {
     'use strict';
     $('.tooltip').tooltipster();
+    $(document).on('click','.train_link', function (e) {
+        incTower.switchActiveSkill($(this).attr('data-skill'));
+        e.preventDefault();
+    });
 });
 function shuffle(o){ //Shuffles an array
     'use strict';
@@ -56,9 +60,22 @@ var incTower = {
     dialogTowerUpgradeDouble: false,
     dialogBossKill: false,
     sellTowerPer: ko.observable(0.5),
+    showChangelog: function () {
+        vex.dialog.alert({
+            message: $('#changelog').html(),
+            overlayClosesOnClick: false
+        });
+    },
+    showSkills: function () {
+        vex.dialog.alert({
+            message: $('#skills').html(),
+            overlayClosesOnClick: false
+        });
+    },
     skills: ko.observableDictionary({}),
     activeSkill: ko.observable('kineticTowers'),
     switchActiveSkill: function(skill) {
+        console.log("ACTIVE SKILL SWITCH:" + skill)
         incTower.activeSkill(skill);
     },
     skillIsMaxed: function(skillName) {

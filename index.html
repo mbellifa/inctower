@@ -14,14 +14,20 @@
         <title>Incremental Tower Defense</title>
     </head>
     <body>
-        <h1>Incremental Tower Defense</h1>
+        <div class="topnav"><span class="header">Incremental Tower Defense</span><span class="toplinks"><button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button> <button data-bind="click: function () { incTower.showSkills(); }">Skills</button></span></div>
+        <div id="skills">
+            <p>Skills: Hover over skill names to see a description.</p>
+            <ul data-bind="foreach: skills.items()">
+
+                <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'title': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
+            </ul>
+        </div>
         <div id="center">
             <div id="gameContainer"></div>
         </div>
         <div id="right_container">
             <div id="right">
                 <div class="panel_container">
-                    <div class="panel_header">Status</div>
                     <div class="panel_contents">
                         <div>Wave: <span data-bind="text: wave"></span></div>
                         <div id="goldText">Gold: <span data-bind="text: humanizeNumber(gold())"></span></div>
@@ -34,22 +40,16 @@
                 </div>
 
 
-                <p><b>Skills:</b></p>
-                <ul data-bind="foreach: skills.items()">
-
-                    <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'title': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><button data-bind="click: function () { incTower.switchActiveSkill($data.key()); }">Train</button></span></li>
-                </ul>
-
                 <div id="buyTower" data-bind="visible: buyingCursor() == false">
                     <b>Buy:</b><br>
                     <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
-                    <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button>
+                    <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button><br>
                     <span data-bind="foreach: availableTowers">
                         <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
                     </span>
                     <div id="cheapestUpgrade" data-bind="if: numTowers() > 0">
                         <b>Upgrade Towers:</b><br>
-                        <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button>
+                        <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button><br>
                         <button data-bind="click: function () { cheapestUpgradeAll(); }">Upgrade Using All Gold</button>
                     </div>
                 </div>
@@ -92,9 +92,11 @@
 
         </div>
         <div id="changelog">
-            <p>Pseudo-changelog:</p>
+            <p>Changelog:</p>
             <ul>
+                <li>2015-11-08: UI update, made top level buttons for changelog and skills.</li>
                 <li>2015-11-08: Reduced the scaling on tower cost increase, reduced the difference in cost from elemental towers to kinetic towers.</li>
+                <li>2015-11-08: Removed current health percentage damage from elemental damage.</li>
                 <li>2015-11-08: Added the upgrades for elemental towers.</li>
                 <li>2015-11-07: Added the ability to sell blocks without towers currently on them.</li>
                 <li>2015-11-07: Added trace line for the path of the mobs.</li>
@@ -136,8 +138,8 @@
             </ul>
             <p>Todo:</p>
             <ul>
-                <li>Add power display for bosses with tool tips.</li>
-                <li>Implement elemental mechanic</li>
+                <li>Add a new skills dialog.</li>
+
             </ul>
         </div>
         <script src="phaser.min.js"></script>
