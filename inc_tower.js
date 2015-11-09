@@ -286,28 +286,28 @@ var incTower = {
         },
         earth: {
             name: 'Earth',
-            baseCost: 1000,
+            baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
             icon: 'earth-element.png'
         },
         air: {
             name: 'Air',
-            baseCost: 1000,
+            baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
             icon: 'air-element.png'
         },
         fire: {
             name: 'Fire',
-            baseCost: 1000,
+            baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
             icon: 'fire-element.png'
         },
         water: {
             name: 'Water',
-            baseCost: 1000,
+            baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
             icon: 'water-element.png'
@@ -438,7 +438,7 @@ var incTower = {
     towerCost: function (base) {
         'use strict';
         if (base === undefined) { base = 25; }
-        var amount = costCalc(base,incTower.numTowers(),1.8);
+        var amount = costCalc(base,incTower.numTowers(),1.4);
         amount = amount.times(1 - (incTower.getSkillLevel('construction') * 0.01));
         return amount;
     },
