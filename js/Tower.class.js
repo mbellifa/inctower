@@ -44,6 +44,9 @@ function UpgradeTower(tower) {
 function SellTower(tower) {
     incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
     incrementObservable(incTower.numTowers,-1);
+    var index = incTower.towers.indexOf(tower);
+    if (index >= 0) { incTower.towers.splice(index, 1); }
+
     tileForbidden[tower.tileX][tower.tileY] = false;
     tower.destroy();
     if (tower.icon) {

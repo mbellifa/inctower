@@ -3,12 +3,7 @@
     <head>
         <link rel="stylesheet" href="css/incTower.css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
-        <script src="js/jquery-1.11.2.min.js"></script>
-        <script src="js/jquery.tooltipster.min.js"></script>
-        <script src="js/vex.combined.min.js"></script>
-        <script src="js/bignumber.min.js"></script>
-        <script src="js/moment.js"></script>
-        <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
+
         <link rel="stylesheet" href="css/vex.css">
         <link rel="stylesheet" href="css/vex-theme-wireframe.css">
         <title>Incremental Tower Defense</title>
@@ -94,6 +89,8 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-11-12: Air tower rework, it now scoops up enemies in a whirlwind and knocks them back far fewer spaces.</li>
+                <li>2015-11-12: Fixed a bug where the save file would record towers you had already sold, this is probably the cause of folks reporting that their tower damage was much lower after a refersh.</li>
                 <li>2015-11-08: UI update, made top level buttons for changelog and skills.</li>
                 <li>2015-11-08: Reduced the scaling on tower cost increase, reduced the difference in cost from elemental towers to kinetic towers.</li>
                 <li>2015-11-08: Removed current health percentage damage from elemental damage.</li>
@@ -142,6 +139,12 @@
 
             </ul>
         </div>
+        <script src="js/jquery-1.11.2.min.js"></script>
+        <script src="js/jquery.tooltipster.min.js"></script>
+        <script src="js/vex.combined.min.js"></script>
+        <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
+        <script src="js/bignumber.min.js"></script>
+        <script src="js/moment.js"></script>
         <script src="phaser.min.js"></script>
         <script src="js/easystar-0.2.1.min.js"></script>
         <script src="js/PathFinderPlugin.js"></script>
