@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="PROJECT" libraries="{Phaser Arcade, ko.observableDictionary.js}" />
+    <file url="PROJECT" libraries="{Knockout 3.3.0, Phaser Arcade, jQuery 1.11, ko.observableDictionary.js}" />
   </component>
 </project>

@@ -161,7 +161,9 @@ Enemy.prototype.nextTile = function () {
                 theEnemy.kill();
             });
 
-            incrementObservable(incTower.wave, -2); //Go back a wave.
+
+            incrementObservable(incTower.wave, -1); //Go back a wave.
+            incTower.farmMode(true); //Turn farm mode on
             return;
         } else if (!incTower.dialogEdgeRegular) {
             incTower.dialogEdgeRegular = true;

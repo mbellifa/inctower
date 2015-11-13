@@ -6,6 +6,7 @@
 
         <link rel="stylesheet" href="css/vex.css">
         <link rel="stylesheet" href="css/vex-theme-wireframe.css">
+        <link rel="stylesheet" href="css/jquery.qtip.css">
         <title>Incremental Tower Defense</title>
     </head>
     <body>
@@ -24,8 +25,12 @@
             <div id="right">
                 <div class="panel_container">
                     <div class="panel_contents">
-                        <div>Wave: <span data-bind="text: wave"></span></div>
-                        <div id="goldText">Gold: <span data-bind="text: humanizeNumber(gold())"></span></div>
+                        <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; Currently in
+                            <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
+                            <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
+                        </div>
+                        <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
+
 
                         <p><b>Currently Training:</b> <span data-bind="text: getActiveSkillName()"></span><br>
                             Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span>.</p>
@@ -89,6 +94,8 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-11-12: Added farm/progress mode.</li>
+                <li>2015-11-12: Changed tooltips to actually work properly.</li>
                 <li>2015-11-12: Air tower rework, it now scoops up enemies in a whirlwind and knocks them back far fewer spaces.</li>
                 <li>2015-11-12: Fixed a bug where the save file would record towers you had already sold, this is probably the cause of folks reporting that their tower damage was much lower after a refersh.</li>
                 <li>2015-11-08: UI update, made top level buttons for changelog and skills.</li>
@@ -140,7 +147,7 @@
             </ul>
         </div>
         <script src="js/jquery-1.11.2.min.js"></script>
-        <script src="js/jquery.tooltipster.min.js"></script>
+        <script src="js/jquery.qtip.min.js"></script>
         <script src="js/vex.combined.min.js"></script>
         <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
         <script src="js/bignumber.min.js"></script>

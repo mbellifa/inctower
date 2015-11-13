@@ -7,5 +7,7 @@
     <orderEntry type="library" name="Phaser Arcade" level="project" />
     <orderEntry type="library" name="knockout-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="ko.observableDictionary.js" level="project" />
+    <orderEntry type="library" name="jQuery 1.11" level="project" />
+    <orderEntry type="library" name="Knockout 3.3.0" level="project" />
   </component>
 </module>
