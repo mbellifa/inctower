@@ -3,16 +3,14 @@
     <head>
         <link rel="stylesheet" href="css/incTower.css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
-
-        <link rel="stylesheet" href="css/vex.css">
-        <link rel="stylesheet" href="css/vex-theme-wireframe.css">
         <link rel="stylesheet" href="css/jquery.qtip.css">
+        <link rel="stylesheet" href="css/jquery-ui.min.css">
         <title>Incremental Tower Defense</title>
     </head>
     <body>
         <div class="topnav"><span class="header">Incremental Tower Defense</span><span class="toplinks"><button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button> <button data-bind="click: function () { incTower.showSkills(); }">Skills</button></span></div>
-        <div id="skills">
-            <p>Skills: Hover over skill names to see a description.</p>
+        <div id="skills" title="Skills">
+            <p>Hover over skill names to see a description.</p>
             <ul data-bind="foreach: skills.items()">
 
                 <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'title': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
@@ -32,9 +30,12 @@
                         <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
 
 
-                        <p><b>Currently Training:</b> <span data-bind="text: getActiveSkillName()"></span><br>
-                            Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span>.</p>
-                        <div class="progressBar" style="width: 90%; height: 16px;"><div class="internalProgress" style="background-color: #333; height:16px; transition:width 1s;" data-bind="style: {width: percentageUntilSkillUp() + '%' }"></div></div>
+                        <b>Currently Training:</b> <span data-bind="text: getActiveSkillName()"></span>.
+                        <div class="progressBar">
+                            <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                            <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                        </div>
+
 
                     </div>
                 </div>
@@ -94,6 +95,10 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-11-14: Removed vex in favor of jQuery UI.</li>
+                <li>2015-11-13: Combined the text and the progress bar to save space.</li>
+                <li>2015-11-13: Teleport no longer functions when frozen or knocked up (by the air tower).</li>
+                <li>2015-11-13: Adjusted nearly all of the skill up times, they were previously set to beta values now it actually takes a few minutes.</li>
                 <li>2015-11-12: Added farm/progress mode.</li>
                 <li>2015-11-12: Changed tooltips to actually work properly.</li>
                 <li>2015-11-12: Air tower rework, it now scoops up enemies in a whirlwind and knocks them back far fewer spaces.</li>
@@ -148,17 +153,14 @@
         </div>
         <script src="js/jquery-1.11.2.min.js"></script>
         <script src="js/jquery.qtip.min.js"></script>
-        <script src="js/vex.combined.min.js"></script>
-        <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
         <script src="js/bignumber.min.js"></script>
         <script src="js/moment.js"></script>
         <script src="phaser.min.js"></script>
         <script src="js/easystar-0.2.1.min.js"></script>
         <script src="js/PathFinderPlugin.js"></script>
-
         <script src="js/knockout-3.3.0.js"></script>
         <script src="js/ko.observableDictionary.js"></script>
-
+        <script src="js/jquery-ui.min.js"></script>
         <script src="inc_tower.js"></script>
         <script type="text/javascript" src="js/Enemy.class.js"></script>
         <script type="text/javascript" src="js/Tower.class.js"></script>

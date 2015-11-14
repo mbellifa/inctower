@@ -117,3 +117,43 @@ body {
     background-color: #999;
 }
 #skills { display: none; }
+
+.progressBar {
+    width: 250px;
+    height: 1.2em;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.progressBar .bar {
+    transition:width 1s;
+    height:1.2em;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.progressBar .bar span.text {
+    position: absolute;
+    display: block;
+    width: 250px;
+    height: 100%;
+    text-align: center;
+}
+.bar.positive {
+    background-color: #333;
+    left: 0;
+}
+.bar.positive span {
+    left: 0;
+    color: white;
+}
+.bar.negative {
+    background-color: white;
+    right: 0;
+}
+.bar.negative span {
+    right: 0;
+    color: black;
+}

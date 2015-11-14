@@ -27,10 +27,8 @@ function UpgradeTower(tower) {
         incrementObservable(tower.damage,tower.damage());
         if (!incTower.dialogTowerUpgradeDouble) {
             incTower.dialogTowerUpgradeDouble = true;
-            vex.dialog.alert({
-                message: "Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles.",
-                overlayClosesOnClick: false
-            });
+            okDialog("Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles.",
+                "Tower Upgrades");
         }
     } else {
         incrementObservable(tower.damage,incTower.towerAttributes[tower.towerType].damagePerLevel);
@@ -106,7 +104,7 @@ Tower = function(opt) {
         this.tile = tile;
         var defaultDamage = 1 * Math.pow(10, incTower.getSkillLevel('towerTemplates'));
 
-        defaultDamage *= 1 + 0.01 * incTower.getSkillLevel('initialEngineering');
+        defaultDamage *= 1 + 0.05 * incTower.getSkillLevel('initialEngineering');
         defaultDamage *= 1 + 0.01 * incTower.getSkillLevel('refinedBlueprints');
         this.damage = ko.observable(new BigNumber(opt.damage || defaultDamage));
         this.level = ko.observable(opt.level || 1);
@@ -140,7 +138,7 @@ Tower.prototype.upgradeCost = function () {
     'use strict';
     var amount = costCalc(incTower.towerAttributes[this.towerType].baseCost,this.level(),1.2);
     amount = amount.times(1 - (incTower.getSkillLevel('construction') * 0.01));
-    amount = amount.times(1 - (incTower.getSkillLevel('modularConstruction') * 0.01));
+    amount = amount.times(1 - (incTower.getSkillLevel('modularConstruction') * 0.05));
     return amount;
 },
 
@@ -163,9 +161,6 @@ Tower.prototype.fire = function() {
         var enemiesInRange = [];
         for (var i = 0;i < enemys.children.length;i++) {
             if (!enemys.children[i].alive) { continue; }
-            //
-            //var dx = (enemys.children[i].x + 16) - (tower.x + 16);
-            //var dy = (enemys.children[i].y + 16) - (tower.y + 16);
             if (enemys.children[i].x < 0 || enemys.children[i].y < 0) { continue; }
             if (game.physics.arcade.distanceBetween(enemys.children[i],this) < this.range) {
                 enemiesInRange.push(enemys.children[i]);
@@ -174,10 +169,6 @@ Tower.prototype.fire = function() {
         if (enemiesInRange.length > 0) {
             var chosenEnemy = enemiesInRange[(Math.random()*enemiesInRange.length) | 0];
             var sprite = 'bullet.png';
-            //if (this.towerType === 'science') {
-            //    sprite = 'blue-bullet.png';
-            //}
-            //var bullet = bullets.getFirstDead();
             if (!(sprite in incTower.deadBullets)) { incTower.deadBullets[sprite] = []; }
             var bullet = incTower.deadBullets[sprite].shift();
             if (bullet !== undefined) {
@@ -190,7 +181,6 @@ Tower.prototype.fire = function() {
             bullet.damage = this.totalDamage();
             bullet.tower = this;
             bullet.target = chosenEnemy;
-            //bullet.rotation = parseFloat(game.physics.arcade.angleToXY(bullet, enemys.children[i].x, enemys.children[i].y)) * 180 / Math.PI;
             this.fireLastTime = game.time.now + this.fireTime;
             game.physics.arcade.moveToObject(bullet, chosenEnemy, 300);
             bullet.fired = game.time.now;

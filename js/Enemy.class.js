@@ -55,12 +55,11 @@ var Enemy = function(x, y, opts) {
     this.elementalInstability = ko.observable(0);
     this.instabilityCap = ko.observable(new BigNumber(5));
     this.totalInstability = ko.observable(0); //Number of times that we've hit the cap.
-    console.log(opts);
+    //console.log(opts);
     for (var opt in opts) {
         if (opts.hasOwnProperty(opt)) {
             if (opt === "scale") {
                 //this.scale.set( opts[opt], opts[opt]);
-                console.log("Set scale to " + opts[opt]);
                 this.scale.x = opts[opt];
                 this.scale.y = opts[opt];
                 this.healthbar.scale.x = opts[opt];
@@ -148,10 +147,10 @@ Enemy.prototype.nextTile = function () {
             console.log("Boss ran off the edge");
             if (!incTower.dialogEdgeBoss) {
                 incTower.dialogEdgeBoss = true;
-                vex.dialog.alert({
-                    message: "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it.",
-                    overlayClosesOnClick: false
-                });
+                okDialog(
+                    "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it.",
+                    "Boss Waves"
+                )
             }
             if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy) {
                 incTower.currentlySelected(null);
@@ -167,10 +166,9 @@ Enemy.prototype.nextTile = function () {
             return;
         } else if (!incTower.dialogEdgeRegular) {
             incTower.dialogEdgeRegular = true;
-            vex.dialog.alert({
-                message: "When regular enemies run off the edge they cycle back through your defenses. Each time this is allowed to happen the monster loses 10% of its gold value.",
-                overlayClosesOnClick: false
-            });
+            okDialog("When non-boss enemies run off the edge they cycle back through your defenses. Each time this is allowed to happen the monster loses 10% of its gold value.",
+                "Regular Enemies"
+            );
 
         }
         if (incTower.wave() > 1) { this.goldValue(this.goldValue().times(0.9)); } //Lose 10% of our gold value each time we p

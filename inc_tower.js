@@ -1,6 +1,18 @@
 /**
  * Created by Mo on 2/21/2015.
  */
+function okDialog(message,title) {
+    $('<div>' + message + '</div>').dialog({
+        modal: true,
+        width: 600,
+        buttons: {
+            Ok: function () {
+                $(this).dialog("close");
+            }
+        },
+        title: title
+    });
+}
 BigNumber.config({ ERRORS: false });
 $(document).ready(function () {
     'use strict';
@@ -22,7 +34,10 @@ $(document).ready(function () {
             }, event);
         }).each(function(i) {
             $.attr(this, 'oldtitle', $.attr(this, 'title'));
-            this.removeAttribute('title');
+            if (this.removeAttribute !== undefined) {
+                this.removeAttribute('title');
+            }
+
         });
     $(document).on('click','.train_link', function (e) {
         incTower.switchActiveSkill($(this).attr('data-skill'));
@@ -82,15 +97,15 @@ var incTower = {
     dialogBossKill: false,
     sellTowerPer: ko.observable(0.5),
     showChangelog: function () {
-        vex.dialog.alert({
-            message: $('#changelog').html(),
-            overlayClosesOnClick: false
+        $('#changelog').dialog({
+            width: 600,
+            height: 500
         });
     },
     showSkills: function () {
-        vex.dialog.alert({
-            message: $('#skills').html(),
-            overlayClosesOnClick: false
+        $('#skills').dialog({
+            width: 500,
+            height: 500,
         });
     },
     skills: ko.observableDictionary({}),
@@ -122,7 +137,7 @@ var incTower = {
     skillAttributes: {
         construction: {
             fullName: 'Construction',
-            baseCost: 1,
+            baseCost: 20,
             growth: 1.1,
             description: 'Reduces the cost of towers and their upgrades by 1% per rank.',
             maxLevel: 10,
@@ -132,10 +147,10 @@ var incTower = {
         },
         modularConstruction:{
             fullName: 'Modular Construction',
-            baseCost: 1,
+            baseCost: 135,
             growth: 1.15,
-            description: 'Reduces the cost of upgrading all towers by 1% per level.',
-            maxLevel: 25,
+            description: 'Reduces the cost of upgrading all towers by 5% per level.',
+            maxLevel: 5,
             //grants: {
             //    25: ['']
             //}
@@ -143,17 +158,17 @@ var incTower = {
         },
         initialEngineering: {
             fullName: 'Initial Engineering',
-            baseCost: 2,
+            baseCost: 135,
             growth: 1.15,
-            description: 'Increases the starting damage, attack speed, and range for all towers by 1%.',
-            maxLevel: 25,
+            description: 'Increases the starting damage, attack speed, and range for all towers by 5% per rank.',
+            maxLevel: 5,
             grants: {
-                25: ['towerTemplates', 'refinedBlueprints']
+                5: ['towerTemplates', 'refinedBlueprints']
             }
         },
         towerTemplates: {
             fullName: 'Tower Templates',
-            baseCost: 2,
+            baseCost: 120,
             growth: 2,
             description: 'Increases the starting damage of towers by a factor of 10 per rank.',
             maxLevel: 5,
@@ -173,8 +188,8 @@ var incTower = {
         },
         kineticTowers: {
             fullName: 'Kinetic Towers',
-            baseCost: 300,
-            growth: 1.15,
+            baseCost: 20,
+            growth: 1.1,
             maxLevel: 10,
             description: 'Increases the damage that kinetic towers deal by 1% per level.'
         },
@@ -270,6 +285,9 @@ var incTower = {
         var skillKeys = incTower.skills.keys();
         for (var h = 0; h < skillKeys.length; h++) {
             var skill = skillKeys[h];
+            if (incTower.skillAttributes[skill].maxLevel !== undefined && incTower.getSkillLevel(skill) > incTower.skillAttributes[skill].maxLevel) {
+                incTower.skills.get(skill)().get('skillLevel')(incTower.skillAttributes[skill].maxLevel);
+            }
             if (incTower.skillAttributes[skill].onMax !== undefined && incTower.skillIsMaxed(skill)) {
                 incTower.skillAttributes[skill].onMax();
             }
@@ -1048,14 +1066,11 @@ function create() {
 
     //We need a load function here for this to really make sense
     if (!incTower.dialogWelcome) {
-        vex.dialog.alert({
-            message: "Welcome to Incremental Tower Defense!<br><br>In the beginning you can build the following things: " +
+        okDialog("In the beginning you can build the following things: " +
             "<ul>" +
-            "<li><b>Blocks</b>: Reroutes enemy movement and required for tower placement.</li>" +
+            "<li><b>Blocks</b>: Reroutes enemy movement and required for tower placement. The purple line shows the way in which most enemies will move toward the red zone.</li>" +
             "<li><b>Kinetic Towers</b>: Deals damage to enemies, upgrading these is the main way to progress through the game.</li>" +
-            "</ul>",
-            overlayClosesOnClick: false
-        });
+            "</ul>", "Incremental Tower Defense");
         incTower.dialogWelcome = true;
     }
     game.time.events.loop(Phaser.Timer.SECOND, everySecond, this);
@@ -1225,7 +1240,7 @@ function everySecond() {
         //incTower.skills.get(incTower.activeSkill()).push('skillPointsCap')()();
     }
     enemys.forEachAlive(function(enemy) {
-        if (enemy.regenerating !== undefined && enemy.regenerating > 0 && enemy.statusEffects.chilled() < 100) {
+        if (enemy.regenerating !== undefined && enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {
             var curHealth = enemy.health();
             var healAmount = enemy.maxHealth.times(enemy.regenerating * 0.01);
             if (healAmount.add(curHealth).gt(enemy.maxHealth)) { healAmount = enemy.maxHealth.minus(curHealth); }
@@ -1236,7 +1251,7 @@ function everySecond() {
                 incrementObservable(enemy.health,healAmount);
             }
         }
-        if (enemy.teleport !== undefined && enemy.teleport > 0) {
+        if (enemy.teleport !== undefined && enemy.teleport > 0 && enemy.statusEffects.chilled().lt(100) && !enemy.knockback) {
             if (game.rnd.integerInRange(0,100) <= 10) {
                 var origScale = enemy.scale.x;
                 var blinkTween = game.add.tween(enemy.scale).to({x:0},250, Phaser.Easing.Quadratic.In);
@@ -1295,10 +1310,9 @@ function update() {
         if (incTower.wave() > 0 && incTower.wave() % 5 === 0) {
             if (!incTower.dialogBossKill) {
                 incTower.dialogBossKill = true;
-                vex.dialog.alert({
-                    message: "Congratulations! You killed your first boss wave. Bosses do not cycle back through your defenses if they are not defeated. If killed it allows you to redeem an upgrade.",
-                    overlayClosesOnClick: false
-                });
+                okDialog("Congratulations! You killed your first boss wave. " +
+                    "Bosses do not cycle back through your defenses if they are not defeated. " +
+                    "If killed it allows you to redeem an upgrade.", "First Boss Kill");
 
             }
         }
@@ -1481,12 +1495,10 @@ function collisionHandler(bullet, enemy) {
                         y:[minY, maxY, maxY, minY, kbY + game.rnd.integerInRange(-16,16)]
                     }, Math.max(500,100 * totalInstability), "Sine.easeInOut", false);
                     knockbackTween.onComplete.add(function () {
-                        for (var i = 0;i < this.length; i++) {
-                            this.knockback = false;
-                            this.speedX = 0;
-                            this.speedY = 0;
-                            this.animations.paused = false;
-                        }
+                        this.knockback = false;
+                        this.speedX = 0;
+                        this.speedY = 0;
+                        this.animations.paused = false;
                     },impactedEnemies[i]);
                     knockbackTween.interpolation(Phaser.Math.bezierInterpolation);
                     knockbackTween.start();
