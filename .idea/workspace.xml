@@ -2,16 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/css/vex-theme-bottom-right-corner.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/css/vex-theme-wireframe.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/css/vex.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/js/vex.combined.min.js" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/css/incTower.css" afterPath="$PROJECT_DIR$/css/incTower.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inc_tower.js" afterPath="$PROJECT_DIR$/inc_tower.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Enemy.class.js" afterPath="$PROJECT_DIR$/js/Enemy.class.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Tower.class.js" afterPath="$PROJECT_DIR$/js/Tower.class.js" />
     </list>
     <ignored path="Incremental Tower Defense.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,11 +26,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.8727274">
-              <caret line="97" column="65" selection-start-line="97" selection-start-column="65" selection-end-line="97" selection-end-column="65" />
+            <state vertical-scroll-proportion="0.41463414">
+              <caret line="97" column="30" selection-start-line="97" selection-start-column="30" selection-end-line="97" selection-end-column="30" />
               <folding>
                 <element signature="n#style#0;n#span#0;n#span#0;n#div#2;n#div#6;n#div#0;n#div#3;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -103,11 +97,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="inc_tower.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="inc_tower.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/inc_tower.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-4.1513762">
-              <caret line="101" column="23" selection-start-line="101" selection-start-column="23" selection-end-line="101" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="1287" column="17" selection-start-line="1287" selection-start-column="17" selection-end-line="1287" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -116,8 +110,8 @@
       <file leaf-file-name="Enemy.class.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="-13.862069">
+              <caret line="198" column="24" selection-start-line="198" selection-start-column="24" selection-end-line="198" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -126,8 +120,8 @@
       <file leaf-file-name="Tower.class.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-107.27586">
-              <caret line="183" column="0" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
+            <state vertical-scroll-proportion="-14.379311">
+              <caret line="169" column="27" selection-start-line="169" selection-start-column="27" selection-end-line="169" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -165,10 +159,10 @@
         <option value="$PROJECT_DIR$/css/vex-theme-bottom-right-corner.css" />
         <option value="$PROJECT_DIR$/css/jquery.qtip.css" />
         <option value="$PROJECT_DIR$/css/incTower.css" />
-        <option value="$PROJECT_DIR$/js/Enemy.class.js" />
-        <option value="$PROJECT_DIR$/inc_tower.js" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/js/Tower.class.js" />
+        <option value="$PROJECT_DIR$/inc_tower.js" />
+        <option value="$PROJECT_DIR$/js/Enemy.class.js" />
+        <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
   </component>
@@ -439,7 +433,13 @@
       <option name="project" value="LOCAL" />
       <updated>1447397590092</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Replaced Vex with jQuery UI.">
+      <created>1447540270751</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1447540270751</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TodoView">
@@ -516,7 +516,8 @@
     <MESSAGE value="UI Update" />
     <MESSAGE value="Air Tower Rework, removed cruft from save file, save tower fix." />
     <MESSAGE value="Added farm mode, updated tooltips." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added farm mode, updated tooltips." />
+    <MESSAGE value="Replaced Vex with jQuery UI." />
+    <option name="LAST_COMMIT_MESSAGE" value="Replaced Vex with jQuery UI." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -880,14 +881,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/css/jquery.qtip.css">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-3.090909">
@@ -937,29 +930,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
+    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.8727274">
-          <caret line="97" column="65" selection-start-line="97" selection-start-column="65" selection-end-line="97" selection-end-column="65" />
-          <folding>
-            <element signature="n#style#0;n#span#0;n#span#0;n#div#2;n#div#6;n#div#0;n#div#3;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="-14.379311">
+          <caret line="169" column="27" selection-start-line="169" selection-start-column="27" selection-end-line="169" selection-end-column="27" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
+    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-107.27586">
-          <caret line="183" column="0" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
+        <state vertical-scroll-proportion="-13.862069">
+          <caret line="198" column="24" selection-start-line="198" selection-start-column="24" selection-end-line="198" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/inc_tower.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.1513762">
-          <caret line="101" column="23" selection-start-line="101" selection-start-column="23" selection-end-line="101" selection-end-column="23" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1287" column="17" selection-start-line="1287" selection-start-column="17" selection-end-line="1287" selection-end-column="17" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.41463414">
+          <caret line="97" column="30" selection-start-line="97" selection-start-column="30" selection-end-line="97" selection-end-column="30" />
+          <folding>
+            <element signature="n#style#0;n#span#0;n#span#0;n#div#2;n#div#6;n#div#0;n#div#3;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

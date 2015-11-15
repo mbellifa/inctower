@@ -1294,11 +1294,8 @@ function update() {
     var currentTime = game.time.now;
     incTower.frame++;
     if (incTower.lastUpdate === 0) { incTower.lastUpdate = currentTime; }
-    var _lastUpdateTime = incTower.lastUpdate;
-    //var diff = (Date.now() - incTower.lastUpdateRealTime) / (1 / game.time.desiredFps);
     incTower.lastUpdateRealTime = Date.now();
     incTower.lastUpdate = currentTime;
-//    if (incTower.frame % 10 === 0) {
 
     if ((!incTower.generatingEnemies) && (enemys.countLiving() === 0)) {
         if (incTower.wave() > 0) {

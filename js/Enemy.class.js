@@ -112,8 +112,8 @@ Enemy.prototype.assignDamage = function (damage, type) {
 Enemy.prototype.moveElmt = function() {
     'use strict';
     if (this.knockback) { return; }
-    this.x += this.speedX;
-    this.y += this.speedY;
+    this.x += this.speedX * this.realSpeed();
+    this.y += this.speedY * this.realSpeed();
     if (this.speedX > 0 && this.x >= this.next_positX) {
         this.x = this.next_positX;
         this.nextTile();
@@ -133,9 +133,9 @@ Enemy.prototype.moveElmt = function() {
         this.y = this.next_positY;
         this.nextTile();
         //Enemy.prototype.nextTile(this);
-    } else if (Math.abs(this.speedX) < 0.01 && Math.abs(this.speedY) < 0.01 && this.realSpeed() > 0) {
-        this.nextTile();
-    }
+    }// else if (Math.abs(this.speedX) < 0.01 && Math.abs(this.speedY) < 0.01 && this.realSpeed() > 0) {
+    //    this.nextTile();
+    //}
 
 };
 Enemy.prototype.nextTile = function () {
@@ -150,7 +150,7 @@ Enemy.prototype.nextTile = function () {
                 okDialog(
                     "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it.",
                     "Boss Waves"
-                )
+                );
             }
             if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy) {
                 incTower.currentlySelected(null);
@@ -180,11 +180,11 @@ Enemy.prototype.nextTile = function () {
     this.next_positY = this.path[this.curTile].y * tileSquare + 16 | 0;
     // on check le sens gauche/droite
     if (this.next_positX > this.x) {
-        this.speedX = this.realSpeed();
+        this.speedX = 1;
         this.angle = 0;
         this.scale.x = 1;
     } else if (this.next_positX < this.x) {
-        this.speedX = -this.realSpeed();
+        this.speedX = -1;
         this.scale.x = -1;
         this.angle = 0;
     } else {
@@ -193,10 +193,10 @@ Enemy.prototype.nextTile = function () {
     }
     // on check le sens haut/bas
     if (this.next_positY > this.y) {
-        this.speedY = this.realSpeed();
+        this.speedY = 1;
         this.angle = 90;
     } else if (this.next_positY < this.y) {
-        this.speedY = -this.realSpeed();
+        this.speedY = -1;
         this.angle = -90;
     } else {
         this.speedY = 0;
@@ -206,6 +206,5 @@ Enemy.prototype.nextTile = function () {
 Enemy.prototype.realSpeed = function () {
     var speed = this.speed;
     speed -= speed * (this.statusEffects.chilled() * 0.01);
-    if (speed < 0) { return 0; }
-    return speed;
+    return Math.max(0,speed);
 };
