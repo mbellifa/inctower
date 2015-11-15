@@ -5,16 +5,12 @@ function chilledUpdate(value) {
     if (value > 100) {
         value = 100;
         this.animations.paused = true;
-        console.log('FROZEN!');
     } else {
         this.animations.paused = false;
     }
     this.animations.currentAnim.speed = this.realSpeed() * 10;
-    var blue = ((value * 2.55) | 0);
     var others = 255 - value;
     this.tint = rgbToHex(others,others,255);
-    //this.blendMode = PIXI.blendModes.MULTIPLY;
-    //this.blendMode = PIXI.blendModes.ADD;
 }
 
 var Enemy = function(x, y, opts) {
@@ -99,12 +95,11 @@ Enemy.prototype.assignDamage = function (damage, type) {
     }
     incrementObservable(this.health, damage.negated());
     incTower.createFloatingText({'scatter':0,'around':this,'amount':damage.negated(), 'type':'damage'});
-    if (this.health() <= 0) {
+    if (this.health().lte(0)) {
         if (incTower.currentlySelected() === this) {
             incTower.currentlySelected(null);
         }
         incTower.gainGold(this.goldValue(), this);
-        //incrementObservable(incTower.gold,enemy.goldValue);
         this.kill();
         this.healthbar.destroy();
     }

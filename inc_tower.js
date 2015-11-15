@@ -25,14 +25,14 @@ $(document).ready(function () {
                     attr: 'title'
                 },
                 style: {
-                    classes: 'qtip-dark',
+                    classes: 'qtip-dark'
                 },
                 show: {
                     event: event.type,
                     ready: true
                 }
             }, event);
-        }).each(function(i) {
+        }).each(function() {
             $.attr(this, 'oldtitle', $.attr(this, 'title'));
             if (this.removeAttribute !== undefined) {
                 this.removeAttribute('title');
@@ -105,13 +105,12 @@ var incTower = {
     showSkills: function () {
         $('#skills').dialog({
             width: 500,
-            height: 500,
+            height: 500
         });
     },
     skills: ko.observableDictionary({}),
     activeSkill: ko.observable('kineticTowers'),
     switchActiveSkill: function(skill) {
-        console.log("ACTIVE SKILL SWITCH:" + skill)
         incTower.activeSkill(skill);
     },
     skillIsMaxed: function(skillName) {
@@ -171,7 +170,7 @@ var incTower = {
             baseCost: 120,
             growth: 2,
             description: 'Increases the starting damage of towers by a factor of 10 per rank.',
-            maxLevel: 5,
+            maxLevel: 5
         },
         refinedBlueprints: {
             fullName: 'Refined Blueprints',
@@ -525,8 +524,7 @@ var incTower = {
     buyTower: function(type) {
         'use strict';
         if (type === undefined) { type = 'kinetic'; }
-        var baseCost = 25;
-        baseCost = incTower.towerAttributes[type].baseCost;
+        var baseCost = incTower.towerAttributes[type].baseCost;
         var cost = incTower.towerCost(baseCost);
         if (incTower.gold().gt(cost)) {
             console.log("Setting cursor to " + type);
@@ -611,7 +609,7 @@ var incTower = {
         zombie:[
             'zombie01.png',
             'zombie02.png',
-            'zombie03.png',
+            'zombie03.png'
         ]
 
     },
@@ -1427,6 +1425,9 @@ function collisionHandler(bullet, enemy) {
            //incTower.createFloatingText({'scatter':0,'around':enemy,'amount':-elementalDamage, 'type':'elemental'});
             if (bullet.tower.towerType === 'water') {
                 incrementObservable(enemy.statusEffects.chilled,20 * totalInstability);
+                if (enemy.statusEffects.chilled().gte(100)) {
+                    incTower.createFloatingText({'color':'#0000CC', 'duration':2000, 'around':enemy,'text':'Frozen!', 'type':'frozen'});
+                }
                 /*if (totalInstability >= 5 && enemy.statusEffects.chilled() < 100) { //5 instability guarantees a short freeze
                     enemy.statusEffects.chilled(100);
                 }*/
