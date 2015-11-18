@@ -128,9 +128,9 @@ Enemy.prototype.moveElmt = function() {
         this.y = this.next_positY;
         this.nextTile();
         //Enemy.prototype.nextTile(this);
-    }// else if (Math.abs(this.speedX) < 0.01 && Math.abs(this.speedY) < 0.01 && this.realSpeed() > 0) {
-    //    this.nextTile();
-    //}
+    } else if (this.speedX  === 0 && this.speedY === 0 && this.realSpeed() > 0.5) {
+        this.nextTile();
+    }
 
 };
 Enemy.prototype.nextTile = function () {

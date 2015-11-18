@@ -8,7 +8,15 @@
         <title>Incremental Tower Defense</title>
     </head>
     <body>
-        <div class="topnav"><span class="header">Incremental Tower Defense</span><span class="toplinks"><button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button> <button data-bind="click: function () { incTower.showSkills(); }">Skills</button></span></div>
+        <div class="topnav">
+            <span class="header">Incremental Tower Defense</span>
+            <span class="toplinks">
+                <button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button>
+                <button data-bind="click: function () { incTower.showSkills(); }">Skills</button>
+                <button data-bind="click: function () { incTower.showSaves(); }">Saves</button>
+                <button data-bind="click: function () { incTower.showCredits(); }">Credits</button>
+            </span>
+        </div>
         <div id="skills" title="Skills">
             <p>Hover over skill names to see a description.</p>
             <ul data-bind="foreach: skills.items()">
@@ -92,9 +100,29 @@
 
 
         </div>
+        <div id="credits" title="Credits">
+            <p>The basis for this whole project started as clone of <a href="https://github.com/theodufay/phaser-tower-defense" target="_blank">this GitHub repo</a>. I used this initial code to teach myself about Phaser.io and many of the enemy sprites and the terrain tiles are from this original project.</p>
+            <p>The number suffixes for large numbers were directly stolen from <a href="https://swarmsim.github.io/" target="_blank">Swarm Simulator (a fantastic game).</a></p>
+            <p>The elemental icons used for the elemental towers comes from <a href="http://pixabay.com/en/air-earth-elements-fire-symbol-147719/" target="_blank">this collection on pixabay</a>.</p>
+            <p>The images used for the blocks came from <a href="http://opengameart.org/content/dungeon-crawl-32x32-tiles" target="_blank">yet another Open Game Art collection</a>.</p>
+            <p>The rock/boulder sprites that fall from the sky when the earth tower activates can be found <a href="http://opengameart.org/content/rocks" target="_blank">here</a></p>
+            <p>The zombie and skeleton enemy sprites are from <a href="http://opengameart.org/content/zombie-and-skeleton-32x48" target="_blank">here</a>.</p>
+            <p>The goblin sprite comes from <a href="http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image" target="_blank">this Open Game Art collection</a>.</p>
+
+        </div>
+        <div id="save" title="Saves">
+            <p>Copy and paste the text below to backup your save game.<br>
+            <textarea id="b64_save" readonly></textarea></p>
+            <p>If you have a save game you wish to load paste it here:<br>
+                <textarea id="b64_load"></textarea></p>
+            </p>
+
+        </div>
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-11-17: Added a load/save feature.</li>
+                <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who released free game art that's used in this project.</li>
                 <li>2015-11-15: Reworked movement hopefully avoiding the recurrant recovering-from-freezing bugs.</li>
                 <li>2015-11-14: Removed vex in favor of jQuery UI.</li>
                 <li>2015-11-13: Combined the text and the progress bar to save space.</li>

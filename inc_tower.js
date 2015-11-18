@@ -13,6 +13,72 @@ function okDialog(message,title) {
         title: title
     });
 }
+function loadSave(save) {
+    $('#b64_save').val(btoa(save));
+    save = JSON.parse(save);
+
+    for (var prop in save) {
+        if (save.hasOwnProperty(prop)) {
+            if (prop === 'towers') {
+                continue;
+            }
+            if (prop === 'blocks') {
+                continue;
+            }
+            if (prop === 'skills') {
+                continue;
+            }
+            if (ko.isComputed(incTower[prop])) { continue; }
+            if (ko.isObservable(incTower[prop])) {
+                var curVal = incTower[prop]();
+                if (isArray(curVal)) {
+                    for (var i = 0;i < save[prop].length;i++) {
+                        incTower[prop].push(save[prop][i]);
+                    }
+                } else if (isPrimativeNumber(curVal)) {
+                    incTower[prop](save[prop]);
+                } else {
+                    console.log(prop);
+                    //should be a big number if we're getting here.
+                    incTower[prop](new BigNumber(save[prop]));
+                }
+                continue;
+            }
+            incTower[prop] = save[prop];
+
+        }
+    }
+    if ('blocks' in save) {
+        incTower.blocks = [];
+        for (var i = 0;i < save.blocks.length;++i) {
+            map.putTile(game.rnd.integerInRange(5,8),save.blocks[i].x,save.blocks[i].y,"Ground");
+            incTower.blocks.push({x:save.blocks[i].x, y: save.blocks[i].y});
+        }
+        recalcPath();
+    }
+    if ('skills' in save) {
+        //We have an observable dict
+        var keys = Object.keys(save.skills);
+        for (var i = 0; i < keys.length;i++) {
+            incTower.gainSkill(keys[i],save.skills[keys[i]]);
+        }
+        incTower.checkSkills();
+    }
+    if ('towers' in save) {
+        for (var i = 0;i < save.towers.length;++i) {
+            var tileY = save.towers[i].tileY;
+            var tileX = save.towers[i].tileX;
+            var index = map.layers[0].data[tileY][tileX].index;
+            if (index >= 5 && index <= 8) {
+                new Tower(save.towers[i]);
+            } else {
+                incrementObservable(incTower.gold,save.towers[i].goldSpent);
+            }
+        }
+    }
+//    console.log(incTower);
+
+}
 BigNumber.config({ ERRORS: false });
 $(document).ready(function () {
     'use strict';
@@ -107,6 +173,34 @@ var incTower = {
             width: 500,
             height: 500
         });
+    },
+    showCredits: function () {
+        $('#credits').dialog({
+            width: 500,
+            height: 500
+        });
+    },
+    showSaves: function () {
+        $('#save').dialog({
+            width: 500,
+            height: 500,
+            buttons: {
+                Ok: function () {
+                    $(this).dialog("close");
+                },
+                Load: function () {
+                    var save;
+                    try {
+                        save = atob($('#b64_load').val());
+                        loadSave(save);
+                    } catch (e) {
+                        okDialog("There was an issue with your save game. It cannot be loaded.");
+                        console.log(e);
+                    }
+                }
+            }
+        });
+
     },
     skills: ko.observableDictionary({}),
     activeSkill: ko.observable('kineticTowers'),
@@ -793,27 +887,8 @@ for (var i = 0;i < incTower.startingSkills.length; i++) {
 var towers;
 function preload() {
     game.load.tilemap('desert', 'assets/maps/tower-defense.json', null, Phaser.Tilemap.TILED_JSON);
-    //game.load.atlasJSONHash('incTower', 'assets/sprites/incTower.png', 'assets/sprites/incTower.json');
     game.load.atlasXML('incTower', 'assets/sprites/sprites.png', 'assets/sprites/sprites.xml');
     game.load.image('tiles', 'assets/maps/tmw_desert_spacing.png');
-    /*game.load.image('tower', 'assets/sprites/tower-32.png');
-    game.load.image('bullet', 'assets/sprites/bullet.png');
-    game.load.image('bluebullet', 'assets/sprites/blue-bullet.png');
-    game.load.image('flask', 'assets/sprites/flask.png'); //Art from: http://opengameart.org/content/whispers-of-avalon-item-icons
-    */
-    /*
-     * Enemy Preload
-     */
-/*    game.load.spritesheet('duck', 'assets/sprites/duck.png', 32, 32, 8);
-    game.load.spritesheet('panda', 'assets/sprites/panda.png', 32, 32, 3);
-    game.load.spritesheet('dog', 'assets/sprites/dog.png', 32, 32, 6);
-    game.load.spritesheet('penguin', 'assets/sprites/penguin.png', 32, 32, 4);
-    game.load.spritesheet('goblin', 'assets/sprites/goblin.png', 32, 32, 3);*/
-    // Art from http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image <-- goblin
-    //Element icons: http://pixabay.com/en/air-earth-elements-fire-symbol-147719/
-    //Block icons from http://opengameart.org/content/dungeon-crawl-32x32-tiles
-    //Rocks http://opengameart.org/content/rocks
-    //Zombie + Skeleton: http://opengameart.org/content/zombie-and-skeleton-32x48
 }
 
 function costCalc(base,number,growth) {
@@ -994,72 +1069,7 @@ function create() {
     }
     var save = localStorage.getItem("save");
     if (save !== null) {
-        save = JSON.parse(save);
-        //We need to parse blocks before towers now.
-
-
-        for (var prop in save) {
-            if (save.hasOwnProperty(prop)) {
-                if (prop === 'towers') {
-                    continue;
-                }
-                if (prop === 'blocks') {
-                    continue;
-                }
-                if (prop === 'skills') {
-                    continue;
-                }
-                if (ko.isComputed(incTower[prop])) { continue; }
-                if (ko.isObservable(incTower[prop])) {
-                    var curVal = incTower[prop]();
-                    if (isArray(curVal)) {
-                        for (var i = 0;i < save[prop].length;i++) {
-                            incTower[prop].push(save[prop][i]);
-                        }
-                    } else if (isPrimativeNumber(curVal)) {
-                        incTower[prop](save[prop]);
-                    } else {
-                        console.log(prop);
-                        //should be a big number if we're getting here.
-                        incTower[prop](new BigNumber(save[prop]));
-                    }
-                    continue;
-                }
-                incTower[prop] = save[prop];
-
-            }
-        }
-        if ('blocks' in save) {
-            incTower.blocks = [];
-            for (var i = 0;i < save.blocks.length;++i) {
-                map.putTile(game.rnd.integerInRange(5,8),save.blocks[i].x,save.blocks[i].y,"Ground");
-                incTower.blocks.push({x:save.blocks[i].x, y: save.blocks[i].y});
-            }
-            recalcPath();
-        }
-        if ('skills' in save) {
-            //We have an observable dict
-            var keys = Object.keys(save.skills);
-            for (var i = 0; i < keys.length;i++) {
-                incTower.gainSkill(keys[i],save.skills[keys[i]]);
-            }
-            incTower.checkSkills();
-        }
-        if ('towers' in save) {
-            for (var i = 0;i < save.towers.length;++i) {
-                var tileY = save.towers[i].tileY;
-                var tileX = save.towers[i].tileX;
-                var index = map.layers[0].data[tileY][tileX].index;
-                if (index >= 5 && index <= 8) {
-                    new Tower(save.towers[i]);
-                } else {
-                    incrementObservable(incTower.gold,save.towers[i].goldSpent);
-                }
-            }
-        }
-        //game = ko.mapping.fromJSON(save);
-        console.log(incTower);
-        //ko.mapping.fromJSON(save,game);
+        loadSave(save);
     }
 
     //We need a load function here for this to really make sense
@@ -1299,6 +1309,7 @@ function update() {
         if (incTower.wave() > 0) {
             //Save state
             var save_data = JSON.stringify(createSaveObj(incTower));
+            $('#b64_save').val(btoa(save_data));
             localStorage.setItem("save",save_data);
         }
         enemys.removeAll();

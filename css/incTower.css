@@ -157,3 +157,10 @@ body {
     right: 0;
     color: black;
 }
+
+#save {
+    display: none;
+}
+#credits {
+    display: none;
+}
