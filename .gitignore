@@ -137,8 +137,7 @@ Desktop.ini
 *.egg
 *.egg-info
 dist
-build
-eggs
+buildeggs
 parts
 bin
 var
