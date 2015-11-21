@@ -8,6 +8,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var minifyCSS = require('gulp-minify-css');
+var concatCss = require('gulp-concat-css');
 
 // Concatenate & Minify JS
 gulp.task('scripts', function() {
@@ -34,9 +35,9 @@ gulp.task('css', function() {
         'css/incTower.css',
         'css/jquery.qtip.css',
         'css/jquery-ui-min.css'
-    ]).pipe(concat('incTower.css'))
+    ]).pipe(concatCss('incTower.css'))
       .pipe(rename({suffix: '.min'}))
-      .pipe(minifyCSS())
+      //.pipe(minifyCSS())
       .pipe(gulp.dest(dest + 'css'));
 });
 gulp.task('copy-css-images', function () {
