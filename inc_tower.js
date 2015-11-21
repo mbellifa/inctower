@@ -16,7 +16,6 @@ function okDialog(message,title) {
 function loadSave(save) {
     $('#b64_save').val(btoa(save));
     save = JSON.parse(save);
-
     for (var prop in save) {
         if (save.hasOwnProperty(prop)) {
             if (prop === 'towers') {
@@ -786,7 +785,6 @@ var incTower = {
 };
 incTower.self = incTower;
 incTower.secondsUntilSkillUp = ko.computed(function () {
-
     if (this.skills.get(this.activeSkill())() === null) { return 0; }
     return this.skills.get(this.activeSkill())().get('skillPointsCap')().minus(this.skills.get(this.activeSkill())().get('skillPoints')());
 },incTower);
@@ -814,7 +812,7 @@ incTower.currentlySelected.subscribe(function (value) {
 });
 
 
-ko.applyBindings(incTower);
+
 
 
 var tileSquare = 32;
@@ -887,7 +885,8 @@ for (var i = 0;i < incTower.startingSkills.length; i++) {
 var towers;
 function preload() {
     game.load.tilemap('desert', 'assets/maps/tower-defense.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.atlasXML('incTower', 'assets/sprites/sprites.png', 'assets/sprites/sprites.xml');
+    //game.load.atlasXML('incTower', 'assets/sprites/sprites.png', 'assets/sprites/sprites.xml');
+    game.load.atlas('incTower', 'assets/sprites/main.png', 'assets/sprites/main.json');
     game.load.image('tiles', 'assets/maps/tmw_desert_spacing.png');
 }
 
@@ -941,6 +940,7 @@ function create() {
     /**
      * Init map
      */
+    ko.applyBindings(incTower);
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.stage.disableVisibilityChange = true;
     map = game.add.tilemap('desert');
@@ -1163,11 +1163,10 @@ function createSaveObj(obj) {
         'visible',
         'worldAlpha',
         'worldRotation',
-
-
-
-
-
+        'children',
+        'rotation',
+        'type',
+        'physicsType'
     ];
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -1185,7 +1184,7 @@ function createSaveObj(obj) {
                 } else {
                     //Should be a big number if we get to ehre
                     if (obj[prop]().toJSON === undefined) { console.log(prop + " ERROR"); }
-                    save[prop] = obj[prop]().toJSON();
+                    save[prop] = obj[prop]().trunc().toJSON();
                 }
                 continue;
             }
@@ -1574,8 +1573,6 @@ function generateEnemy(difficulty) {
             pack[j].health = pack[j].health.times(1 + (pack[j].bonusHealthPercentage * 0.01));
         }
         pack[j].goldValue = BigNumber.max(totalWaveGold.times(Math.min(1,pack[j].healthWeight).toPrecision(15)),1).ceil();
-
-        //pack[j].goldValue = Math.ceil(Math.max(1,totalWaveGold * Math.min(1,pack[j].healthWeight)));
     }
     var offset = 0;
     for (var i = 0;i < pack.length;++i) {

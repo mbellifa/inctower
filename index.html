@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="css/incTower.css">
+        <link rel="stylesheet" href="build/css/incTower.min.css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="css/jquery.qtip.css">
-        <link rel="stylesheet" href="css/jquery-ui.min.css">
         <title>Incremental Tower Defense</title>
     </head>
     <body>
@@ -121,8 +119,9 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-11-20: Added a gulp file for concatenating all the javascript and css files into minified versions. Changed sprite map to JSON which seems to result in fewer errors loading.</li>
                 <li>2015-11-17: Added a load/save feature.</li>
-                <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who released free game art that's used in this project.</li>
+                <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who jave released free game art that is being used in this project.</li>
                 <li>2015-11-15: Reworked movement hopefully avoiding the recurrant recovering-from-freezing bugs.</li>
                 <li>2015-11-14: Removed vex in favor of jQuery UI.</li>
                 <li>2015-11-13: Combined the text and the progress bar to save space.</li>
@@ -180,18 +179,8 @@
 
             </ul>
         </div>
-        <script src="js/jquery-1.11.2.min.js"></script>
-        <script src="js/jquery.qtip.min.js"></script>
-        <script src="js/bignumber.min.js"></script>
-        <script src="js/moment.js"></script>
-        <script src="phaser.min.js"></script>
-        <script src="js/easystar-0.2.1.min.js"></script>
-        <script src="js/PathFinderPlugin.js"></script>
-        <script src="js/knockout-3.3.0.js"></script>
-        <script src="js/ko.observableDictionary.js"></script>
-        <script src="js/jquery-ui.min.js"></script>
-        <script src="inc_tower.js"></script>
-        <script type="text/javascript" src="js/Enemy.class.js"></script>
-        <script type="text/javascript" src="js/Tower.class.js"></script>
+        <script type="text/javascript" src="js/phaser.min.js"></script>
+        <script type="text/javascript" src="build/js/incTower.min.js"></script>
+
     </body>
 </html>
