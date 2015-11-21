@@ -34,10 +34,10 @@ gulp.task('css', function() {
     return gulp.src([
         'css/incTower.css',
         'css/jquery.qtip.css',
-        'css/jquery-ui-min.css'
+        'css/jquery-ui.min.css'
     ]).pipe(concatCss('incTower.css'))
       .pipe(rename({suffix: '.min'}))
-      //.pipe(minifyCSS())
+      .pipe(minifyCSS())
       .pipe(gulp.dest(dest + 'css'));
 });
 gulp.task('copy-css-images', function () {
