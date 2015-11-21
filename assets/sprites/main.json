@@ -1,0 +1,262 @@
+{
+"frames": [
+	{
+		"filename": "Tower-32.png",
+		"frame": {"x":534, "y":381, "w":19, "h":32},
+		"spriteSourceSize": {"x":7,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	},
+	{
+		"filename": "air-element.png",
+		"frame": {"x":0, "y":493, "w":16, "h":10},
+		"spriteSourceSize": {"x":0,"y":0,"w":16,"h":10},
+		"sourceSize": {"w":16,"h":10}
+	},
+	{
+		"filename": "blue-bullet.png",
+		"frame": {"x":70, "y":498, "w":9, "h":9},
+		"spriteSourceSize": {"x":0,"y":0,"w":9,"h":9},
+		"sourceSize": {"w":9,"h":9}
+	},
+	{
+		"filename": "bubble.png",
+		"frame": {"x":33, "y":460, "w":32, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	},
+	{
+		"filename": "bullet.png",
+		"frame": {"x":70, "y":488, "w":9, "h":9},
+		"spriteSourceSize": {"x":0,"y":0,"w":9,"h":9},
+		"sourceSize": {"w":9,"h":9}
+	},
+	{
+		"filename": "dog01.png",
+		"frame": {"x":98, "y":460, "w":31, "h":27},
+		"spriteSourceSize": {"x":0,"y":0,"w":31,"h":27},
+		"sourceSize": {"w":31,"h":27}
+	},
+	{
+		"filename": "dog02.png",
+		"frame": {"x":98, "y":460, "w":31, "h":27},
+		"spriteSourceSize": {"x":0,"y":0,"w":31,"h":27},
+		"sourceSize": {"w":31,"h":27}
+	},
+	{
+		"filename": "dog03.png",
+		"frame": {"x":0, "y":460, "w":32, "h":25},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":25},
+		"sourceSize": {"w":32,"h":25}
+	},
+	{
+		"filename": "dog04.png",
+		"frame": {"x":98, "y":460, "w":31, "h":27},
+		"spriteSourceSize": {"x":0,"y":0,"w":31,"h":27},
+		"sourceSize": {"w":31,"h":27}
+	},
+	{
+		"filename": "dog05.png",
+		"frame": {"x":130, "y":460, "w":31, "h":26},
+		"spriteSourceSize": {"x":0,"y":0,"w":31,"h":26},
+		"sourceSize": {"w":31,"h":26}
+	},
+	{
+		"filename": "dog06.png",
+		"frame": {"x":66, "y":460, "w":31, "h":26},
+		"spriteSourceSize": {"x":0,"y":0,"w":31,"h":26},
+		"sourceSize": {"w":31,"h":26}
+	},
+	{
+		"filename": "duck01.png",
+		"frame": {"x":428, "y":460, "w":23, "h":30},
+		"spriteSourceSize": {"x":0,"y":0,"w":23,"h":30},
+		"sourceSize": {"w":23,"h":30}
+	},
+	{
+		"filename": "duck02.png",
+		"frame": {"x":538, "y":447, "w":19, "h":28},
+		"spriteSourceSize": {"x":0,"y":0,"w":19,"h":28},
+		"sourceSize": {"w":19,"h":28}
+	},
+	{
+		"filename": "duck03.png",
+		"frame": {"x":538, "y":476, "w":19, "h":27},
+		"spriteSourceSize": {"x":0,"y":0,"w":19,"h":27},
+		"sourceSize": {"w":19,"h":27}
+	},
+	{
+		"filename": "duck04.png",
+		"frame": {"x":558, "y":438, "w":18, "h":28},
+		"spriteSourceSize": {"x":0,"y":0,"w":18,"h":28},
+		"sourceSize": {"w":18,"h":28}
+	},
+	{
+		"filename": "duck05.png",
+		"frame": {"x":452, "y":460, "w":22, "h":30},
+		"spriteSourceSize": {"x":0,"y":0,"w":22,"h":30},
+		"sourceSize": {"w":22,"h":30}
+	},
+	{
+		"filename": "duck06.png",
+		"frame": {"x":554, "y":409, "w":18, "h":28},
+		"spriteSourceSize": {"x":0,"y":0,"w":18,"h":28},
+		"sourceSize": {"w":18,"h":28}
+	},
+	{
+		"filename": "duck07.png",
+		"frame": {"x":554, "y":381, "w":19, "h":27},
+		"spriteSourceSize": {"x":0,"y":0,"w":19,"h":27},
+		"sourceSize": {"w":19,"h":27}
+	},
+	{
+		"filename": "duck08.png",
+		"frame": {"x":475, "y":460, "w":21, "h":28},
+		"spriteSourceSize": {"x":0,"y":0,"w":21,"h":28},
+		"sourceSize": {"w":21,"h":28}
+	},
+	{
+		"filename": "earth-element.png",
+		"frame": {"x":48, "y":493, "w":10, "h":16},
+		"spriteSourceSize": {"x":0,"y":0,"w":10,"h":16},
+		"sourceSize": {"w":10,"h":16}
+	},
+	{
+		"filename": "fire-element.png",
+		"frame": {"x":59, "y":493, "w":10, "h":16},
+		"spriteSourceSize": {"x":0,"y":0,"w":10,"h":16},
+		"sourceSize": {"w":10,"h":16}
+	},
+	{
+		"filename": "flask.png",
+		"frame": {"x":17, "y":493, "w":16, "h":16},
+		"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+		"sourceSize": {"w":16,"h":16}
+	},
+	{
+		"filename": "goblin01.png",
+		"frame": {"x":380, "y":460, "w":23, "h":31},
+		"spriteSourceSize": {"x":0,"y":0,"w":23,"h":31},
+		"sourceSize": {"w":23,"h":31}
+	},
+	{
+		"filename": "goblin02.png",
+		"frame": {"x":404, "y":460, "w":23, "h":30},
+		"spriteSourceSize": {"x":0,"y":0,"w":23,"h":30},
+		"sourceSize": {"w":23,"h":30}
+	},
+	{
+		"filename": "goblin03.png",
+		"frame": {"x":355, "y":460, "w":24, "h":30},
+		"spriteSourceSize": {"x":0,"y":0,"w":24,"h":30},
+		"sourceSize": {"w":24,"h":30}
+	},
+	{
+		"filename": "panda01.png",
+		"frame": {"x":223, "y":460, "w":26, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+		"sourceSize": {"w":26,"h":32}
+	},
+	{
+		"filename": "panda02.png",
+		"frame": {"x":303, "y":460, "w":25, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":25,"h":32},
+		"sourceSize": {"w":25,"h":32}
+	},
+	{
+		"filename": "panda03.png",
+		"frame": {"x":277, "y":460, "w":25, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":25,"h":32},
+		"sourceSize": {"w":25,"h":32}
+	},
+	{
+		"filename": "penguin01.png",
+		"frame": {"x":329, "y":460, "w":25, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":25,"h":32},
+		"sourceSize": {"w":25,"h":32}
+	},
+	{
+		"filename": "penguin02.png",
+		"frame": {"x":250, "y":460, "w":26, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+		"sourceSize": {"w":26,"h":32}
+	},
+	{
+		"filename": "penguin03.png",
+		"frame": {"x":162, "y":460, "w":30, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":32},
+		"sourceSize": {"w":30,"h":32}
+	},
+	{
+		"filename": "penguin04.png",
+		"frame": {"x":193, "y":460, "w":29, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":29,"h":32},
+		"sourceSize": {"w":29,"h":32}
+	},
+	{
+		"filename": "rock1.png",
+		"frame": {"x":0, "y":0, "w":533, "h":459},
+		"spriteSourceSize": {"x":0,"y":0,"w":533,"h":459},
+		"sourceSize": {"w":533,"h":459}
+	},
+	{
+		"filename": "rock2.png",
+		"frame": {"x":1061, "y":0, "w":497, "h":483},
+		"spriteSourceSize": {"x":0,"y":0,"w":497,"h":483},
+		"sourceSize": {"w":497,"h":483}
+	},
+	{
+		"filename": "rock3.png",
+		"frame": {"x":534, "y":0, "w":526, "h":380},
+		"spriteSourceSize": {"x":0,"y":0,"w":526,"h":380},
+		"sourceSize": {"w":526,"h":380}
+	},
+	{
+		"filename": "skeleton01.png",
+		"frame": {"x":558, "y":467, "w":15, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":15,"h":32},
+		"sourceSize": {"w":15,"h":32}
+	},
+	{
+		"filename": "skeleton02.png",
+		"frame": {"x":574, "y":381, "w":12, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":12,"h":32},
+		"sourceSize": {"w":12,"h":32}
+	},
+	{
+		"filename": "skeleton03.png",
+		"frame": {"x":574, "y":467, "w":15, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":15,"h":32},
+		"sourceSize": {"w":15,"h":32}
+	},
+	{
+		"filename": "water-element.png",
+		"frame": {"x":34, "y":493, "w":13, "h":16},
+		"spriteSourceSize": {"x":0,"y":0,"w":13,"h":16},
+		"sourceSize": {"w":13,"h":16}
+	},
+	{
+		"filename": "zombie01.png",
+		"frame": {"x":518, "y":460, "w":19, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":19,"h":32},
+		"sourceSize": {"w":19,"h":32}
+	},
+	{
+		"filename": "zombie02.png",
+		"frame": {"x":534, "y":414, "w":19, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":19,"h":32},
+		"sourceSize": {"w":19,"h":32}
+	},
+	{
+		"filename": "zombie03.png",
+		"frame": {"x":497, "y":460, "w":20, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":20,"h":32},
+		"sourceSize": {"w":20,"h":32}
+	}
+
+],
+"meta": {
+	"image": "main.png",
+	"size": {"w": 2048, "h": 512},
+	"scale": "1"
+}
+}

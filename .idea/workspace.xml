@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="I lied, readded">
+    <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/main.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/main.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/css/incTower.min.css" afterPath="$PROJECT_DIR$/build/css/incTower.min.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gulpfile.js" afterPath="$PROJECT_DIR$/gulpfile.js" />
     </list>
     <ignored path="Incremental Tower Defense.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -311,6 +311,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Incremental Tower Defense" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="inctower" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="assets" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sprites" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -545,7 +563,13 @@
       <option name="project" value="LOCAL" />
       <updated>1448071997712</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="CSS Fix Pt 4: It turns out minification causes fewer issues than not including the proper sources in your gulp file.">
+      <created>1448072164044</created>
+      <option name="number" value="00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1448072164044</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TodoView">
@@ -559,9 +583,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1456" height="876" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34978843" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34978843" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.49153736" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32974428" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32974428" sideWeight="0.5084626" order="7" side_tool="true" content_ui="tabs" />
@@ -629,7 +653,8 @@
     <MESSAGE value="Added gulp file which concatenates javascript and css files. Reduces the sprite image size, changed sprite image to use JSON instead of XML." />
     <MESSAGE value="Added the build directory, dirty but necessary for github.io." />
     <MESSAGE value="Hopefully  fixed css issue by removing css minification." />
-    <option name="LAST_COMMIT_MESSAGE" value="Hopefully  fixed css issue by removing css minification." />
+    <MESSAGE value="CSS Fix Pt 4: It turns out minification causes fewer issues than not including the proper sources in your gulp file." />
+    <option name="LAST_COMMIT_MESSAGE" value="CSS Fix Pt 4: It turns out minification causes fewer issues than not including the proper sources in your gulp file." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
