@@ -116,7 +116,6 @@ body {
 .toplinks button:hover {
     background-color: #999;
 }
-#skills { display: none; }
 
 .progressBar {
     width: 250px;
@@ -163,4 +162,7 @@ body {
 }
 #credits {
     display: none;
+}
+.ui-widget {
+    font-size: 0.8em !important;
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="PROJECT" libraries="{Knockout 3.3.0, Phaser Arcade, jQuery 1.11, ko.observableDictionary.js}" />
+    <file url="file://$PROJECT_DIR$" libraries="{inctower node_modules}" />
+    <file url="PROJECT" libraries="{Knockout 3.3.0, Phaser Arcade, bignumber.min.js, jQuery 1.11, knockout-DefinitelyTyped, ko.observableDictionary.js, moment-DefinitelyTyped}" />
   </component>
 </project>

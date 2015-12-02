@@ -1,8 +1,10 @@
 /**
  * Created by Mo on 2/21/2015.
  */
-function okDialog(message,title) {
-    $('<div>' + message + '</div>').dialog({
+function okDialog(opts) {
+    'use strict';
+
+    $('<div>' + opts.message + '</div>').dialog({
         modal: true,
         width: 600,
         buttons: {
@@ -10,11 +12,13 @@ function okDialog(message,title) {
                 $(this).dialog("close");
             }
         },
-        title: title
+        title: opts.title
     });
 }
 function loadSave(save) {
+    'use strict';
     $('#b64_save').val(btoa(save));
+    var i;
     save = JSON.parse(save);
     for (var prop in save) {
         if (save.hasOwnProperty(prop)) {
@@ -31,10 +35,10 @@ function loadSave(save) {
             if (ko.isObservable(incTower[prop])) {
                 var curVal = incTower[prop]();
                 if (isArray(curVal)) {
-                    for (var i = 0;i < save[prop].length;i++) {
+                    for (i = 0;i < save[prop].length;i++) {
                         incTower[prop].push(save[prop][i]);
                     }
-                } else if (isPrimativeNumber(curVal)) {
+                } else if (isPrimativeNumber(curVal) || typeof curVal === 'boolean') {
                     incTower[prop](save[prop]);
                 } else {
                     console.log(prop);
@@ -49,7 +53,7 @@ function loadSave(save) {
     }
     if ('blocks' in save) {
         incTower.blocks = [];
-        for (var i = 0;i < save.blocks.length;++i) {
+        for (i = 0;i < save.blocks.length;++i) {
             map.putTile(game.rnd.integerInRange(5,8),save.blocks[i].x,save.blocks[i].y,"Ground");
             incTower.blocks.push({x:save.blocks[i].x, y: save.blocks[i].y});
         }
@@ -58,13 +62,13 @@ function loadSave(save) {
     if ('skills' in save) {
         //We have an observable dict
         var keys = Object.keys(save.skills);
-        for (var i = 0; i < keys.length;i++) {
+        for (i = 0; i < keys.length;i++) {
             incTower.gainSkill(keys[i],save.skills[keys[i]]);
         }
         incTower.checkSkills();
     }
     if ('towers' in save) {
-        for (var i = 0;i < save.towers.length;++i) {
+        for (i = 0;i < save.towers.length;++i) {
             var tileY = save.towers[i].tileY;
             var tileX = save.towers[i].tileX;
             var index = map.layers[0].data[tileY][tileX].index;
@@ -81,13 +85,16 @@ function loadSave(save) {
 BigNumber.config({ ERRORS: false });
 $(document).ready(function () {
     'use strict';
-    window.game = new Phaser.Game(800, 608, Phaser.AUTO, 'gameContainer', {preload: preload, create: create, update: update, render: render}, false, false);
+    window.game = new Phaser.Game(800, 608, Phaser.AUTO, 'gameContainer', {preload: preload, create: create, update: update}, false, false);
     //Blatantly stolen from the qtip delegation example
     $(document).on('mouseover', '.tooltip', function(event) {
             $(this).qtip({
-                overwrite: false,
+                overwrite: true,
                 content: {
-                    attr: 'title'
+                    attr: 'data-tooltip'
+                },
+                position: {
+                    viewport: $(window)
                 },
                 style: {
                     classes: 'qtip-dark'
@@ -97,16 +104,14 @@ $(document).ready(function () {
                     ready: true
                 }
             }, event);
-        }).each(function() {
-            $.attr(this, 'oldtitle', $.attr(this, 'title'));
-            if (this.removeAttribute !== undefined) {
-                this.removeAttribute('title');
-            }
-
         });
     $(document).on('click','.train_link', function (e) {
         incTower.switchActiveSkill($(this).attr('data-skill'));
         e.preventDefault();
+    });
+    $( ".accordion" ).accordion({
+        collapsible: true,
+        heightStyle: "content"
     });
 });
 function shuffle(o){ //Shuffles an array
@@ -160,26 +165,33 @@ var incTower = {
     dialogEdgeBoss: false,
     dialogTowerUpgradeDouble: false,
     dialogBossKill: false,
-    sellTowerPer: ko.observable(0.5),
+    sellTowerPer: ko.pureComputed(function () {
+        'use strict';
+        return 0.5 + (0.05 * incTower.getSkillLevel('scrapping'));
+    }),
     showChangelog: function () {
+        'use strict';
         $('#changelog').dialog({
             width: 600,
             height: 500
         });
     },
     showSkills: function () {
+        'use strict';
         $('#skills').dialog({
             width: 500,
             height: 500
         });
     },
     showCredits: function () {
+        'use strict';
         $('#credits').dialog({
             width: 500,
             height: 500
         });
     },
     showSaves: function () {
+        'use strict';
         $('#save').dialog({
             width: 500,
             height: 500,
@@ -193,7 +205,10 @@ var incTower = {
                         save = atob($('#b64_load').val());
                         loadSave(save);
                     } catch (e) {
-                        okDialog("There was an issue with your save game. It cannot be loaded.");
+                        okDialog({
+                            title: "Save Game",
+                            message:"There was an issue with your save game. It cannot be loaded."
+                        });
                         console.log(e);
                     }
                 }
@@ -204,15 +219,18 @@ var incTower = {
     skills: ko.observableDictionary({}),
     activeSkill: ko.observable('kineticTowers'),
     switchActiveSkill: function(skill) {
+        'use strict';
         incTower.activeSkill(skill);
     },
     skillIsMaxed: function(skillName) {
+        'use strict';
         if (incTower.skillAttributes[skillName].maxLevel !== undefined) {
             if (incTower.getSkillLevel(skillName) >= incTower.skillAttributes[skillName].maxLevel) { return true; }
         }
         return false;
     },
     skillCanTrain: function(skillName) {
+        'use strict';
         if (incTower.skillIsMaxed(skillName)) { return false; }
         if (incTower.activeSkill() === skillName) { return false; } //Can't train the skill you're already training
         return true;
@@ -232,20 +250,23 @@ var incTower = {
             baseCost: 20,
             growth: 1.1,
             description: 'Reduces the cost of towers and their upgrades by 1% per rank.',
-            maxLevel: 10,
-            grants: {
-                10: ['initialEngineering', 'modularConstruction']
-            }
+            describeRank: function (rank) {
+                return 'Reduces the cost of towers and their upgrades by ' + rank + '%.';
+            },
+            maxLevel: 10
         },
         modularConstruction:{
             fullName: 'Modular Construction',
             baseCost: 135,
             growth: 1.15,
             description: 'Reduces the cost of upgrading all towers by 5% per level.',
+            describeRank: function (rank) {
+                return 'Reduces the cost of upgrading all towers by ' + (rank * 5) + '%.';
+            },
             maxLevel: 5,
-            //grants: {
-            //    25: ['']
-            //}
+            requires: {
+                construction: 10
+            }
 
         },
         initialEngineering: {
@@ -253,9 +274,13 @@ var incTower = {
             baseCost: 135,
             growth: 1.15,
             description: 'Increases the starting damage, attack speed, and range for all towers by 5% per rank.',
+            describeRank: function (rank) {
+                return 'Increases the starting damage, attack speed, and range for all towers by ' + (rank * 5) + '%.';
+            },
+
             maxLevel: 5,
-            grants: {
-                5: ['towerTemplates', 'refinedBlueprints']
+            requires: {
+                construction: 10
             }
         },
         towerTemplates: {
@@ -263,19 +288,50 @@ var incTower = {
             baseCost: 120,
             growth: 2,
             description: 'Increases the starting damage of towers by a factor of 10 per rank.',
-            maxLevel: 5
+            describeRank: function (rank) {
+                return 'Increases the starting damage of towers by a factor of ' + Math.pow(10,rank) + '.';
+            },
+            maxLevel: 5,
+            requires: {
+                initialEngineering: 5
+            }
+
+        },
+        scrapping: {
+            fullName: 'Scrapping',
+            baseCost: 80,
+            growth: 1.5,
+            description: 'Returns an additional 5% of spent gold on the sale of a tower.',
+            describeRank: function (rank) {
+                return 'Refunds an additional ' + (rank * 5) + '% of gold spent after the sale of a tower.';
+            },
+
+            maxLevel: 5,
+            requires: {
+                initialEngineering: 5
+            }
         },
         refinedBlueprints: {
             fullName: 'Refined Blueprints',
             baseCost: 15,
             growth: 1.2,
-            description: 'Increases the starting damage of towers by 1% per rank.'
+            description: 'Increases the starting damage of towers by 5% per rank.',
+            describeRank: function (rank) {
+                return 'Increases the starting damage of towers by ' + (rank * 5) + '%.';
+            },
+            requires: {
+                towerTemplates: 5
+            }
         },
         marketConnections: {
             fullName: 'Market Connections',
             baseCost: 45,
             growth: 1.2,
-            description: 'Increases the gold reward on each kill by 1% per level.'
+            description: 'Increases the gold reward on each kill by 1% per level.',
+            describeRank: function (rank) {
+                return 'Increases the gold reward on each kill by ' + (rank) + '%.';
+            }
+
 
         },
         kineticTowers: {
@@ -283,23 +339,27 @@ var incTower = {
             baseCost: 20,
             growth: 1.1,
             maxLevel: 10,
-            description: 'Increases the damage that kinetic towers deal by 1% per level.'
+            description: 'Increases the damage that kinetic towers deal by 1% per level.',
+            describeRank: function (rank) {
+                return 'Increases the damage that kinetic towers deal by ' + (rank) + '%.';
+            },
         },
-        kineticAmmo:{
-            fullName: 'Kinetic Ammunition',
-            baseCost: 15,
-            growth: 1.1,
-            description: 'Optimizes the damage caused by kinetic towers, increasing damage by 1% per level.'
-        },
+        //kineticAmmo:{
+        //    fullName: 'Kinetic Ammunition',
+        //    baseCost: 15,
+        //    growth: 1.1,
+        //    description: 'Optimizes the damage caused by kinetic towers, increasing damage by 1% per level.',
+        //
+        //},
         magicalAffinity: {
             fullName: 'Magical Affinity',
             baseCost: 300,
             growth: 1.1,
             maxLevel: 1,
             description: "Grants magical affinity opening the path to casting spells and elemental towers.",
-            grants: {
-                1: ['fireAffinity', 'waterAffinity','airAffinity','earthAffinity']
-            }
+            describeRank: function () {
+                return "Grants magical affinity opening the path to casting spells and elemental towers.";
+            },
         },
         fireAffinity: {
             fullName: 'Fire Affinity',
@@ -307,8 +367,42 @@ var incTower = {
             growth: 1.1,
             maxLevel: 1,
             description: "Attunes yourself with fire which allows you to build fire towers which burn enemies over time, causing them to take increased damage from all sources.",
+            describeRank: function (rank) {
+                return "Attunes yourself with fire which allows you to build fire towers which burn enemies over time, causing them to take increased damage from all sources.";
+            },
             onMax: function () {
+                'use strict';
                 if (incTower.availableTowers.indexOf('fire') < 0) { incTower.availableTowers.push('fire'); }
+            },
+            requires: {
+                magicalAffinity: 1
+            }
+        },
+        fireRuneApplication: {
+            fullName: 'Fire Rune Application',
+            baseCost: 100,
+            growth: 1.266,
+            maxLevel: 10,
+            description: "Increases the chance that a fire tower successfully applies a rune by 5% per rank.",
+            describeRank: function (rank) {
+                return "Increases the chance that a fire tower successfully applies a rune by " + (rank * 5) + '%.';
+            },
+            requires: {
+                fireAffinity: 1
+            }
+        },
+        fireAdvancedRuneApplication: {
+            fullName: 'Fire Rune Application (Advanced)',
+            baseCost: 200,
+            growth: 1.406,
+            maxLevel: 10,
+            description: "When a fire tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
+            describeRank: function (rank) {
+                return "When a fire tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
+            },
+
+            requires: {
+                fireRuneApplication: 10
             }
         },
         waterAffinity: {
@@ -317,31 +411,142 @@ var incTower = {
             growth: 1.1,
             maxLevel: 1,
             description: "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.",
+            describeRank: function (rank) {
+                return "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.";
+            },
+
             onMax: function () {
+                'use strict';
                 if (incTower.availableTowers.indexOf('water') < 0) { incTower.availableTowers.push('water'); }
+            },
+            requires: {
+                magicalAffinity: 1
             }
         },
+        waterRuneApplication: {
+            fullName: 'Water Rune Application',
+            baseCost: 100,
+            growth: 1.266,
+            maxLevel: 10,
+            description: "Increases the chance that a water tower successfully applies a rune by 5% per rank.",
+            describeRank: function (rank) {
+                return "Increases the chance that a water tower successfully applies a rune by " + (rank * 5) + '%.';
+            },
+
+            requires: {
+                waterAffinity: 1
+            }
+        },
+        waterAdvancedRuneApplication: {
+            fullName: 'Water Rune Application (Advanced)',
+            baseCost: 200,
+            growth: 1.406,
+            maxLevel: 10,
+            description: "When a water tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
+            describeRank: function (rank) {
+                return "When a water tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
+            },
+
+            requires: {
+                waterRuneApplication: 10
+            }
+        },
+
         earthAffinity: {
             fullName: 'Earth Affinity',
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
             description: "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.",
+            describeRank: function (rank) {
+                return "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.";
+            },
+
             onMax: function () {
+                'use strict';
                 if (incTower.availableTowers.indexOf('earth') < 0) { incTower.availableTowers.push('earth'); }
+            },
+            requires: {
+                magicalAffinity: 1
             }
 
         },
+        earthRuneApplication: {
+            fullName: 'Earth Rune Application',
+            baseCost: 100,
+            growth: 1.266,
+            maxLevel: 10,
+            description: "Increases the chance that an earth tower successfully applies a rune by 5% per rank.",
+            describeRank: function (rank) {
+                return "Increases the chance that an earth tower successfully applies a rune by " + (rank * 5) + '%.';
+            },
+
+            requires: {
+                earthAffinity: 1
+            }
+        },
+        earthAdvancedRuneApplication: {
+            fullName: 'Earth Rune Application (Advanced)',
+            baseCost: 200,
+            growth: 1.406,
+            maxLevel: 10,
+            description: "When a fire tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
+            describeRank: function (rank) {
+                return "When a fire tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
+            },
+
+            requires: {
+                earthRuneApplication: 10
+            }
+        },
+
         airAffinity: {
             fullName: 'Air Affinity',
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
-            description: "Attunes yourself with air which allows you to build air towers which knock enemies back.",
+            description: "Attunes yourself with air which allows you to build air towers which will occasionally trap enemies in a whirlwind, knocking them back.",
+            describeRank: function (rank) {
+                return "Attunes yourself with air which allows you to build air towers which will occasionally trap enemies in a whirlwind, knocking them back.";
+            },
+
             onMax: function () {
+                'use strict';
                 if (incTower.availableTowers.indexOf('air') < 0) { incTower.availableTowers.push('air'); }
+            },
+            requires: {
+                magicalAffinity: 1
             }
-        }
+        },
+        airRuneApplication: {
+            fullName: 'Air Rune Application',
+            baseCost: 100,
+            growth: 1.266,
+            maxLevel: 10,
+            description: "Increases the chance that an air tower successfully applies a rune by 5% per rank.",
+            describeRank: function (rank) {
+                return "Increases the chance that an air tower successfully applies a rune by " + (rank * 5) + '%.';
+            },
+
+            requires: {
+                airAffinity: 1
+            }
+        },
+        airAdvancedRuneApplication: {
+            fullName: 'Air Rune Application (Advanced)',
+            baseCost: 200,
+            growth: 1.406,
+            maxLevel: 10,
+            description: "When an air tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
+            describeRank: function (rank) {
+                return "When an air tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
+            },
+
+            requires: {
+                airRuneApplication: 10
+            }
+        },
+
 
 
 
@@ -365,7 +570,11 @@ var incTower = {
     describeSkill: function (name) {
         'use strict';
         if (!(name in incTower.skillAttributes)) { console.log(name); return ''; }
-        return incTower.skillAttributes[name].description;
+        var currentLevel = incTower.getSkillLevel(name);
+        var desc = '';
+        if (currentLevel > 0) { desc += "<p>Current Rank: " + incTower.skillAttributes[name].describeRank(currentLevel) + '</p>'; }
+        if (!incTower.skillIsMaxed(name)) { desc += '<p>Next Rank: ' + incTower.skillAttributes[name].describeRank(currentLevel + 1) + '</p>'; }
+        return desc;
     },
     getSkillLevel: function(name) {
         'use strict';
@@ -374,6 +583,22 @@ var incTower = {
     },
     checkSkills: function () {
         'use strict';
+        for (var skill in incTower.skillAttributes) {
+            var grantSkill = true;
+            if (incTower.skillAttributes[skill].requires !== undefined) {
+                for (var requirementSkill in incTower.skillAttributes[skill].requires) {
+                    if (incTower.getSkillLevel(requirementSkill) < incTower.skillAttributes[skill].requires[requirementSkill]) {
+                        grantSkill = false;
+                    }
+                }
+            }
+            if (grantSkill) {
+                if (!incTower.haveSkill(skill)) {
+                    incTower.gainSkill(skill);
+                }
+            }
+
+        }
         var skillKeys = incTower.skills.keys();
         for (var h = 0; h < skillKeys.length; h++) {
             var skill = skillKeys[h];
@@ -382,20 +607,6 @@ var incTower = {
             }
             if (incTower.skillAttributes[skill].onMax !== undefined && incTower.skillIsMaxed(skill)) {
                 incTower.skillAttributes[skill].onMax();
-            }
-            if (incTower.skillAttributes[skill].grants !== undefined) {
-                var levels = Object.keys(incTower.skillAttributes[skill].grants);
-                var currentLevel = incTower.getSkillLevel(skill);
-                for (var i = 0; i < levels.length;i++) {
-                    if (currentLevel >= parseInt(levels[i])) {
-                        var skillsToAdd = incTower.skillAttributes[skill].grants[levels[i]];
-                        for (var j = 0;j < skillsToAdd.length; j++) {
-                            if (!incTower.haveSkill(skillsToAdd[j])) {
-                                incTower.gainSkill(skillsToAdd[j]);
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -407,6 +618,7 @@ var incTower = {
         return true;
     },
     getActiveSkillName: function () {
+        'use strict';
         var active = incTower.activeSkill();
         if (active in incTower.skillAttributes) {
             return incTower.skillAttributes[active].fullName;
@@ -414,9 +626,11 @@ var incTower = {
         return '';
     },
     skillRate: function () {
+        'use strict';
         return 1;
     },
     timeUntilSkillUp: function(pointDiff) {
+        'use strict';
         return moment().add(pointDiff / incTower.skillRate(),'seconds').fromNow();
     },
 
@@ -529,6 +743,7 @@ var incTower = {
 
     },
     generateBossPack: function () {
+        'use strict';
         var bossPowers = Object.keys(incTower.bossPowers);
         var totalPowers = (incTower.wave() / 25) + 1 | 0;
         var possAnimations = Object.keys(incTower.enemyAnimations);
@@ -557,6 +772,7 @@ var incTower = {
                     if (baseEntry.scale > 0.7) {
                         baseEntry.scale *= 0.8;
                     }
+
                 } else if (power === 'regenerating') {
                     baseEntry.regenerating += 0.5;
                 } else if (power === 'fast') {
@@ -576,6 +792,7 @@ var incTower = {
                     baseEntry.powers[power] = 1;
                 }
             }
+            if (baseEntry.swarm) { baseEntry.bonusHealthPercentage -= 20; }
             ret.push(baseEntry);
 
         }
@@ -590,7 +807,7 @@ var incTower = {
         return amount;
     },
     gainGold: function (amount, floatAround) {
-        /*amount *= 1 + (incTower.getNumberUpgrades('onePercentGold') / 100)*/
+        'use strict';
         incrementObservable(incTower.gold,amount);
         if (floatAround !== undefined) {
             incTower.createFloatingText({'color':'#C9960C', 'duration':3000, 'around':floatAround,'text':'+'+humanizeNumber(amount) + 'g', 'scatter':16, 'type':'gold'});
@@ -625,6 +842,7 @@ var incTower = {
         }
     },
     cheapestUpgradeCostTower: ko.pureComputed(function () {
+        'use strict';
         var cheapest = -1;
         var retTower;
         for (var i = 0;i < incTower.numTowers();++i) {
@@ -638,9 +856,11 @@ var incTower = {
         return retTower;
     }),
     cheapestUpgradeCost: ko.pureComputed(function () {
+        'use strict';
         return incTower.cheapestUpgradeCostTower().upgradeCost();
     }),
     cheapestUpgrade: function () {
+        'use strict';
         PayToUpgradeTower(incTower.cheapestUpgradeCostTower());
     },
     cheapestUpgradeAll: function () {
@@ -760,7 +980,7 @@ var incTower = {
         if ('scatter' in opt) { scatter = opt.scatter; }
         if (scatter > 0) {
             floatText.x = game.rnd.integerInRange(x - scatter,x + scatter);
-            floatText.y = game.rnd.integerInRange(y - scatter,y + scatter)
+            floatText.y = game.rnd.integerInRange(y - scatter,y + scatter);
         } else {
             floatText.x = x;
             floatText.y = y;
@@ -785,11 +1005,12 @@ var incTower = {
 };
 incTower.self = incTower;
 incTower.secondsUntilSkillUp = ko.computed(function () {
+    'use strict';
     if (this.skills.get(this.activeSkill())() === null) { return 0; }
     return this.skills.get(this.activeSkill())().get('skillPointsCap')().minus(this.skills.get(this.activeSkill())().get('skillPoints')());
 },incTower);
 incTower.percentageUntilSkillUp = ko.computed(function () {
-
+    'use strict';
     if (this.skills.get(this.activeSkill())() === null) { return 0; }
     return this.skills.get(this.activeSkill())().get('skillPoints')().dividedBy(this.skills.get(this.activeSkill())().get('skillPointsCap')()).times(100);
 },incTower);
@@ -828,6 +1049,7 @@ for (var i = 0;i < 25;++i) {
 var path = [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5,"y":0},{"x":6,"y":0},{"x":7,"y":0},{"x":7,"y":1},{"x":8,"y":1},{"x":9,"y":1},{"x":10,"y":1},{"x":11,"y":1},{"x":11,"y":2},{"x":11,"y":3},{"x":11,"y":4},{"x":12,"y":4},{"x":12,"y":5},{"x":12,"y":6},{"x":12,"y":7},{"x":12,"y":8},{"x":13,"y":8},{"x":13,"y":9},{"x":14,"y":9},{"x":15,"y":9},{"x":15,"y":10},{"x":16,"y":10},{"x":16,"y":11},{"x":17,"y":11},{"x":17,"y":12},{"x":17,"y":13},{"x":18,"y":13},{"x":18,"y":14},{"x":19,"y":14},{"x":20,"y":14},{"x":21,"y":14},{"x":21,"y":15},{"x":21,"y":16},{"x":22,"y":16},{"x":22,"y":17},{"x":23,"y":17},{"x":23,"y":18},{"x":24,"y":18},{"x":24,"y":19}];
 
 function recalcPath() {
+    'use strict';
     var walkables = [30];
     pathfinder.setGrid(map.layers[0].data, walkables);
 
@@ -865,7 +1087,7 @@ function recalcPath() {
                 }
             }
             if (!valid) {
-                var curPathTile = enemy.path[enemy.curTile];
+                //var curPathTile = enemy.path[enemy.curTile];
                 enemy.path = p.slice(0);
             }
         });
@@ -891,6 +1113,7 @@ function preload() {
 }
 
 function costCalc(base,number,growth) {
+    'use strict';
     return new BigNumber(growth).pow(number).times(base);
     //return base * Math.pow(growth,number) | 0;
 }
@@ -905,6 +1128,7 @@ incTower.numSuffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 
     'Og', 'UOg', 'DOg', 'TOg', 'QaOg', 'QiOg', 'SxOg', 'SpOg', 'OOg', 'NOg'
 ];
 function humanizeBigNumber(number,precision) {
+    'use strict';
     if (precision === undefined) { precision = 1;}
     var thresh = 1000;
     //number = 3;
@@ -920,6 +1144,7 @@ function humanizeBigNumber(number,precision) {
 }
 
 function humanizeNumber(number,precision) {
+    'use strict';
     if (precision === undefined) { precision = 1;}
     if (!isPrimativeNumber(number)) { return humanizeBigNumber(number,precision); }
     var thresh = 1000;
@@ -937,9 +1162,7 @@ incTower.humanizeNumber = humanizeNumber;
 
 
 function create() {
-    /**
-     * Init map
-     */
+    //This function CANNOT be made strict as it sets globals.
     ko.applyBindings(incTower);
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.stage.disableVisibilityChange = true;
@@ -1074,11 +1297,14 @@ function create() {
 
     //We need a load function here for this to really make sense
     if (!incTower.dialogWelcome) {
-        okDialog("In the beginning you can build the following things: " +
+        okDialog({
+            title: "Incremental Tower Defense",
+            message:"In the beginning you can build the following things: " +
             "<ul>" +
             "<li><b>Blocks</b>: Reroutes enemy movement and required for tower placement. The purple line shows the way in which most enemies will move toward the red zone.</li>" +
             "<li><b>Kinetic Towers</b>: Deals damage to enemies, upgrading these is the main way to progress through the game.</li>" +
-            "</ul>", "Incremental Tower Defense");
+            "</ul>"
+        });
         incTower.dialogWelcome = true;
     }
     game.time.events.loop(Phaser.Timer.SECOND, everySecond, this);
@@ -1093,7 +1319,7 @@ function create() {
     startZone.endFill();
 
     var endZone = game.add.graphics(800,608);
-    var colour = "0xFF0000";
+    colour = "0xFF0000";
     endZone.beginFill(colour);
     endZone.lineStyle(5, colour, 1);
     endZone.lineTo(0, -tileSquare);
@@ -1104,20 +1330,20 @@ function create() {
 }
 
 function convergeUpdate() {
+    'use strict';
     var ticks = (Date.now() - incTower.lastUpdateRealTime) / 16;
     var lastRealUpdate = incTower.lastUpdateRealTime;
     for (var i = 0;i < ticks;i++) {
         game.update(lastRealUpdate + 16 * i);
     }
 }
-function render() {
 
-}
 function rgbToHex (r, g, b) {
     'use strict';
     return "0x" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 function createSaveObj(obj) {
+    'use strict';
     var save = {};
     var dontSave = [
         'self',
@@ -1201,7 +1427,7 @@ function createSaveObj(obj) {
                 //We have an observable dict
                 save[prop] = {};
                 var keys = obj[prop].keys();
-                for (key in keys) {
+                for (var key in keys) {
                     var value = obj[prop].get(keys[key])();
                     save[prop][keys[key]] = {
                         skillLevel: value.get('skillLevel')(),
@@ -1221,6 +1447,7 @@ function createSaveObj(obj) {
 //Repeat event that fires on every second. Currently used for regenerating enemies.
 function everySecond() {
     //Training skills
+    'use strict';
     if (!(incTower.activeSkill() in incTower.skillAttributes)) {
         var skills = incTower.skills.keys();
         shuffle(skills);
@@ -1247,7 +1474,7 @@ function everySecond() {
         //incTower.skills.get(incTower.activeSkill()).push('skillPointsCap')()();
     }
     enemys.forEachAlive(function(enemy) {
-        if (enemy.regenerating !== undefined && enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {
+        if (enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {
             var curHealth = enemy.health();
             var healAmount = enemy.maxHealth.times(enemy.regenerating * 0.01);
             if (healAmount.add(curHealth).gt(enemy.maxHealth)) { healAmount = enemy.maxHealth.minus(curHealth); }
@@ -1258,7 +1485,7 @@ function everySecond() {
                 incrementObservable(enemy.health,healAmount);
             }
         }
-        if (enemy.teleport !== undefined && enemy.teleport > 0 && enemy.statusEffects.chilled().lt(100) && !enemy.knockback) {
+        if (enemy.teleport > 0 && enemy.statusEffects.chilled().lt(100) && !enemy.knockback) {
             if (game.rnd.integerInRange(0,100) <= 10) {
                 var origScale = enemy.scale.x;
                 var blinkTween = game.add.tween(enemy.scale).to({x:0},250, Phaser.Easing.Quadratic.In);
@@ -1289,15 +1516,52 @@ function everySecond() {
                 if (effectName === 'burning') {
                     enemy.assignDamage(effect(),'fire');
                 }
-                if (effect().lt(3)) { effect(new BigNumber(0)); }
+                if (effect().lt(3)) {
+                    effect(new BigNumber(0));
+                    if (effectName === 'burning') {
+                        enemy.burningSprite.visible = false;
+                    }
+                }
                 if (statusEffects[i] === 'chilled' && effect().lt(100) && enemy.speedX === 0 && enemy.speedY === 0) {
                     enemy.nextTile();
                 }
             }
         }
+        enemy.elementalRuneDiminishing = _.mapValues(enemy.elementalRuneDiminishing, function (dim) {
+            if (dim < 0.5) { return 0; }
+            return dim * 0.95;
+        });
+        var reaction = false;
+        for (i = 0;i < enemy.elementalRunes.length;i++) {
+            if (game.rnd.integerInRange(0,100) < 10) {
+                reaction = enemy.elementalRunes[i].runeType;
+                break;
+            }
+        }
+        if (reaction) {
+            var newElementalRunes = [];
+            var eligibleToReact = {};
+            eligibleToReact[reaction] = true;
+            var reactionCounts = {};
+            for (i = 0; i < enemy.elementalRunes.length; i++) {
+                var runeType = enemy.elementalRunes[i].runeType;
+                if (runeType in eligibleToReact) {
+                    if (!(runeType in reactionCounts)) { reactionCounts[runeType] = 0; }
+                    reactionCounts[runeType]++;
+                    enemy.elementalRunes[i].destroy();
+                } else {
+                    newElementalRunes.push(enemy.elementalRunes[i]);
+                }
+            }
+            enemy.elementalRunes = newElementalRunes;
+            enemy.repositionRunes();
+            enemy.performReaction(reaction, reactionCounts);
+            //Run the reaction
+        }
     });
 }
 function update() {
+    'use strict';
     var currentTime = game.time.now;
     incTower.frame++;
     if (incTower.lastUpdate === 0) { incTower.lastUpdate = currentTime; }
@@ -1307,17 +1571,20 @@ function update() {
     if ((!incTower.generatingEnemies) && (enemys.countLiving() === 0)) {
         if (incTower.wave() > 0) {
             //Save state
-            var save_data = JSON.stringify(createSaveObj(incTower));
-            $('#b64_save').val(btoa(save_data));
-            localStorage.setItem("save",save_data);
+            var saveData = JSON.stringify(createSaveObj(incTower));
+            $('#b64_save').val(btoa(saveData));
+            localStorage.setItem("save",saveData);
         }
         enemys.removeAll();
         if (incTower.wave() > 0 && incTower.wave() % 5 === 0) {
             if (!incTower.dialogBossKill) {
                 incTower.dialogBossKill = true;
-                okDialog("Congratulations! You killed your first boss wave. " +
-                    "Bosses do not cycle back through your defenses if they are not defeated. " +
-                    "If killed it allows you to redeem an upgrade.", "First Boss Kill");
+                okDialog({
+                    title: "First Boss Kill",
+                    message: "Congratulations! You killed your first boss wave. " +
+                             "Bosses do not cycle back through your defenses if they are not defeated. " +
+                             "If killed it allows you to redeem an upgrade."
+                });
 
             }
         }
@@ -1328,57 +1595,6 @@ function update() {
         //generateEnemy(Math.pow(incTower.wave * 5,1.35));
         generateEnemy(costCalc(5,incTower.wave(),1.2));
     }
-  //  }
-    enemys.forEachAlive(function(enemy) {
-        enemy.moveElmt();
-        //enemy.healthbar = game.add.graphics(0,0);
-        if (enemy._lasthp !== enemy.health()) {
-            enemy.healthbar.clear();
-            var per = enemy.health() / enemy.maxHealth;
-            var x = (per) * 100;
-            var colour = rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-
-            enemy.healthbar.beginFill(colour);
-            enemy.healthbar.lineStyle(5, colour, 1);
-            enemy.healthbar.moveTo(0,-5);
-            enemy.healthbar.lineTo(tileSquare * per, -5);
-            enemy.healthbar.endFill();
-            game.world.bringToTop(enemy.healthbar);
-            enemy._lasthp = enemy.health();
-        }
-        if (enemy.shielding !== undefined && enemy.shielding > 0) {
-            if (enemy.lastShieldTime === undefined || enemy.lastShieldTime + (4000 / enemy.shielding) < game.time.now) {
-                enemy.shielded = true;
-                enemy.lastShieldTime = game.time.now;
-                enemy.subSprites.shield.visible = true;
-
-                console.log("SHIELDED");
-            }
-
-        }
-        enemy.healthbar.x = enemy.x - 16;
-        enemy.healthbar.y = enemy.y - 15;
-        var subsprites = Object.keys(enemy.subSprites);
-        for (var i = 0;i < subsprites.length;i++) {
-            if (enemy.subSprites[subsprites[i]].visible) {
-                enemy.subSprites[subsprites[i]].x = enemy.x - 16;
-                enemy.subSprites[subsprites[i]].y = enemy.y - 16;
-            }
-
-        }
-
-
-
-
-
-    });
-    /*
-     * ower fire
-     */
-    //towers.forEach(function(tower) {
-    //    tower.fire();
-    //});
-    //if (incTower.frame % 5 === 0) {
     bullets.forEachAlive(function (bullet) {
         var range = bullet.tower.range;
         var timeSinceFired = game.time.now - bullet.fired;
@@ -1406,123 +1622,37 @@ function update() {
 }
 
 function collisionHandler(bullet, enemy) {
+    'use strict';
     if (!bullet.alive) { return; }
     bullet.kill();
     var frame = bullet._frame.name;
     if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
     incTower.deadBullets[frame].push(bullet);
-
-    //TODO: Damage types.
     var damage = bullet.damage;
-    enemy.assignDamage(damage,bullet.tower.towerType);
-    if (bullet.tower.towerType === 'fire' || bullet.tower.towerType === 'water' || bullet.tower.towerType === 'air' || bullet.tower.towerType === 'earth') {
-        incrementObservable(enemy.elementalInstability,game.rnd.integerInRange(1,damage));
-        var hitCap = false;
-        var capIncrease = new BigNumber(0);
-        while (enemy.elementalInstability() >= enemy.instabilityCap()) {
-            hitCap = true;
+    var towerType = bullet.tower.towerType;
+    enemy.assignDamage(damage,towerType);
+    if (towerType === 'fire' || towerType === 'water' || towerType === 'air' || towerType === 'earth') {
+        incrementObservable(enemy.elementalInstability,BigNumber.random().times(damage));
+        var chance = 0.10; //10% base chance of applying a rune
+        chance += (0.05 * incTower.getSkillLevel(towerType + 'RuneApplication')); //increases by 5% per rank in the relevant skill
+        chance -= (0.05 * enemy.elementalRuneDiminishing[towerType] || 0);
+        if (game.rnd.frac() < chance) {
+            enemy.addElementalRune(bullet.tower.towerType);
+            if (game.rnd.frac() < (0.05 * incTower.getSkillLevel(towerType + 'AdvancedRuneApplication'))) {
+                enemy.addElementalRune(bullet.tower.towerType);
+            }
 
-            capIncrease = capIncrease.plus(enemy.instabilityCap());
-            incrementObservable(enemy.elementalInstability, -enemy.instabilityCap());
-            incrementObservable(enemy.instabilityCap,enemy.instabilityCap()); //Double the cap
-            incrementObservable(enemy.totalInstability);
         }
-        if (hitCap === true) {
-            var totalInstability = enemy.totalInstability();
-            var previousCap = capIncrease;
-            /*var elementalDamage = enemy.health().times(totalInstability * 0.01) ; //Deals 1% of current health for each time we've had an elemental event
-            enemy.assignDamage(elementalDamage,bullet.tower.towerType);*/
-           //incTower.createFloatingText({'scatter':0,'around':enemy,'amount':-elementalDamage, 'type':'elemental'});
-            if (bullet.tower.towerType === 'water') {
-                incrementObservable(enemy.statusEffects.chilled,20 * totalInstability);
-                if (enemy.statusEffects.chilled().gte(100)) {
-                    incTower.createFloatingText({'color':'#0000CC', 'duration':2000, 'around':enemy,'text':'Frozen!', 'type':'frozen'});
-                }
-                /*if (totalInstability >= 5 && enemy.statusEffects.chilled() < 100) { //5 instability guarantees a short freeze
-                    enemy.statusEffects.chilled(100);
-                }*/
-            }
-            if (bullet.tower.towerType === 'fire') {
-                incrementObservable(enemy.statusEffects.sensitivity, 10 * totalInstability);
-                incrementObservable(enemy.statusEffects.burning, previousCap);
-            }
-            if (bullet.tower.towerType === 'earth') {
-                var boulder = game.add.sprite(enemy.x, enemy.y, 'incTower', 'rock' + game.rnd.integerInRange(1,3) + '.png');
-                boulder.anchor.setTo(0.5, 0.5);
-                game.physics.enable(boulder, Phaser.Physics.ARCADE);
-                var bigDim = boulder.width;
-                if (boulder.height > bigDim) { bigDim = boulder.height; }
-
-
-                var endWidth = Math.max(tileSquare * totalInstability * 0.25,tileSquare);
-                var startWidth = endWidth * 4;
-                boulder.damageOnImpact = totalInstability;
-                boulder.scale.x = startWidth / bigDim;
-                boulder.scale.y = startWidth / bigDim;
-
-                /*boulder.x = enemy.x;
-                boulder.y = enemy.y;*/
-                var boulderTween = game.add.tween(boulder.scale).to({x:endWidth / bigDim, y: endWidth / bigDim},500, Phaser.Easing.Quadratic.In, true);
-                boulderTween.onComplete.add(function () {
-                    game.physics.arcade.overlap(this, enemys, function (boulder, enemy) {
-                        enemy.assignDamage(previousCap,'earth');
-                    }, null, this);
-                    this.destroy();
-                },boulder);
-            }
-            if (bullet.tower.towerType === 'air') {
-
-                var originX = enemy.x;
-                var originY = enemy.y;
-                var sqrtInstability = Math.sqrt(totalInstability);
-                var minX = Math.max(0,originX - 16 * sqrtInstability);
-                var maxX = Math.min(800,originX + 16 * sqrtInstability);
-                var minY = Math.max(0,originY - 16 * sqrtInstability);
-                var maxY = Math.min(608,originY + 16 * sqrtInstability);
-                var destTileNum = Math.max(0,enemy.curTile - Math.max(1,parseInt(Math.sqrt(totalInstability))));
-                var kbX = enemy.path[destTileNum].x * 32 + 16; //Knock back X and Y
-                var kbY = enemy.path[destTileNum].y * 32 + 16;
-                var impactedEnemies = [];
-                for (var i = 0;i < enemys.children.length;i++) {
-                    if (!enemys.children[i].alive) {
-                        continue;
-                    }
-                    if (enemys.children[i].x > minX && enemys.children[i].x < maxX && enemys.children[i].y > minY && enemys.children[i].y < maxY) {
-                        impactedEnemies.push(enemys.children[i]);
-                    }
-                }
-
-                for (var i = 0;i < impactedEnemies.length;i++) {
-                    impactedEnemies[i].knockback = true;
-                    impactedEnemies[i].animations.paused = true;
-                    impactedEnemies[i].curTile = destTileNum;
-                    impactedEnemies[i].assignDamage(previousCap,'air');
-                    var knockbackTween = game.add.tween(impactedEnemies[i]).to( {
-                        angle:['+90','+180','+270','+360','+450'],
-                        x:[maxX, maxX, minX, minX, kbX + game.rnd.integerInRange(-16,16)],
-                        y:[minY, maxY, maxY, minY, kbY + game.rnd.integerInRange(-16,16)]
-                    }, Math.max(500,100 * totalInstability), "Sine.easeInOut", false);
-                    knockbackTween.onComplete.add(function () {
-                        this.knockback = false;
-                        this.speedX = 0;
-                        this.speedY = 0;
-                        this.animations.paused = false;
-                    },impactedEnemies[i]);
-                    knockbackTween.interpolation(Phaser.Math.bezierInterpolation);
-                    knockbackTween.start();
-                }
-            }
-        }
-        /*if (bullet.tower.towerType === 'water' && enemy.statusEffects.chilled < 10) { //Water always slows by 10% even if we didn't get an elemental event
-            enemy.statusEffects.chilled(10);
-        }*/
 
     }
+
+
 
 
 }
 
 function generateEnemy(difficulty) {
+    'use strict';
     //var i = 0;
     incTower.generatingEnemies = true;
     var totalWaveGold = incTower.goldPerWave(incTower.wave());
@@ -1588,9 +1718,44 @@ function generateEnemy(difficulty) {
 
 }
 function calcSkill(skill,toLevel) {
+    'use strict';
     var tally = new BigNumber(0);
     for (var i = 0; i < toLevel;i++) {
         tally = tally.plus(costCalc(incTower.skillAttributes[skill].baseCost,i,incTower.skillAttributes[skill].growth));
     }
     return tally;
+}
+function calcSkillGrowth(skill,toLevel,targetTime) {
+    'use strict';
+    var toggle = 1;
+    var targetTime = new BigNumber(targetTime);
+    while (1) {
+        var baseGrowth = incTower.skillAttributes[skill].growth;
+        var posGrowth = baseGrowth + toggle;
+        var negGrowth = baseGrowth - toggle;
+        var zeroval = calcSkill(skill,toLevel).minus(targetTime).abs();
+        incTower.skillAttributes[skill].growth = posGrowth;
+        var posval = calcSkill(skill,toLevel).minus(targetTime).abs();
+        incTower.skillAttributes[skill].growth = negGrowth;
+        var negval = calcSkill(skill,toLevel).minus(targetTime).abs();
+        if (zeroval.lt(posval) && zeroval.lt(negval)) {
+            console.log("Within " + zeroval.toJSON() + " at " + baseGrowth);
+            if (zeroval.lt(1)) { break; }
+            toggle /= 2;
+        } else if (posval.lt(negval)) {
+            console.log("Within " + posval.toJSON() + " at " + posGrowth);
+            incTower.skillAttributes[skill].growth = posGrowth;
+        } else {
+            console.log("Within " + negval.toJSON() + " at " + negGrowth);
+            incTower.skillAttributes[skill].growth = negGrowth;
+        }
+
+
+
+
+
+
+    }
+
+
 }

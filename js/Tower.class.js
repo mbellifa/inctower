@@ -27,8 +27,10 @@ function UpgradeTower(tower) {
         incrementObservable(tower.damage,tower.damage());
         if (!incTower.dialogTowerUpgradeDouble) {
             incTower.dialogTowerUpgradeDouble = true;
-            okDialog("Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles.",
-                "Tower Upgrades");
+            okDialog({
+                title: "Tower Upgrades",
+                message: "Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles."
+            });
         }
     } else {
         incrementObservable(tower.damage,incTower.towerAttributes[tower.towerType].damagePerLevel);

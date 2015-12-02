@@ -2,6 +2,7 @@
   <library name="Phaser Arcade" type="javaScript">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/phaser-arcade-physics.min.js" />
+      <root url="file://$PROJECT_DIR$/js/phaser.min.js" />
     </CLASSES>
     <SOURCES />
   </library>

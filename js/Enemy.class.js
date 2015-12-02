@@ -15,9 +15,7 @@ function chilledUpdate(value) {
 
 var Enemy = function(x, y, opts) {
     var anim = incTower.enemyAnimations[opts.name];
-    //Phaser.Sprite.call(this, game, path[0].x * tileSquare, path[0].y * tileSquare, 'incTower', anim[0]);
     Phaser.Sprite.call(this, game, x, y, 'incTower', anim[0]);
-    //this = game.add.sprite(path[0].x * tileSquare, path[0].y * tileSquare, 'incTower', anim[0]);
     game.physics.enable(this, Phaser.Physics.ARCADE);
     this.animations.add('walk', anim, 10, true, false);
     this.animations.play('walk');
@@ -31,27 +29,29 @@ var Enemy = function(x, y, opts) {
         burning: ko.observable(new BigNumber(0))
     };
     this.events.onKilled.add(function () {
-        var subsprites = Object.keys(this.subSprites);
-        for (var i = 0; i < subsprites.length; i++) {
-            this.subSprites[subsprites[i]].destroy();
+
+
+        if (incTower.currentlySelected() === this) {
+            incTower.currentlySelected(null);
         }
+
+        this.healthbar.destroy();
     },this);
-    this.subSprites = { };
+    this.realSpeed = ko.computed(function () {
+        var speed = this.speed;
+        speed -= speed * (this.statusEffects.chilled() * 0.01);
+        return Math.max(0,speed);
+    }, this);
     this.statusEffects.chilled.subscribe(chilledUpdate,this);
     this.speedX = 0;
     this.speedY = 0;
-    this.health = ko.observable(new BigNumber(opts.health));
-    this.maxHealth = opts.health;
-    this.healthbar = game.add.graphics(0,0);
+
+
     this.goldValue = ko.observable(opts.goldValue);
-    //this.healthbar.anchor.set(0);
-    //this.addChild(this.healthbar);
-    this._lasthp = 0;
+    this.healthbar = game.add.graphics(0,0);
+    this.addChild(this.healthbar);
+
     this.curTile = 0;
-    this.elementalInstability = ko.observable(0);
-    this.instabilityCap = ko.observable(new BigNumber(5));
-    this.totalInstability = ko.observable(0); //Number of times that we've hit the cap.
-    //console.log(opts);
     for (var opt in opts) {
         if (opts.hasOwnProperty(opt)) {
             if (opt === "scale") {
@@ -69,7 +69,9 @@ var Enemy = function(x, y, opts) {
         }
     }
     if (this.shielding > 0) {
-        this.subSprites.shield = game.add.sprite(this.x, this.y, 'incTower', 'bubble.png');
+        this.shieldSprite = game.add.sprite(0, 0, 'incTower', 'bubble.png');
+        this.shieldSprite.anchor.setTo(0.5,0.5);
+        this.addChild(this.shieldSprite);
     }
     enemys.add(this);
     this.inputEnabled = true;
@@ -77,6 +79,28 @@ var Enemy = function(x, y, opts) {
     this.path = path.slice(0);
     this.nextTile();
     this.moveElmt();
+    this.health = ko.observable();
+
+    this.health.subscribe(function (newHealth) {
+        this.healthbar.clear();
+        var per = newHealth.div(this.maxHealth);
+        var x = (per) * 100;
+        var colour = rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
+        this.healthbar.beginFill(colour);
+        this.healthbar.lineStyle(5, colour, 1);
+        this.healthbar.moveTo(-16,-21);
+        this.healthbar.lineTo(32 * per - 16, -21);
+        this.healthbar.endFill();
+        game.world.bringToTop(this.healthbar);
+    }, this);
+    this.maxHealth = opts.health;
+    this.health(new BigNumber(opts.health));
+    this.elementalInstability = ko.observable(new BigNumber(0));
+    this.elementalRunes = [];
+    this.elementalRuneCounts = {};
+    this.elementalRuneDiminishing = {};
+
+
 };
 
 Enemy.prototype = Object.create(Phaser.Sprite.prototype);
@@ -84,24 +108,22 @@ Enemy.prototype.constructor = Enemy;
 
 Enemy.prototype.assignDamage = function (damage, type) {
     'use strict';
-    //console.trace();
     if (type === undefined) { type = "normal"; }
-    //damage = damage.times(1 + (incTower.getNumberUpgrades('onePercentDamage') * 0.01));
-    damage = damage.times(1 + (this.statusEffects.sensitivity() * 0.01));
+    var sensitivity = this.statusEffects.sensitivity();
+    if (sensitivity > 0) { damage = damage.times(1 + (this.statusEffects.sensitivity() * 0.01)); }
+    if (type in this.elementalRuneCounts) {
+        damage = damage.times(1 + (this.elementalRuneCounts[type] * 0.20));
+    }
     if (this.shielded) {
         damage = BigNumber(0);
-        this.subSprites.shield.visible = false;
+        this.shieldSprite.visible = false;
         this.shielded = false;
     }
     incrementObservable(this.health, damage.negated());
     incTower.createFloatingText({'scatter':0,'around':this,'amount':damage.negated(), 'type':'damage'});
     if (this.health().lte(0)) {
-        if (incTower.currentlySelected() === this) {
-            incTower.currentlySelected(null);
-        }
         incTower.gainGold(this.goldValue(), this);
         this.kill();
-        this.healthbar.destroy();
     }
 };
 Enemy.prototype.moveElmt = function() {
@@ -109,25 +131,21 @@ Enemy.prototype.moveElmt = function() {
     if (this.knockback) { return; }
     this.x += this.speedX * this.realSpeed();
     this.y += this.speedY * this.realSpeed();
-    if (this.speedX > 0 && this.x >= this.next_positX) {
-        this.x = this.next_positX;
+    if (this.speedX > 0 && this.x >= this.nextX) {
+        this.x = this.nextX;
         this.nextTile();
-        //Enemy.prototype.nextTile(this);
     }
-    else if (this.speedX < 0 && this.x <= this.next_positX) {
-        this.x = this.next_positX;
+    else if (this.speedX < 0 && this.x <= this.nextX) {
+        this.x = this.nextX;
         this.nextTile();
-        //Enemy.prototype.nextTile(this);
     }
-    else if (this.speedY > 0 && this.y >= this.next_positY) {
-        this.y = this.next_positY;
+    else if (this.speedY > 0 && this.y >= this.nextY) {
+        this.y = this.nextY;
         this.nextTile();
-        //Enemy.prototype.nextTile(this);
     }
-    else if (this.speedY < 0 && this.y <= this.next_positY) {
-        this.y = this.next_positY;
+    else if (this.speedY < 0 && this.y <= this.nextY) {
+        this.y = this.nextY;
         this.nextTile();
-        //Enemy.prototype.nextTile(this);
     } else if (this.speedX  === 0 && this.speedY === 0 && this.realSpeed() > 0.5) {
         this.nextTile();
     }
@@ -142,43 +160,40 @@ Enemy.prototype.nextTile = function () {
             console.log("Boss ran off the edge");
             if (!incTower.dialogEdgeBoss) {
                 incTower.dialogEdgeBoss = true;
-                okDialog(
-                    "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it.",
-                    "Boss Waves"
-                );
+                okDialog({
+                    title: "Boss Waves",
+                    message: "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it."
+                });
             }
             if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy) {
                 incTower.currentlySelected(null);
             }
             enemys.forEach(function(theEnemy) {
-                theEnemy.healthbar.destroy();
                 theEnemy.kill();
             });
-
-
             incrementObservable(incTower.wave, -1); //Go back a wave.
             incTower.farmMode(true); //Turn farm mode on
             return;
         } else if (!incTower.dialogEdgeRegular) {
             incTower.dialogEdgeRegular = true;
-            okDialog("When non-boss enemies run off the edge they cycle back through your defenses. Each time this is allowed to happen the monster loses 10% of its gold value.",
-                "Regular Enemies"
-            );
-
+            okDialog({
+                title: "Regular Enemies",
+                message:"When non-boss enemies run off the edge they cycle back through your defenses. Each time this is allowed to happen the monster loses 10% of its gold value."
+            });
         }
         if (incTower.wave() > 1) { this.goldValue(this.goldValue().times(0.9)); } //Lose 10% of our gold value each time we p
         this.curTile = 0;
         this.x = (this.path[0].x - 1) * tileSquare;
         this.y = this.path[0].y * tileSquare;
     }
-    this.next_positX = this.path[this.curTile].x * tileSquare + 16 | 0;
-    this.next_positY = this.path[this.curTile].y * tileSquare + 16 | 0;
+    this.nextX = this.path[this.curTile].x * tileSquare + 16 | 0;
+    this.nextY = this.path[this.curTile].y * tileSquare + 16 | 0;
     // on check le sens gauche/droite
-    if (this.next_positX > this.x) {
+    if (this.nextX > this.x) {
         this.speedX = 1;
         this.angle = 0;
         this.scale.x = 1;
-    } else if (this.next_positX < this.x) {
+    } else if (this.nextX < this.x) {
         this.speedX = -1;
         this.scale.x = -1;
         this.angle = 0;
@@ -187,19 +202,202 @@ Enemy.prototype.nextTile = function () {
         this.scale.x = 1;
     }
     // on check le sens haut/bas
-    if (this.next_positY > this.y) {
+    if (this.nextY > this.y) {
         this.speedY = 1;
         this.angle = 90;
-    } else if (this.next_positY < this.y) {
+    } else if (this.nextY < this.y) {
         this.speedY = -1;
         this.angle = -90;
     } else {
         this.speedY = 0;
     }
 };
+Enemy.prototype.update = function () {
+    this.moveElmt();
+    if (this.shielding > 0) {
+        if (this.lastShieldTime === undefined || this.lastShieldTime + (4000 / this.shielding) < game.time.now) {
+            this.shielded = true;
+            this.lastShieldTime = game.time.now;
+            this.shieldSprite.visible = true;
+        }
+    }
+}
+Enemy.prototype.addElementalRune = function(runeType) {
+    var iconName = runeType + '-element.png';
+    var runeIcon = game.add.sprite(0, 0, 'incTower', iconName);
+    this.elementalRunes.push(runeIcon);
+    runeIcon.scale.x = 0.8;
+    runeIcon.scale.y = 0.8;
+    runeIcon.anchor.setTo(0,1);
+    var magic = this.elementalRunes.length * 8;
+    runeIcon.x = 16 + Math.floor(magic / 32) * 8;
+    runeIcon.y = -16 + magic % 32;
+    runeIcon.runeType = runeType;
+    this.addChild(runeIcon);
+    if (!(runeType in this.elementalRuneCounts)) { this.elementalRuneCounts[runeType] = 0; }
+    this.elementalRuneCounts[runeType]++;
+};
 
-Enemy.prototype.realSpeed = function () {
-    var speed = this.speed;
-    speed -= speed * (this.statusEffects.chilled() * 0.01);
-    return Math.max(0,speed);
+Enemy.prototype.repositionRunes = function () {
+    this.elementalRuneCounts = {};
+    //This is called after we have deleted some runes so we'll recount as well.
+    for (var i = 0;i < this.elementalRunes.length;i++) {
+        var magic = i * 8;
+        this.elementalRunes[i].x = 16 + Math.floor(magic / 32) * 8;
+        this.elementalRunes[i].y = -16 + magic % 32;
+        var runeType = this.elementalRunes[i].runeType;
+        if (!(runeType in this.elementalRuneCounts)) { this.elementalRuneCounts[runeType] = 0; }
+        this.elementalRuneCounts[runeType]++;
+
+    }
+
+};
+Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
+    if (opts === undefined) { opts = {}; }
+    for (var key in reactionCounts) {
+        this.elementalRuneDiminishing[key] = (this.elementalRuneDiminishing[key] || 0) + reactionCounts[key];
+    }
+    if (reaction === 'water') {
+        var iceStormChance = reactionCounts.water - 4;
+        if (iceStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= iceStormChance) {
+            var newOpts = opts;
+            newOpts.noStorm = true;
+            enemys.forEachAlive(function (enemy) {
+                enemy.performReaction(reaction, reactionCounts, newOpts);
+                incTower.createFloatingText({'color':'#0000CC', 'duration':3000, 'around':this,'text':'Ice Storm!', 'type':'iceStorm'});
+            });
+        }
+        incrementObservable(this.statusEffects.chilled,50 * reactionCounts.water);
+        if (this.statusEffects.chilled().gte(100)) {
+            incTower.createFloatingText({'color':'#0000CC', 'duration':2000, 'around':this,'text':'Frozen!', 'type':'frozen'});
+        }
+        this.assignDamage(this.elementalInstability(), 'water');
+
+    } else if (reaction === 'fire') {
+        var fireStormChance = reactionCounts.fire - 4;
+        if (fireStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= fireStormChance) {
+            var newOpts = opts;
+            newOpts.noStorm = true;
+            enemys.forEachAlive(function (enemy) {
+                enemy.performReaction(reaction, reactionCounts, newOpts);
+                incTower.createFloatingText({'color':'#CC0000', 'duration':3000, 'around':this,'text':'Fire Storm!', 'type':'fireStorm'});
+            });
+        }
+        incrementObservable(this.statusEffects.sensitivity, 20 * reactionCounts.fire);
+        incrementObservable(this.statusEffects.burning, this.elementalInstability() * Math.pow(2,Math.min(0,reactionCounts.fire - 2)));
+        if (this.burningSprite === undefined) {
+            this.burningSprite = game.add.sprite(0, -4, 'incTower', "smokefire-0001.png");
+            this.burningSprite.anchor.setTo(0.5, 0.5);
+            this.burningSprite.scale.x = 0.5;
+            this.burningSprite.scale.y = 0.5;
+            this.burningSprite.angle = 270;
+            this.addChild(this.burningSprite);
+            this.burningSprite.animations.add('burn', [
+                "smokefire-0001.png",
+                "smokefire-0002.png",
+                "smokefire-0003.png",
+                "smokefire-0004.png",
+                "smokefire-0005.png",
+                "smokefire-0006.png",
+                "smokefire-0007.png",
+                "smokefire-0008.png",
+                "smokefire-0009.png",
+                "smokefire-0010.png",
+                "smokefire-0011.png",
+                "smokefire-0012.png",
+                "smokefire-0013.png",
+                "smokefire-0014.png",
+                "smokefire-0015.png",
+                "smokefire-0016.png",
+                "smokefire-0017.png",
+                "smokefire-0018.png",
+                "smokefire-0019.png",
+                "smokefire-0020.png",
+            ], 10, true, false);
+            this.burningSprite.animations.play('burn');
+        } else {
+            this.burningSprite.visible = true;
+        }
+    } else if (reaction === 'earth') {
+        var boulderStormChance = reactionCounts.earth - 4;
+        if (boulderStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= boulderStormChance) {
+            var newOpts = opts;
+            newOpts.noStorm = true;
+            enemys.forEachAlive(function (enemy) {
+                enemy.performReaction(reaction, reactionCounts, newOpts);
+                //incTower.createFloatingText({'color':'#CC0000', 'duration':3000, 'around':this,'text':'Fire Storm!', 'type':'fireStorm'});
+            });
+        }
+        var boulder = game.add.sprite(this.x, this.y, 'incTower', 'rock' + game.rnd.integerInRange(1,3) + '.png');
+        boulder.anchor.setTo(0.5, 0.5);
+        game.physics.enable(boulder, Phaser.Physics.ARCADE);
+        var bigDim = boulder.width;
+        if (boulder.height > bigDim) { bigDim = boulder.height; }
+        var endWidth = Math.max(tileSquare * reactionCounts.earth * 0.5,tileSquare);
+        var startWidth = endWidth * 4;
+        boulder.damageOnImpact = this.elementalInstability();
+        boulder.scale.x = startWidth / bigDim;
+        boulder.scale.y = startWidth / bigDim;
+
+        var boulderTween = game.add.tween(boulder.scale).to({x:endWidth / bigDim, y: endWidth / bigDim},500, Phaser.Easing.Quadratic.In, true);
+        boulderTween.onComplete.add(function () {
+            game.physics.arcade.overlap(this, enemys, function (boulder, enemy) {
+                enemy.assignDamage(boulder.damageOnImpact,'earth');
+            }, null, this);
+            this.destroy();
+        },boulder);
+    } else if (reaction === 'air') {
+
+        var windStormChance = reactionCounts.air - 4;
+        if (windStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= windStormChance) {
+            var newOpts = opts;
+            newOpts.noStorm = true;
+            enemys.forEachAlive(function (enemy) {
+                enemy.performReaction(reaction, reactionCounts, newOpts);
+                //incTower.createFloatingText({'color':'#CCCCCC', 'duration':3000, 'around':this,'text':'Fire Storm!', 'type':'fireStorm'});
+            });
+        }
+        var originX = this.x;
+        var originY = this.y;
+
+        var minX = Math.max(0,originX - 32 * reactionCounts.air);
+        var maxX = Math.min(800,originX + 32 * reactionCounts.air);
+        var minY = Math.max(0,originY - 32 * reactionCounts.air);
+        var maxY = Math.min(608,originY + 32 * reactionCounts.air);
+        var destTileNum = Math.max(0,this.curTile - Math.max(1,parseInt(reactionCounts.air)));
+        var kbX = this.path[destTileNum].x * 32 + 16; //Knock back X and Y
+        var kbY = this.path[destTileNum].y * 32 + 16;
+        var impactedEnemies = [];
+        for (var i = 0;i < enemys.children.length;i++) {
+            if (!enemys.children[i].alive) {
+                continue;
+            }
+            if (enemys.children[i].x > minX && enemys.children[i].x < maxX && enemys.children[i].y > minY && enemys.children[i].y < maxY) {
+                impactedEnemies.push(enemys.children[i]);
+            }
+        }
+
+        for (var i = 0;i < impactedEnemies.length;i++) {
+            impactedEnemies[i].knockback = true;
+            impactedEnemies[i].animations.paused = true;
+            impactedEnemies[i].curTile = destTileNum;
+            impactedEnemies[i].assignDamage(this.elementalInstability(), 'air');
+            var knockbackTween = game.add.tween(impactedEnemies[i]).to({
+                angle: ['+90', '+180', '+270', '+360', '+450'],
+                x: [maxX, maxX, minX, minX, kbX + game.rnd.integerInRange(-16, 16)],
+                y: [minY, maxY, maxY, minY, kbY + game.rnd.integerInRange(-16, 16)]
+            }, Math.max(1000, 500 * Math.pow(2,Math.min(0,reactionCounts.air))), "Sine.easeInOut", false);
+            knockbackTween.onComplete.add(function () {
+                this.knockback = false;
+                this.speedX = 0;
+                this.speedY = 0;
+                this.animations.paused = false;
+            }, impactedEnemies[i]);
+            knockbackTween.interpolation(Phaser.Math.bezierInterpolation);
+            knockbackTween.start();
+        }
+
+    }
+    console.log(reactionCounts);
+
 };

@@ -2,6 +2,9 @@
 <html>
     <head>
         <link rel="stylesheet" href="build/css/incTower.min.css" type="text/css">
+        <link rel="stylesheet" href="css/incTower.css" type="text/css">
+        <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
+        <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
         <title>Incremental Tower Defense</title>
     </head>
@@ -10,25 +13,19 @@
             <span class="header">Incremental Tower Defense</span>
             <span class="toplinks">
                 <button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button>
-                <button data-bind="click: function () { incTower.showSkills(); }">Skills</button>
+                <!--<button data-bind="click: function () { incTower.showSkills(); }">Skills</button>-->
                 <button data-bind="click: function () { incTower.showSaves(); }">Saves</button>
                 <button data-bind="click: function () { incTower.showCredits(); }">Credits</button>
             </span>
-        </div>
-        <div id="skills" title="Skills">
-            <p>Hover over skill names to see a description.</p>
-            <ul data-bind="foreach: skills.items()">
-
-                <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'title': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
-            </ul>
         </div>
         <div id="center">
             <div id="gameContainer"></div>
         </div>
         <div id="right_container">
             <div id="right">
-                <div class="panel_container">
-                    <div class="panel_contents">
+                <div class="accordion">
+                    <h3>Info</h3>
+                    <div>
                         <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; Currently in
                             <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
                             <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
@@ -36,67 +33,82 @@
                         <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
 
 
-                        <b>Currently Training:</b> <span data-bind="text: getActiveSkillName()"></span>.
+                        <b>Currently Training:</b> <span data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }" class="tooltip"></span>.
                         <div class="progressBar">
                             <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                             <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                         </div>
+                    </div>
+                </div>
+                <div class="accordion">
+                    <h3>Buy/Upgrade</h3>
+                    <div>
+                        <div id="buyTower" data-bind="visible: buyingCursor() == false">
+                            <b>Buy:</b><br>
+                            <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
+                            <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button><br>
+                            <span data-bind="foreach: availableTowers">
+                                <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
+                            </span>
+                            <div id="cheapestUpgrade" data-bind="if: numTowers() > 0">
+                                <b>Upgrade Towers:</b><br>
+                                <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button><br>
+                                <button data-bind="click: function () { cheapestUpgradeAll(); }">Upgrade Using All Gold</button>
+                            </div>
+                        </div>
+                        <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
+                            <p>Click on the map to place your block.</p>
+                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                        </div>
+                        <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
+                            <p>Click on a tower-less block to sell it.</p>
+                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                        </div>
+                        <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
+                            <p>Click on a tile with a block to build your tower.</p>
+                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="skills" class="accordion">
+                    <h3>Skills</h3>
+                    <div>
+                        <p>Hover over skill names to see a description.</p>
+                        <ul data-bind="foreach: skills.items()">
 
-
+                            <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
+                        </ul>
                     </div>
                 </div>
 
+                <div class="accordion" data-bind="if: currentlySelected()">
+                    <h3>Currently Selected</h3>
+                    <div>
 
-                <div id="buyTower" data-bind="visible: buyingCursor() == false">
-                    <b>Buy:</b><br>
-                    <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
-                    <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button><br>
-                    <span data-bind="foreach: availableTowers">
-                        <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
-                    </span>
-                    <div id="cheapestUpgrade" data-bind="if: numTowers() > 0">
-                        <b>Upgrade Towers:</b><br>
-                        <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button><br>
-                        <button data-bind="click: function () { cheapestUpgradeAll(); }">Upgrade Using All Gold</button>
+                        <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
+                            <p><b>Currently Selected Tower:</b></p>
+                            <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
+                            <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
+                            <div>Range: <span data-bind="text: currentlySelected().range"></span></div>
+                            <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
+                            <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
+                            <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
+                        </div>
+                        <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
+                            <p><b>Currently Selected Enemy:</b></p>
+                            <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
+                            <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span></div>
+                            <div data-bind="if: currentlySelected().powers">
+                                Powers:
+                                <span data-bind="foreach: Object.keys(currentlySelected().powers)">
+                                    <span data-bind="text: $data, attr: {'data-tooltip': incTower.bossPowers[$data].describe(incTower.currentlySelected().powers[$data])}" style="text-transform: capitalize;" class="tooltip"></span>
+                                </span>
+                            </div>
+                            <div>Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())"></span></div>
+                        </div>
                     </div>
-                </div>
-                <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
-                    <p>Click on the map to place your block.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                </div>
-                <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
-                    <p>Click on a tower-less block to sell it.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                </div>
-                <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
-                    <p>Click on a tile with a block to build your tower.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                </div>
-                <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
-                    <p><b>Currently Selected Tower:</b></p>
-                    <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
-                    <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
-                    <div>Range: <span data-bind="text: currentlySelected().range"></span></div>
-                    <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
-                    <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
-                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
-                </div>
-                <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
-                    <p><b>Currently Selected Enemy:</b></p>
-                    <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
-                    <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span></div>
-                    <div data-bind="if: currentlySelected().powers">
-                        Powers:
-                        <span data-bind="foreach: Object.keys(currentlySelected().powers)">
-                            <span data-bind="text: $data, attr: {'title': incTower.bossPowers[$data].describe(incTower.currentlySelected().powers[$data])}" style="text-transform: capitalize;" class="tooltip"></span>
-                        </span>
-                    </div>
-                    <div>Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().instabilityCap())"></span> (<span data-bind="text: humanizeNumber(currentlySelected().totalInstability())"></span>)</div>
                 </div>
             </div>
-
-
-
         </div>
         <div id="credits" title="Credits">
             <p>The basis for this whole project started as clone of <a href="https://github.com/theodufay/phaser-tower-defense" target="_blank">this GitHub repo</a>. I used this initial code to teach myself about Phaser.io and many of the enemy sprites and the terrain tiles are from this original project.</p>
@@ -119,6 +131,15 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-02: Massively buffed Refined Blueprints skill (from 1%/rank to 5%/rank).</li>
+                <li>2015-12-02: Fixed an issue where the tooltips weren't updating on skill level increase.</li>
+                <li>2015-12-01: Fixed the bug where farm/progress mode wasn't being loaded properly.</li>
+                <li>2015-11-29: Changed skill descriptions to calculate the current benefit you're getting and the next ranks benefit instead of a static string.</li>
+                <li>2015-11-29: Changed the skill system from the notion of a skill granting a new skill to the notion of a skill requiring a set of skills. This will allow me to make skills that require multiple prerequisites.</li>
+                <li>2015-11-29: Added a visual effect to burns caused by the fire runes.</li>
+                <li>2015-11-28: Reworked elemental system (yet again), towers now have a chance to attach elemental runes to monsters. Each second each rune has a chance to activate consuming all the runes of the same type and creating an effect of that type. Damage of a given type is increased by 20% for each rune of that type on the target.</li>
+                <li>2015-11-21: Implemented scrapping skill.</li>
+                <li>2015-11-21: Moving back to importing a million javascript files since gulp slows down prototyping so much.</li>
                 <li>2015-11-20: Added a gulp file for concatenating all the javascript and css files into minified versions. Changed sprite map to JSON which seems to result in fewer errors loading.</li>
                 <li>2015-11-17: Added a load/save feature.</li>
                 <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who jave released free game art that is being used in this project.</li>
@@ -180,7 +201,21 @@
             </ul>
         </div>
         <script type="text/javascript" src="js/phaser.min.js"></script>
-        <script type="text/javascript" src="build/js/incTower.min.js"></script>
+        <script type="text/javascript" src="js/lodash.min.js"></script>
+        <script type="text/javascript" src="js/knockout-3.3.0.js"></script>
+        <script type="text/javascript" src="js/ko.observableDictionary.js"></script>
+        <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
+        <script type="text/javascript" src="js/bignumber.min.js"></script>
+        <script type="text/javascript" src="js/moment.js"></script>
+        <script type="text/javascript" src="js/easystar-0.2.1.min.js"></script>
+        <script type="text/javascript" src="js/PathFinderPlugin.js"></script>
+        <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="inc_tower.js"></script>
+        <script type="text/javascript" src="js/Tower.class.js"></script>
+        <script type="text/javascript" src="js/Enemy.class.js"></script>
+
+
 
     </body>
 </html>

@@ -9,5 +9,8 @@
     <orderEntry type="library" name="ko.observableDictionary.js" level="project" />
     <orderEntry type="library" name="jQuery 1.11" level="project" />
     <orderEntry type="library" name="Knockout 3.3.0" level="project" />
+    <orderEntry type="library" name="bignumber.min.js" level="project" />
+    <orderEntry type="library" name="moment-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="inctower node_modules" level="project" />
   </component>
 </module>

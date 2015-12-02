@@ -6,11 +6,11 @@
     <option boss="false" />
     <option browser="true" />
     <option browserify="false" />
-    <option camelcase="false" />
+    <option camelcase="true" />
     <option couch="false" />
     <option curly="true" />
     <option debug="false" />
-    <option devel="false" />
+    <option devel="true" />
     <option dojo="false" />
     <option elision="false" />
     <option enforceall="false" />
@@ -30,7 +30,7 @@
     <option immed="false" />
     <option iterator="false" />
     <option jasmine="false" />
-    <option jquery="false" />
+    <option jquery="true" />
     <option lastsemic="false" />
     <option latedef="false" />
     <option laxbreak="false" />
@@ -56,7 +56,7 @@
     <option passfail="false" />
     <option phantom="false" />
     <option plusplus="false" />
-    <option predef="ko" />
+    <option predef="ko, BigNumber" />
     <option proto="false" />
     <option prototypejs="false" />
     <option qunit="false" />
