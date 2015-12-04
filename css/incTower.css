@@ -83,6 +83,7 @@ body {
 }
 .progressBar {
     border: 1px black solid;
+    margin-top: 5px;
 }
 .tooltip {
     color: cornflowerblue;
@@ -155,6 +156,10 @@ body {
 .bar.negative span {
     right: 0;
     color: black;
+}
+.mana.bar.positive {
+    background-color: #3A79B8;
+    left: 0;
 }
 
 #save {

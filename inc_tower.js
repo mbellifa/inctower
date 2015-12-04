@@ -15,6 +15,16 @@ function okDialog(opts) {
         title: opts.title
     });
 }
+//Stolen from http://lostsouls.org/grimoire_diminishing_returns
+function diminishingReturns(val, scale) {
+    'use strict';
+    if (val < 0) {
+        return -diminishingReturns(-val, scale);
+    }
+    var mult = val / scale;
+    var trinum = (Math.sqrt(8.0 * mult + 1.0) - 1.0) / 2.0;
+    return trinum * scale;
+}
 function loadSave(save) {
     'use strict';
     $('#b64_save').val(btoa(save));
@@ -244,6 +254,9 @@ var incTower = {
         if (incTower.skillIsMaxed(skillName)) { return "Maxed"; }
         return humanizeNumber(skill.get('skillPoints')()) + " / " + humanizeNumber(skill.get('skillPointsCap')());
     },
+    maxMana: ko.observable(new BigNumber(0)),
+    mana: ko.observable(new BigNumber(0)),
+
     skillAttributes: {
         construction: {
             fullName: 'Construction',
@@ -359,6 +372,13 @@ var incTower = {
             description: "Grants magical affinity opening the path to casting spells and elemental towers.",
             describeRank: function () {
                 return "Grants magical affinity opening the path to casting spells and elemental towers.";
+            },
+            onMax: function () {
+                'use strict';
+                if (incTower.maxMana().eq(0)) {
+                    incTower.maxMana(new BigNumber(1000));
+                    incTower.mana(incTower.maxMana());
+                }
             },
         },
         fireAffinity: {
@@ -841,6 +861,15 @@ var incTower = {
             incTower.buyingCursor(type);
         }
     },
+    averageDamage: ko.pureComputed(function () {
+        'use strict';
+        var tally = new BigNumber(0);
+        for (var i = 0;i < incTower.numTowers();++i) {
+            var tower = towers.getAt(i);
+            tally = tally.plus(tower.totalDamage());
+        }
+        return tally.div(incTower.numTowers());
+    }),
     cheapestUpgradeCostTower: ko.pureComputed(function () {
         'use strict';
         var cheapest = -1;
@@ -1013,6 +1042,12 @@ incTower.percentageUntilSkillUp = ko.computed(function () {
     'use strict';
     if (this.skills.get(this.activeSkill())() === null) { return 0; }
     return this.skills.get(this.activeSkill())().get('skillPoints')().dividedBy(this.skills.get(this.activeSkill())().get('skillPointsCap')()).times(100);
+},incTower);
+
+incTower.percentageMaxMana = ko.computed(function () {
+    'use strict';
+    if (this.maxMana().eq(0)) { return 0; }
+    return this.mana().div(this.maxMana()).times(100);
 },incTower);
 
 incTower.currentlySelected.subscribe(function (value) {
@@ -1448,6 +1483,7 @@ function createSaveObj(obj) {
 function everySecond() {
     //Training skills
     'use strict';
+    incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.maxMana().times(0.001))));
     if (!(incTower.activeSkill() in incTower.skillAttributes)) {
         var skills = incTower.skills.keys();
         shuffle(skills);
@@ -1490,16 +1526,17 @@ function everySecond() {
                 var origScale = enemy.scale.x;
                 var blinkTween = game.add.tween(enemy.scale).to({x:0},250, Phaser.Easing.Quadratic.In);
                 var bestDist = 0;
-                var bestTile;
                 var curTileEntry = enemy.path[enemy.curTile];
+                var possibleTiles = [];
                 for (var i = enemy.curTile;i < enemy.path.length;++i) {
                     var destTile = enemy.path[i];
                     var dist = Math.abs(destTile.x - curTileEntry.x) + Math.abs(destTile.y - curTileEntry.y);
-                    if (dist <= enemy.teleport && dist >= bestDist) {
-                        bestTile = destTile;
-                        enemy.curTile = i;
+                    if (dist <= enemy.teleport && dist >= 1) {
+                        possibleTiles.push(i);
                     }
                 }
+                enemy.curTile =  game.rnd.pick(possibleTiles);
+                var bestTile = enemy.path[enemy.curTile];
 
                 var moveTween = game.add.tween(enemy).to({x:bestTile.x * 32 + 16, y:bestTile.y * 32 + 16},50,"Linear");
                 var blinkInTween = game.add.tween(enemy.scale).to({x:origScale},250, Phaser.Easing.Quadratic.In);

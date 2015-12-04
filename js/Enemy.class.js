@@ -108,6 +108,7 @@ Enemy.prototype.constructor = Enemy;
 
 Enemy.prototype.assignDamage = function (damage, type) {
     'use strict';
+    if (damage.times === undefined) { console.trace(); }
     if (type === undefined) { type = "normal"; }
     var sensitivity = this.statusEffects.sensitivity();
     if (sensitivity > 0) { damage = damage.times(1 + (this.statusEffects.sensitivity() * 0.01)); }
@@ -271,7 +272,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         if (this.statusEffects.chilled().gte(100)) {
             incTower.createFloatingText({'color':'#0000CC', 'duration':2000, 'around':this,'text':'Frozen!', 'type':'frozen'});
         }
-        this.assignDamage(this.elementalInstability(), 'water');
+        this.assignDamage(this.elementalInstability().times(Math.pow(1.2,Math.max(0,reactionCounts.water - 1))), 'water');
 
     } else if (reaction === 'fire') {
         var fireStormChance = reactionCounts.fire - 4;
@@ -284,7 +285,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
             });
         }
         incrementObservable(this.statusEffects.sensitivity, 20 * reactionCounts.fire);
-        incrementObservable(this.statusEffects.burning, this.elementalInstability() * Math.pow(2,Math.min(0,reactionCounts.fire - 2)));
+        incrementObservable(this.statusEffects.burning, this.elementalInstability().times(Math.pow(1.2,Math.max(0,reactionCounts.fire - 1))));
         if (this.burningSprite === undefined) {
             this.burningSprite = game.add.sprite(0, -4, 'incTower', "smokefire-0001.png");
             this.burningSprite.anchor.setTo(0.5, 0.5);
@@ -320,7 +321,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         }
     } else if (reaction === 'earth') {
         var boulderStormChance = reactionCounts.earth - 4;
-        if (boulderStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= boulderStormChance) {
+        if (boulderStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(0,100) >= boulderStormChance) {
             var newOpts = opts;
             newOpts.noStorm = true;
             enemys.forEachAlive(function (enemy) {
@@ -335,7 +336,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         if (boulder.height > bigDim) { bigDim = boulder.height; }
         var endWidth = Math.max(tileSquare * reactionCounts.earth * 0.5,tileSquare);
         var startWidth = endWidth * 4;
-        boulder.damageOnImpact = this.elementalInstability();
+        boulder.damageOnImpact = this.elementalInstability().times(Math.pow(1.2,Math.max(0,reactionCounts.earth - 1)));
         boulder.scale.x = startWidth / bigDim;
         boulder.scale.y = startWidth / bigDim;
 
@@ -347,24 +348,25 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
             this.destroy();
         },boulder);
     } else if (reaction === 'air') {
-
-        var windStormChance = reactionCounts.air - 4;
-        if (windStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= windStormChance) {
-            var newOpts = opts;
-            newOpts.noStorm = true;
-            enemys.forEachAlive(function (enemy) {
-                enemy.performReaction(reaction, reactionCounts, newOpts);
-                //incTower.createFloatingText({'color':'#CCCCCC', 'duration':3000, 'around':this,'text':'Fire Storm!', 'type':'fireStorm'});
-            });
-        }
         var originX = this.x;
         var originY = this.y;
-
         var minX = Math.max(0,originX - 32 * reactionCounts.air);
         var maxX = Math.min(800,originX + 32 * reactionCounts.air);
         var minY = Math.max(0,originY - 32 * reactionCounts.air);
         var maxY = Math.min(608,originY + 32 * reactionCounts.air);
-        var destTileNum = Math.max(0,this.curTile - Math.max(1,parseInt(reactionCounts.air)));
+        var tweenLength = Math.max(1000, 250 * Math.pow(1.5,Math.max(0,reactionCounts.air-1)));
+        var windStormChance = reactionCounts.air - 4;
+        if (windStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= windStormChance) {
+            //When we get a windstorm we impact all enemies on the map
+            minX = 0;
+            maxX = 800;
+            minY = 0;
+            maxY = 608;
+
+        }
+
+        //var destTileNum = Math.floor(Math.max(0,this.curTile - Math.max(1,diminishingReturns(reactionCounts.air, 2))));
+        var destTileNum = Math.floor(Math.max(0,this.curTile - Math.max(1,reactionCounts.air)));
         var kbX = this.path[destTileNum].x * 32 + 16; //Knock back X and Y
         var kbY = this.path[destTileNum].y * 32 + 16;
         var impactedEnemies = [];
@@ -376,17 +378,18 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
                 impactedEnemies.push(enemys.children[i]);
             }
         }
+        var airDamage = this.elementalInstability().times(Math.pow(1.2,Math.max(0,reactionCounts.air - 1)));
 
         for (var i = 0;i < impactedEnemies.length;i++) {
             impactedEnemies[i].knockback = true;
             impactedEnemies[i].animations.paused = true;
             impactedEnemies[i].curTile = destTileNum;
-            impactedEnemies[i].assignDamage(this.elementalInstability(), 'air');
+            impactedEnemies[i].assignDamage(airDamage, 'air');
             var knockbackTween = game.add.tween(impactedEnemies[i]).to({
                 angle: ['+90', '+180', '+270', '+360', '+450'],
                 x: [maxX, maxX, minX, minX, kbX + game.rnd.integerInRange(-16, 16)],
                 y: [minY, maxY, maxY, minY, kbY + game.rnd.integerInRange(-16, 16)]
-            }, Math.max(1000, 500 * Math.pow(2,Math.min(0,reactionCounts.air))), "Sine.easeInOut", false);
+            }, tweenLength, "Sine.easeInOut", false);
             knockbackTween.onComplete.add(function () {
                 this.knockback = false;
                 this.speedX = 0;

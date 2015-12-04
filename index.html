@@ -31,12 +31,14 @@
                             <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
                         </div>
                         <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
-
-
                         <b>Currently Training:</b> <span data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }" class="tooltip"></span>.
                         <div class="progressBar">
                             <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                             <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                        </div>
+                        <div class="progressBar">
+                            <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                            <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
                         </div>
                     </div>
                 </div>
@@ -131,6 +133,10 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-03: Instead of trying to knockback all enemies as a separate air event which caused weird looking stuff air rune activations now have a chance to produce a storm that captures all enemies.</li>
+                <li>2015-12-03: All of the elemental towers now do 20% more damage for each rune after the first, e.g. an enemy with 3 water runes that freezes takes instability + 72% additional damage.</li>
+                <li>2015-12-03: Teleport now selects randomly between tiles that it could jump to instead of picking the one with the best distance.</li>
+                <li>2015-12-03: Implemented the mana bar, (gained on learning Magical Affinity). Currently you gain 0.1% of your max mana a second.</li>
                 <li>2015-12-02: Massively buffed Refined Blueprints skill (from 1%/rank to 5%/rank).</li>
                 <li>2015-12-02: Fixed an issue where the tooltips weren't updating on skill level increase.</li>
                 <li>2015-12-01: Fixed the bug where farm/progress mode wasn't being loaded properly.</li>
