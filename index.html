@@ -24,7 +24,6 @@
         <div id="right_container">
             <div id="right">
                 <div>
-                    <h3>Info</h3>
                     <div>
                         <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; Currently in
                             <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
@@ -78,7 +77,7 @@
                 <div id="skills" class="accordion">
                     <h3>Skills</h3>
                     <div>
-                        <p>Hover over skill names to see a description.</p>
+                        <p style="margin: 0;">Hover over skill names to see a description.</p>
                         <ul data-bind="foreach: skills.items()">
                             <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
                         </ul>
@@ -86,7 +85,6 @@
                 </div>
 
                 <div data-bind="if: currentlySelected()">
-                    <h3>Currently Selected</h3>
                     <div>
 
                         <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
