@@ -169,5 +169,16 @@ body {
     display: none;
 }
 .ui-widget {
-    font-size: 0.8em !important;
+    font-size: 0.9em !important;
+}
+
+.menu {
+    margin-top: 5px !important;
+}
+.ui-menu {
+    width: 150px;
+}
+
+.skills {
+    width: 250px;
 }

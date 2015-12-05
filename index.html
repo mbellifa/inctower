@@ -23,7 +23,7 @@
         </div>
         <div id="right_container">
             <div id="right">
-                <div class="accordion">
+                <div>
                     <h3>Info</h3>
                     <div>
                         <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; Currently in
@@ -36,54 +36,56 @@
                             <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                             <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                         </div>
-                        <div class="progressBar">
+                        <div class="progressBar" data-bind="visible: incTower.maxMana().gt(0)">
                             <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
                             <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
                         </div>
                     </div>
                 </div>
-                <div class="accordion">
-                    <h3>Buy/Upgrade</h3>
-                    <div>
-                        <div id="buyTower" data-bind="visible: buyingCursor() == false">
-                            <b>Buy:</b><br>
-                            <button data-bind="click: function () { incTower.buyBlock(); }">Buy a Block (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</button>
-                            <button data-bind="click: function () { incTower.sellBlock(); }">Sell a Block</button><br>
-                            <span data-bind="foreach: availableTowers">
-                                <button data-bind="click: function () { incTower.buyTower($data); }">Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)</button><br>
-                            </span>
-                            <div id="cheapestUpgrade" data-bind="if: numTowers() > 0">
-                                <b>Upgrade Towers:</b><br>
-                                <button data-bind="click: function () { cheapestUpgrade(); }">Upgrade the Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)</button><br>
-                                <button data-bind="click: function () { cheapestUpgradeAll(); }">Upgrade Using All Gold</button>
-                            </div>
-                        </div>
-                        <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
-                            <p>Click on the map to place your block.</p>
-                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                        </div>
-                        <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
-                            <p>Click on a tower-less block to sell it.</p>
-                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                        </div>
-                        <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
-                            <p>Click on a tile with a block to build your tower.</p>
-                            <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+                <ul class="menu">
+                    <li>Build
+                        <ul>
+                            <li>Blocks
+                                <ul>
+                                    <li data-bind="click: function () { incTower.buyBlock(); }">Buy (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</li>
+                                    <li data-bind="click: function () { incTower.sellBlock(); }">Sell Block</li>
+                                </ul>
+                            </li>
+                            <li>Towers
+                                <ul data-bind="foreach: availableTowers">
+                                    <li data-bind="click: function () { incTower.buyTower($data); }">
+                                        Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li data-bind="visible: numTowers() > 0">Upgrade
+                        <ul>
+                            <li data-bind="click: function () { cheapestUpgrade(); }">
+                                Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)
+                            </li>
+                            <li data-bind="click: function () { cheapestUpgradeAll(); }">Using All Gold</li>
+                        </ul>
+                    </li>
+                    <li>Train Skills
+                        <ul data-bind="foreach: skills.items()" class="skills">
+                            <li data-bind="visible: incTower.skillCanTrain($data.key())"><a href="#" data-bind="click: function () { incTower.switchActiveSkill($data.key()); }"><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>)</a></li>
+                        </ul>
+                    </li>
+
+                </ul>
                 <div id="skills" class="accordion">
                     <h3>Skills</h3>
                     <div>
                         <p>Hover over skill names to see a description.</p>
                         <ul data-bind="foreach: skills.items()">
-
                             <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="accordion" data-bind="if: currentlySelected()">
+                <div data-bind="if: currentlySelected()">
                     <h3>Currently Selected</h3>
                     <div>
 
@@ -133,6 +135,7 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-04: Implemented an experimental menu UI change.</li>
                 <li>2015-12-03: Instead of trying to knockback all enemies as a separate air event which caused weird looking stuff air rune activations now have a chance to produce a storm that captures all enemies.</li>
                 <li>2015-12-03: All of the elemental towers now do 20% more damage for each rune after the first, e.g. an enemy with 3 water runes that freezes takes instability + 72% additional damage.</li>
                 <li>2015-12-03: Teleport now selects randomly between tiles that it could jump to instead of picking the one with the best distance.</li>

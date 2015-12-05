@@ -123,6 +123,7 @@ $(document).ready(function () {
         collapsible: true,
         heightStyle: "content"
     });
+    $('.menu').menu();
 });
 function shuffle(o){ //Shuffles an array
     'use strict';
@@ -886,7 +887,10 @@ var incTower = {
     }),
     cheapestUpgradeCost: ko.pureComputed(function () {
         'use strict';
-        return incTower.cheapestUpgradeCostTower().upgradeCost();
+        var tower = incTower.cheapestUpgradeCostTower();
+        if (tower) { return tower.upgradeCost(); }
+        return 0;
+
     }),
     cheapestUpgrade: function () {
         'use strict';
