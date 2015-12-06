@@ -356,12 +356,14 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         var maxY = Math.min(608,originY + 32 * reactionCounts.air);
         var tweenLength = Math.max(1000, 250 * Math.pow(1.5,Math.max(0,reactionCounts.air-1)));
         var windStormChance = reactionCounts.air - 4;
+        var windStorm = false;
         if (windStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= windStormChance) {
             //When we get a windstorm we impact all enemies on the map
-            minX = 0;
-            maxX = 800;
-            minY = 0;
-            maxY = 608;
+            //minX = 0;
+            //maxX = 800;
+            //minY = 0;
+            //maxY = 608;
+            windStorm = true;
 
         }
 
@@ -374,17 +376,24 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
             if (!enemys.children[i].alive) {
                 continue;
             }
-            if (enemys.children[i].x > minX && enemys.children[i].x < maxX && enemys.children[i].y > minY && enemys.children[i].y < maxY) {
+            if (windStorm) {
+                impactedEnemies.push(enemys.children[i]);
+            } else if (enemys.children[i].x >= minX && enemys.children[i].x <= maxX && enemys.children[i].y >= minY && enemys.children[i].y <= maxY) {
                 impactedEnemies.push(enemys.children[i]);
             }
         }
         var airDamage = this.elementalInstability().times(Math.pow(1.2,Math.max(0,reactionCounts.air - 1)));
 
-        for (var i = 0;i < impactedEnemies.length;i++) {
+        for (var i = 0; i < impactedEnemies.length; i++) {
             impactedEnemies[i].knockback = true;
             impactedEnemies[i].animations.paused = true;
             impactedEnemies[i].curTile = destTileNum;
             impactedEnemies[i].assignDamage(airDamage, 'air');
+            if (impactedEnemies[i].elementalRuneDiminishing.air === undefined) {
+                impactedEnemies[i].elementalRuneDiminishing.air = 0;
+            }
+            impactedEnemies[i].elementalRuneDiminishing.air += reactionCounts.air * 0.5;
+
             var knockbackTween = game.add.tween(impactedEnemies[i]).to({
                 angle: ['+90', '+180', '+270', '+360', '+450'],
                 x: [maxX, maxX, minX, minX, kbX + game.rnd.integerInRange(-16, 16)],

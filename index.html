@@ -6,6 +6,8 @@
         <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
         <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
+
         <title>Incremental Tower Defense</title>
     </head>
     <body>
@@ -41,7 +43,7 @@
                         </div>
                     </div>
                 </div>
-                <ul class="menu">
+                <ul class="menu" data-bind="visible: buyingCursor() == false">
                     <li>Build
                         <ul>
                             <li>Blocks
@@ -74,13 +76,26 @@
                     </li>
 
                 </ul>
+                <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
+                    <p>Click on the map to place your block.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
+                <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
+                    <p>Click on a tower-less block to sell it.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
+                <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
+                    <p>Click on a tile with a block to build your tower.</p>
+                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                </div>
+
                 <div id="skills" class="accordion">
                     <h3>Skills</h3>
                     <div>
                         <p style="margin: 0;">Hover over skill names to see a description.</p>
-                        <ul data-bind="foreach: skills.items()">
-                            <li><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>) <span data-bind="if: incTower.skillCanTrain($data.key())"><a href="#" data-bind="attr: {'data-skill': $data.key()};" class="train_link">Train</a></span></li>
-                        </ul>
+                        <table id="skills_table">
+
+                        </table>
                     </div>
                 </div>
 
@@ -133,6 +148,9 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-05: Hopefully the windstorm proc (the somewhat rare chance that an air reaction gets a bonus) should look less nutty now.</li>
+                <li>2015-12-05: Now hides the menu when your cursor is active (when you're buying a block or tower)</li>
+                <li>2015-12-05: Implemented yet another experimental UI change, skills are now stored in a filterable paginated table so they don't take a crazy amount of space.</li>
                 <li>2015-12-04: Implemented an experimental menu UI change.</li>
                 <li>2015-12-03: Instead of trying to knockback all enemies as a separate air event which caused weird looking stuff air rune activations now have a chance to produce a storm that captures all enemies.</li>
                 <li>2015-12-03: All of the elemental towers now do 20% more damage for each rune after the first, e.g. an enemy with 3 water runes that freezes takes instability + 72% additional damage.</li>
@@ -218,9 +236,11 @@
         <script type="text/javascript" src="js/easystar-0.2.1.min.js"></script>
         <script type="text/javascript" src="js/PathFinderPlugin.js"></script>
         <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
         <script type="text/javascript" src="inc_tower.js"></script>
         <script type="text/javascript" src="js/Tower.class.js"></script>
         <script type="text/javascript" src="js/Enemy.class.js"></script>
+
 
 
 

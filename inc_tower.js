@@ -90,7 +90,6 @@ function loadSave(save) {
         }
     }
 //    console.log(incTower);
-
 }
 BigNumber.config({ ERRORS: false });
 $(document).ready(function () {
@@ -124,6 +123,75 @@ $(document).ready(function () {
         heightStyle: "content"
     });
     $('.menu').menu();
+    var dt = $('#skills_table').DataTable({
+        columns: [
+            { title: "Name", data: "name" },
+            { title: "Rank", data: "rank" },
+            { title: "Progress", data: "progress" },
+            { data: 'tooltip', visible: false }
+         ],
+        rowId: 'id',
+        data: [],
+        preDrawCallback: function () {
+            var dt = $('#skills_table').DataTable();
+            var nodes = dt.rows().nodes().to$();
+            nodes.each(function (i,node) {
+                var id = node.id;
+                node = $(node);
+                node.children('td:first').addClass('tooltip').attr('data-tooltip', incTower.describeSkill(id));
+            });
+        },
+        lengthMenu: [5, 10, 25, 50, 100]
+    });
+
+    var getRowObj = function (skill, rawVal) {
+        if (rawVal === undefined) {
+            rawVal = incTower.skills.get(skill)();
+        }
+        return {
+            id: skill,
+            name: incTower.skillAttributes[skill].fullName,
+            rank: rawVal.get('skillLevel')(),
+            progress: incTower.skillTextProgress(skill),
+            tooltip: incTower.describeSkill(skill)
+        };
+    };
+    var reDrawRow = function (skill) {
+        var row = dt.row('#'+skill);
+        row.data(getRowObj(skill));
+        dt.draw(false);
+    };
+
+
+    var addRow = function(row) {
+        var skill = row.key();
+        row.value().get('skillLevel').subscribe(function () {
+            reDrawRow(skill);
+        });
+        var progressComputed = ko.computed(function () {
+           return incTower.skillTextProgress(skill);
+        });
+        progressComputed.subscribe(function () {
+            reDrawRow(skill);
+        });
+        dt.row.add(getRowObj(skill, row.value()));
+    };
+
+    var rawSkills = incTower.skills.items();
+    for (var i = 0;i < rawSkills.length;i++) {
+        addRow(rawSkills[i]);
+    }
+    dt.draw(false);
+    incTower.skills.items.subscribe(function (changes) {
+        for (var i = 0; i < changes.length; i++) {
+            var change = changes[i];
+            if (change.status === 'added') {
+                addRow(change.value);
+            }
+        }
+        dt.draw(false);
+    }, null, "arrayChange");
+
 });
 function shuffle(o){ //Shuffles an array
     'use strict';
@@ -221,6 +289,7 @@ var incTower = {
                             message:"There was an issue with your save game. It cannot be loaded."
                         });
                         console.log(e);
+                        console.trace();
                     }
                 }
             }
@@ -511,9 +580,9 @@ var incTower = {
             baseCost: 200,
             growth: 1.406,
             maxLevel: 10,
-            description: "When a fire tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
+            description: "When an earth tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
             describeRank: function (rank) {
-                return "When a fire tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
+                return "When an earth tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
 
             requires: {
