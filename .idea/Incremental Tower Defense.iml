@@ -12,5 +12,6 @@
     <orderEntry type="library" name="bignumber.min.js" level="project" />
     <orderEntry type="library" name="moment-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="inctower node_modules" level="project" />
+    <orderEntry type="library" name="lodash-DefinitelyTyped" level="application" />
   </component>
 </module>

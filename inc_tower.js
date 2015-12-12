@@ -76,6 +76,7 @@ function loadSave(save) {
             incTower.gainSkill(keys[i],save.skills[keys[i]]);
         }
         incTower.checkSkills();
+        incTower.activeSkill(false);
     }
     if ('towers' in save) {
         for (i = 0;i < save.towers.length;++i) {
@@ -118,12 +119,87 @@ $(document).ready(function () {
         incTower.switchActiveSkill($(this).attr('data-skill'));
         e.preventDefault();
     });
+    $('#skills').on('click','#skill_queue_button', function (e) {
+        incTower.enqueueSkill(incTower.UIselectedSkill());
+        e.preventDefault();
+    });
     $( ".accordion" ).accordion({
         collapsible: true,
         heightStyle: "content"
     });
     $('.menu').menu();
-    var dt = $('#skills_table').DataTable({
+    var data = [];
+    function addSkillToData (skill, parent) {
+        if (parent === undefined) { parent = "#"; }
+        data.push({id: skill, parent: parent, text: incTower.skillAttributes[skill].fullName });
+        if (incTower.skillAttributes[skill].grants !== undefined) {
+            var origin = skill;
+            _.map(incTower.possibleGrants(skill), function (skill) {
+                addSkillToData(skill, origin);
+            });
+        }
+    };
+    _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
+    console.log(data);
+    $('#skills_tree').jstree({ 'core' : {
+        'data' : data,
+        //'themes' : {
+        //    name: 'default-dark'
+        //}
+        multiple: false,
+    }
+    }).on('select_node.jstree', function (e, data) {
+        var selected = data.selected[0];
+        if (selected in incTower.skillAttributes) {
+            incTower.UIselectedSkill(selected);
+            $('#skills_desc_text').html(incTower.describeSkill(selected));
+        }
+    });
+    $('#sortable_queue').sortable({
+        stop: function () {
+            var potentialList = [];
+            $('#sortable_queue li').each(function (i,v) {
+                var jv = $(v);
+                var skill = jv.attr('data-skill');
+                var rank = jv.attr('data-rank');
+                potentialList.push([skill, parseInt(rank)]);
+            });
+            var skillTally = {};
+            var valid = true;
+            _.forEach(potentialList, function (item) {
+                if (!valid) { return false; }
+                var skill = item[0];
+                var rank = item[1];
+                if (!_.has(skillTally,skill)) {
+                    skillTally[skill] = incTower.getSkillLevel(skill);
+                    if (!incTower.haveSkill(skill)) { valid = false; }
+                }
+                if (rank !== skillTally[skill] + 1) { valid = false; }
+                else {
+                    skillTally[skill] = rank;
+                }
+                if (incTower.skillAttributes[skill].grants) {
+                    var grants = [];
+                    _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
+                        if (rank >= level) {
+                            grants = grants.concat(skills);
+                        }
+                    });
+                    _.forEach(grants, function (grant) {
+                       if (!_.has(skillTally, grant)) { skillTally[grant] = 0; }
+                    });
+                }
+
+
+            });
+
+            if (!valid) { return false; }
+            incTower.skillQueue(potentialList);
+            incTower.activeSkill(potentialList[0][0]);
+        }
+    });
+    //$('#skills').jstree();
+    /*var dt = $('#skills_table').DataTable({
         columns: [
             { title: "Name", data: "name" },
             { title: "Rank", data: "rank" },
@@ -191,7 +267,7 @@ $(document).ready(function () {
         }
         dt.draw(false);
     }, null, "arrayChange");
-
+     */
 });
 function shuffle(o){ //Shuffles an array
     'use strict';
@@ -258,7 +334,7 @@ var incTower = {
     showSkills: function () {
         'use strict';
         $('#skills').dialog({
-            width: 500,
+            width: 800,
             height: 500
         });
     },
@@ -297,7 +373,9 @@ var incTower = {
 
     },
     skills: ko.observableDictionary({}),
-    activeSkill: ko.observable('kineticTowers'),
+    skillQueue: ko.observableArray([]),
+    UIselectedSkill: ko.observable(false),
+    activeSkill: ko.observable(false),
     switchActiveSkill: function(skill) {
         'use strict';
         incTower.activeSkill(skill);
@@ -308,6 +386,43 @@ var incTower = {
             if (incTower.getSkillLevel(skillName) >= incTower.skillAttributes[skillName].maxLevel) { return true; }
         }
         return false;
+    },
+    directlyQueueable: function (skill) {
+        if (!(skill in incTower.skillAttributes)) { return false; }
+        //Returns the rank trainable in the skill if it is directly trainable, meaning all prereqs are met in the queue already, otherwise false
+        var minRank = incTower.getSkillLevel(skill) + 1;
+        _.map(incTower.skillQueue(), function(item) {
+            if (item[0] === skill) {
+                minRank++;
+            }
+        });
+        if (incTower.skillAttributes[skill].maxLevel !== undefined && minRank > incTower.skillAttributes[skill].maxLevel) {
+            return false;
+        }
+        if (!incTower.haveSkill(skill)) {
+            var grants = [];
+            _.map(incTower.skillQueue(), function(item) {
+                var skill = item[0];
+                var rank = item[1];
+                if (incTower.skillAttributes[skill].grants !== undefined) {
+                    _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
+                       if (rank >= level) {
+                           grants = grants.concat(skills);
+                       }
+                    });
+                }
+            });
+            if (!_.includes(grants,skill)) { return false; }
+        }
+        return minRank;
+
+
+    },
+    enqueueSkill: function(skill) {
+        var minRank = incTower.directlyQueueable(skill);
+        if (minRank === false) { return false; }
+        incTower.skillQueue.push([skill, minRank]);
+
     },
     skillCanTrain: function(skillName) {
         'use strict';
@@ -336,7 +451,10 @@ var incTower = {
             describeRank: function (rank) {
                 return 'Reduces the cost of towers and their upgrades by ' + rank + '%.';
             },
-            maxLevel: 10
+            maxLevel: 10,
+            grants: {
+                10: ['modularConstruction', 'initialEngineering']
+            }
         },
         modularConstruction:{
             fullName: 'Modular Construction',
@@ -347,10 +465,6 @@ var incTower = {
                 return 'Reduces the cost of upgrading all towers by ' + (rank * 5) + '%.';
             },
             maxLevel: 5,
-            requires: {
-                construction: 10
-            }
-
         },
         initialEngineering: {
             fullName: 'Initial Engineering',
@@ -362,8 +476,8 @@ var incTower = {
             },
 
             maxLevel: 5,
-            requires: {
-                construction: 10
+            grants: {
+                5: ['towerTemplates','scrapping']
             }
         },
         towerTemplates: {
@@ -375,8 +489,8 @@ var incTower = {
                 return 'Increases the starting damage of towers by a factor of ' + Math.pow(10,rank) + '.';
             },
             maxLevel: 5,
-            requires: {
-                initialEngineering: 5
+            grants: {
+                5: ['refinedBlueprints']
             }
 
         },
@@ -388,11 +502,7 @@ var incTower = {
             describeRank: function (rank) {
                 return 'Refunds an additional ' + (rank * 5) + '% of gold spent after the sale of a tower.';
             },
-
             maxLevel: 5,
-            requires: {
-                initialEngineering: 5
-            }
         },
         refinedBlueprints: {
             fullName: 'Refined Blueprints',
@@ -402,9 +512,6 @@ var incTower = {
             describeRank: function (rank) {
                 return 'Increases the starting damage of towers by ' + (rank * 5) + '%.';
             },
-            requires: {
-                towerTemplates: 5
-            }
         },
         marketConnections: {
             fullName: 'Market Connections',
@@ -450,6 +557,9 @@ var incTower = {
                     incTower.mana(incTower.maxMana());
                 }
             },
+            grants: {
+                1: ['fireAffinity', 'waterAffinity', 'earthAffinity', 'airAffinity']
+            }
         },
         fireAffinity: {
             fullName: 'Fire Affinity',
@@ -464,9 +574,11 @@ var incTower = {
                 'use strict';
                 if (incTower.availableTowers.indexOf('fire') < 0) { incTower.availableTowers.push('fire'); }
             },
-            requires: {
-                magicalAffinity: 1
+            grants: {
+                1: ['fireRuneApplication']
             }
+
+
         },
         fireRuneApplication: {
             fullName: 'Fire Rune Application',
@@ -477,8 +589,8 @@ var incTower = {
             describeRank: function (rank) {
                 return "Increases the chance that a fire tower successfully applies a rune by " + (rank * 5) + '%.';
             },
-            requires: {
-                fireAffinity: 1
+            grants: {
+                10: ['fireAdvancedRuneApplication']
             }
         },
         fireAdvancedRuneApplication: {
@@ -490,10 +602,6 @@ var incTower = {
             describeRank: function (rank) {
                 return "When a fire tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
-
-            requires: {
-                fireRuneApplication: 10
-            }
         },
         waterAffinity: {
             fullName: 'Water Affinity',
@@ -509,8 +617,8 @@ var incTower = {
                 'use strict';
                 if (incTower.availableTowers.indexOf('water') < 0) { incTower.availableTowers.push('water'); }
             },
-            requires: {
-                magicalAffinity: 1
+            grants: {
+                1: ['waterRuneApplication']
             }
         },
         waterRuneApplication: {
@@ -522,9 +630,8 @@ var incTower = {
             describeRank: function (rank) {
                 return "Increases the chance that a water tower successfully applies a rune by " + (rank * 5) + '%.';
             },
-
-            requires: {
-                waterAffinity: 1
+            grants: {
+                10: ['waterAdvancedRuneApplication']
             }
         },
         waterAdvancedRuneApplication: {
@@ -536,10 +643,6 @@ var incTower = {
             describeRank: function (rank) {
                 return "When a water tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
-
-            requires: {
-                waterRuneApplication: 10
-            }
         },
 
         earthAffinity: {
@@ -556,8 +659,8 @@ var incTower = {
                 'use strict';
                 if (incTower.availableTowers.indexOf('earth') < 0) { incTower.availableTowers.push('earth'); }
             },
-            requires: {
-                magicalAffinity: 1
+            grants: {
+                1: ['earthRuneApplication']
             }
 
         },
@@ -570,9 +673,8 @@ var incTower = {
             describeRank: function (rank) {
                 return "Increases the chance that an earth tower successfully applies a rune by " + (rank * 5) + '%.';
             },
-
-            requires: {
-                earthAffinity: 1
+            grants: {
+                10: ['earthAdvancedRuneApplication']
             }
         },
         earthAdvancedRuneApplication: {
@@ -584,10 +686,6 @@ var incTower = {
             describeRank: function (rank) {
                 return "When an earth tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
-
-            requires: {
-                earthRuneApplication: 10
-            }
         },
 
         airAffinity: {
@@ -604,8 +702,8 @@ var incTower = {
                 'use strict';
                 if (incTower.availableTowers.indexOf('air') < 0) { incTower.availableTowers.push('air'); }
             },
-            requires: {
-                magicalAffinity: 1
+            grants: {
+                1: ['airRuneApplication']
             }
         },
         airRuneApplication: {
@@ -618,8 +716,8 @@ var incTower = {
                 return "Increases the chance that an air tower successfully applies a rune by " + (rank * 5) + '%.';
             },
 
-            requires: {
-                airAffinity: 1
+            grants: {
+                10: ['airAdvancedRuneApplication']
             }
         },
         airAdvancedRuneApplication: {
@@ -631,15 +729,7 @@ var incTower = {
             describeRank: function (rank) {
                 return "When an air tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
-
-            requires: {
-                airRuneApplication: 10
-            }
         },
-
-
-
-
     },
     startingSkills: ['kineticTowers', 'construction', 'magicalAffinity'],
     gainSkill: function (name, opt) {
@@ -662,8 +752,11 @@ var incTower = {
         if (!(name in incTower.skillAttributes)) { console.log(name); return ''; }
         var currentLevel = incTower.getSkillLevel(name);
         var desc = '';
-        if (currentLevel > 0) { desc += "<p>Current Rank: " + incTower.skillAttributes[name].describeRank(currentLevel) + '</p>'; }
-        if (!incTower.skillIsMaxed(name)) { desc += '<p>Next Rank: ' + incTower.skillAttributes[name].describeRank(currentLevel + 1) + '</p>'; }
+        var maxed = incTower.skillIsMaxed(name);
+        if (currentLevel > 0) {
+            desc += "<p>" + incTower.skillAttributes[name].describeRank(currentLevel) + '</p>';
+        }
+        if (!maxed) { desc += '<p>Next Rank: ' + incTower.skillAttributes[name].describeRank(currentLevel + 1) + '</p>'; }
         return desc;
     },
     getSkillLevel: function(name) {
@@ -671,34 +764,35 @@ var incTower = {
         if (incTower.skills.get(name)() === null) { return 0; }
         return incTower.skills.get(name)().get('skillLevel')();
     },
+    possibleGrants: function(skill) {
+        'use strict';
+        return _.flatten(_.values(incTower.skillAttributes[skill].grants));
+    },
     checkSkills: function () {
         'use strict';
-        for (var skill in incTower.skillAttributes) {
-            var grantSkill = true;
-            if (incTower.skillAttributes[skill].requires !== undefined) {
-                for (var requirementSkill in incTower.skillAttributes[skill].requires) {
-                    if (incTower.getSkillLevel(requirementSkill) < incTower.skillAttributes[skill].requires[requirementSkill]) {
-                        grantSkill = false;
-                    }
-                }
-            }
-            if (grantSkill) {
-                if (!incTower.haveSkill(skill)) {
-                    incTower.gainSkill(skill);
-                }
-            }
-
-        }
-        var skillKeys = incTower.skills.keys();
-        for (var h = 0; h < skillKeys.length; h++) {
-            var skill = skillKeys[h];
+        var toAdd = [];
+        _.map(incTower.skills.keys(), function (skill) {
             if (incTower.skillAttributes[skill].maxLevel !== undefined && incTower.getSkillLevel(skill) > incTower.skillAttributes[skill].maxLevel) {
                 incTower.skills.get(skill)().get('skillLevel')(incTower.skillAttributes[skill].maxLevel);
             }
             if (incTower.skillAttributes[skill].onMax !== undefined && incTower.skillIsMaxed(skill)) {
                 incTower.skillAttributes[skill].onMax();
             }
-        }
+            if (incTower.skillAttributes[skill].grants !== undefined) {
+                var curLevel = incTower.getSkillLevel(skill);
+                _.keys(incTower.skillAttributes[skill].grants).map(function (level) {
+                    level = parseInt(level);
+                    if (curLevel >= level) {
+                        toAdd = toAdd.concat(incTower.skillAttributes[skill].grants[level]);
+                    }
+                });
+            }
+        });
+        _.map(toAdd, function (skill) {
+           if (!incTower.haveSkill(skill)) {
+               incTower.gainSkill(skill);
+           }
+        });
 
 
     },
@@ -1110,6 +1204,21 @@ incTower.secondsUntilSkillUp = ko.computed(function () {
     'use strict';
     if (this.skills.get(this.activeSkill())() === null) { return 0; }
     return this.skills.get(this.activeSkill())().get('skillPointsCap')().minus(this.skills.get(this.activeSkill())().get('skillPoints')());
+},incTower);
+incTower.secondsUntilQueueExhausted = ko.computed(function () {
+    'use strict';
+    if (this.skillQueue().length === 0) { return 0; }
+    var tally = new BigNumber(0);
+    _.forEach(this.skillQueue(), function (item) {
+        var skill = item[0];
+        var rank = item[1];
+        if (incTower.haveSkill(skill) && incTower.getSkillLevel(skill) === rank - 1) {
+            tally = tally.plus(this.skills.get(skill)().get('skillPointsCap')().minus(this.skills.get(skill)().get('skillPoints')()));
+        } else {
+            tally = tally.plus(costCalc(incTower.skillAttributes[skill].baseCost,rank,incTower.skillAttributes[skill].growth));
+        }
+    }, this);
+    return tally;
 },incTower);
 incTower.percentageUntilSkillUp = ko.computed(function () {
     'use strict';
@@ -1557,29 +1666,36 @@ function everySecond() {
     //Training skills
     'use strict';
     incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.maxMana().times(0.001))));
-    if (!(incTower.activeSkill() in incTower.skillAttributes)) {
-        var skills = incTower.skills.keys();
-        shuffle(skills);
-        for (var i = 0;i < skills.length;i++) {
-            var possibleSkill = skills[i];
-            if (incTower.skillAttributes[possibleSkill].maxLevel !== undefined && incTower.getSkillLevel(possibleSkill) >= incTower.skillAttributes[possibleSkill].maxLevel) { continue; }
-            incTower.activeSkill(skills[i]);
-            break;
-        } 
-        
+    if (!incTower.activeSkill() || !_.has(incTower.skillAttributes, incTower.activeSkill())) {
+        var queue = incTower.skillQueue();
+        if (queue.length === 0) {
+            var skills = incTower.skills.keys();
+            shuffle(skills);
+            incTower.enqueueSkill(_.find(skills, function (skill) {
+                return incTower.directlyQueueable(skill);
+            }));
+            queue = incTower.skillQueue();
+        }
+        incTower.activeSkill(queue[0][0]);
+        console.log(queue);
     }
 
     var skill = incTower.skills.get(incTower.activeSkill())();
     incrementObservable(skill.get('skillPoints'), incTower.skillRate());
-    if (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
+    while (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
         skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
         incrementObservable(skill.get('skillLevel'));
         skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost,skill.get('skillLevel')(),incTower.skillAttributes[incTower.activeSkill()].growth));
         incTower.checkSkills();
         console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
-        if (incTower.skillAttributes[incTower.activeSkill()].maxLevel !== undefined && skill.get('skillLevel')() >= incTower.skillAttributes[incTower.activeSkill()].maxLevel) {
+        var poppedSkill = incTower.skillQueue.shift();
+        if (poppedSkill[0] !== incTower.activeSkill()) { console.log(' ERROR: ' + poppedSkill[0] + ' !== ' + incTower.activeSkill() ); }
+        if (incTower.skillQueue().length > 0) {
+            incTower.activeSkill(incTower.skillQueue()[0][0]);
+        } else {
             incTower.activeSkill(false);
         }
+
         //incTower.skills.get(incTower.activeSkill()).push('skillPointsCap')()();
     }
     enemys.forEachAlive(function(enemy) {

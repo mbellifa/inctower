@@ -179,6 +179,43 @@ body {
     width: 150px;
 }
 
-.skills {
-    width: 250px;
+/*.skills {*/
+    /*width: 250px;*/
+/*}*/
+
+#skills {
+    display: none;
+}
+#skills_tree {
+    float: left;
+    width: 50%;
+}
+#skills_desc {
+    float: right;
+    height: 50%;
+    width: 50%;
+}
+#skills_queue {
+    float: right;
+    height: 50%;
+    width: 50%;
+    clear: right;
+    overflow: scroll;
+}
+
+#sortable_queue {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 90%;
+}
+#sortable_queue li {
+    margin: 0 3px 3px 3px;
+    padding: 0.4em;
+    padding-left: 1.5em;
+    position: relative;
+}
+#sortable_queue li .ui-icon {
+    position: absolute;
+    margin-left: -1.3em;
 }

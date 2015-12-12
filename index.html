@@ -6,16 +6,25 @@
         <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
         <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
         <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
-
+        <link rel="stylesheet" type="text/css" href="css/jstree-themes/default/style.min.css">
         <title>Incremental Tower Defense</title>
+        <script type="text/html" id="skillTemplate">
+            <li>
+                <span data-bind="text: incTower.skillAttributes[skill].fullName"></span>
+                <span data-bind="if: incTower.skillAttributes[skill].grants">
+                    <ul data-bind="template: { name: 'skillTemplate', foreach: incTower.possibleGrants(skill) , as: 'skill' }">
+
+                    </ul>
+                </span>
+            </li>
+        </script>
     </head>
     <body>
         <div class="topnav">
             <span class="header">Incremental Tower Defense</span>
             <span class="toplinks">
                 <button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button>
-                <!--<button data-bind="click: function () { incTower.showSkills(); }">Skills</button>-->
+                <button data-bind="click: function () { incTower.showSkills(); }">Skills</button>
                 <button data-bind="click: function () { incTower.showSaves(); }">Saves</button>
                 <button data-bind="click: function () { incTower.showCredits(); }">Credits</button>
             </span>
@@ -69,12 +78,6 @@
                             <li data-bind="click: function () { cheapestUpgradeAll(); }">Using All Gold</li>
                         </ul>
                     </li>
-                    <li>Train Skills
-                        <ul data-bind="foreach: skills.items()" class="skills">
-                            <li data-bind="visible: incTower.skillCanTrain($data.key())"><a href="#" data-bind="click: function () { incTower.switchActiveSkill($data.key()); }"><span data-bind="text: incTower.skillAttributes[$data.key()].fullName, attr: {'data-tooltip': incTower.describeSkill($data.key()) }" class="tooltip"></span>: <span data-bind="text: $data.value().get('skillLevel')()"></span> (<span data-bind="text: incTower.skillTextProgress($data.key())"></span>)</a></li>
-                        </ul>
-                    </li>
-
                 </ul>
                 <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
                     <p>Click on the map to place your block.</p>
@@ -87,16 +90,6 @@
                 <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
                     <p>Click on a tile with a block to build your tower.</p>
                     <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
-                </div>
-
-                <div id="skills" class="accordion">
-                    <h3>Skills</h3>
-                    <div>
-                        <p style="margin: 0;">Hover over skill names to see a description.</p>
-                        <table id="skills_table">
-
-                        </table>
-                    </div>
                 </div>
 
                 <div data-bind="if: currentlySelected()">
@@ -145,9 +138,33 @@
             </p>
 
         </div>
+        <div id="skills" title="Skills">
+            <div id="skills_tree">
+
+
+            </div>
+            <div id="skills_desc">
+                <h3>Description</h3>
+                <span id="skills_desc_text">
+                    Click a skill on the left to see its description.
+                </span>
+                <div data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue</button></div>
+            </div>
+            <div id="skills_queue">
+                <h3>Training Queue</h3>
+                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted in <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span></p>
+                <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
+                <ul data-bind="foreach: skillQueue" id="sortable_queue">
+                    <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>)</li>
+                </ul>
+
+            </div>
+        </div>
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-11: Added skill queueing! Hopefully I resolved all the bugs I introduced by doing this, but probably not. </li>
+                <li>2015-12-11: Reworked skills UI into a separate dialog box instead of the table.</li>
                 <li>2015-12-05: Hopefully the windstorm proc (the somewhat rare chance that an air reaction gets a bonus) should look less nutty now.</li>
                 <li>2015-12-05: Now hides the menu when your cursor is active (when you're buying a block or tower)</li>
                 <li>2015-12-05: Implemented yet another experimental UI change, skills are now stored in a filterable paginated table so they don't take a crazy amount of space.</li>
@@ -236,7 +253,7 @@
         <script type="text/javascript" src="js/easystar-0.2.1.min.js"></script>
         <script type="text/javascript" src="js/PathFinderPlugin.js"></script>
         <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
+        <script type="text/javascript" src="js/jstree.min.js"></script>
         <script type="text/javascript" src="inc_tower.js"></script>
         <script type="text/javascript" src="js/Tower.class.js"></script>
         <script type="text/javascript" src="js/Enemy.class.js"></script>
