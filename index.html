@@ -152,7 +152,7 @@
             </div>
             <div id="skills_queue">
                 <h3>Training Queue</h3>
-                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted in <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span></p>
+                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted in <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
                 <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
                 <ul data-bind="foreach: skillQueue" id="sortable_queue">
                     <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>)</li>
@@ -163,6 +163,7 @@
         <div id="changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-11: Skill labels now update in the tree based on their level.</li>
                 <li>2015-12-11: Added skill queueing! Hopefully I resolved all the bugs I introduced by doing this, but probably not. </li>
                 <li>2015-12-11: Reworked skills UI into a separate dialog box instead of the table.</li>
                 <li>2015-12-05: Hopefully the windstorm proc (the somewhat rare chance that an air reaction gets a bonus) should look less nutty now.</li>

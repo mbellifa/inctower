@@ -128,31 +128,20 @@ $(document).ready(function () {
         heightStyle: "content"
     });
     $('.menu').menu();
-    var data = [];
-    function addSkillToData (skill, parent) {
-        if (parent === undefined) { parent = "#"; }
-        data.push({id: skill, parent: parent, text: incTower.skillAttributes[skill].fullName });
-        if (incTower.skillAttributes[skill].grants !== undefined) {
-            var origin = skill;
-            _.map(incTower.possibleGrants(skill), function (skill) {
-                addSkillToData(skill, origin);
-            });
-        }
-    };
-    _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
-    console.log(data);
-    $('#skills_tree').jstree({ 'core' : {
-        'data' : data,
-        //'themes' : {
-        //    name: 'default-dark'
-        //}
-        multiple: false,
-    }
-    }).on('select_node.jstree', function (e, data) {
+
+    console.log(incTower.skillTreeData());
+    console.log($('#skills_tree'));
+    $('#skills_tree').on('select_node.jstree', function (e, data) {
         var selected = data.selected[0];
         if (selected in incTower.skillAttributes) {
             incTower.UIselectedSkill(selected);
             $('#skills_desc_text').html(incTower.describeSkill(selected));
+        }
+    }).jstree({
+        core: {
+            data: incTower.skillTreeData(),
+            multiple: false,
+            check_callback: true
         }
     });
     $('#sortable_queue').sortable({
@@ -376,6 +365,27 @@ var incTower = {
     skillQueue: ko.observableArray([]),
     UIselectedSkill: ko.observable(false),
     activeSkill: ko.observable(false),
+    skillTreeUpdateLabel: function (skillName) {
+        var maxLevel = incTower.skillAttributes[skillName].maxLevel;
+        if (maxLevel === undefined) { maxLevel = '&infin;'; }
+        var currentLevel = '--';
+        if (incTower.haveSkill(skillName)) { currentLevel = incTower.getSkillLevel(skillName); }
+        var label = incTower.skillAttributes[skillName].fullName + ' (' + currentLevel + ' / ' + maxLevel + ')';
+        $('#skills_tree').jstree('rename_node', '#' + skillName, label);
+    },
+    checkQueue: function () {
+        'use strict';
+        if (!incTower.activeSkill() || !_.has(incTower.skillAttributes, incTower.activeSkill())) {
+            if (incTower.skillQueue().length === 0) {
+                var skills = incTower.skills.keys();
+                shuffle(skills);
+                incTower.enqueueSkill(_.find(skills, function (skill) {
+                    return incTower.directlyQueueable(skill);
+                }));
+            }
+            incTower.activeSkill(incTower.skillQueue()[0][0]);
+        }
+    },
     switchActiveSkill: function(skill) {
         'use strict';
         incTower.activeSkill(skill);
@@ -746,10 +756,11 @@ var incTower = {
             skillPoints: skillPoints,
             skillPointsCap: skillPointsCap
         }));
+        incTower.skillTreeUpdateLabel(name);
     },
     describeSkill: function (name) {
         'use strict';
-        if (!(name in incTower.skillAttributes)) { console.log(name); return ''; }
+        if (!(name in incTower.skillAttributes)) { return ''; }
         var currentLevel = incTower.getSkillLevel(name);
         var desc = '';
         var maxed = incTower.skillIsMaxed(name);
@@ -1248,7 +1259,27 @@ incTower.currentlySelected.subscribe(function (value) {
     incTower.currentlySelectedIndicator.y = value.y; //+ (tileSquare / 2);
 
 });
-
+incTower.skillTreeData = function () {
+    'use strict';
+    var data = [];
+    function addSkillToData (skill, parent) {
+        if (parent === undefined) { parent = "#"; }
+        var maxLevel = incTower.skillAttributes[skill].maxLevel;
+        if (maxLevel === undefined) { maxLevel = '&infin;'; }
+        var currentLevel = '--';
+        if (incTower.haveSkill(skill)) { currentLevel = incTower.getSkillLevel(skill); }
+        var label = incTower.skillAttributes[skill].fullName + ' (' + currentLevel + ' / ' + maxLevel + ')';
+        data.push({id: skill, parent: parent, text: label });
+        if (incTower.skillAttributes[skill].grants !== undefined) {
+            var origin = skill;
+            _.map(incTower.possibleGrants(skill), function (skill) {
+                addSkillToData(skill, origin);
+            });
+        }
+    };
+    _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
+    return data;
+};
 
 
 
@@ -1666,37 +1697,27 @@ function everySecond() {
     //Training skills
     'use strict';
     incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.maxMana().times(0.001))));
-    if (!incTower.activeSkill() || !_.has(incTower.skillAttributes, incTower.activeSkill())) {
-        var queue = incTower.skillQueue();
-        if (queue.length === 0) {
-            var skills = incTower.skills.keys();
-            shuffle(skills);
-            incTower.enqueueSkill(_.find(skills, function (skill) {
-                return incTower.directlyQueueable(skill);
-            }));
-            queue = incTower.skillQueue();
-        }
-        incTower.activeSkill(queue[0][0]);
-        console.log(queue);
-    }
+    incTower.checkQueue();
+
 
     var skill = incTower.skills.get(incTower.activeSkill())();
     incrementObservable(skill.get('skillPoints'), incTower.skillRate());
     while (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
         skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
         incrementObservable(skill.get('skillLevel'));
+        //console.log(incTower.activeSkill());
         skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost,skill.get('skillLevel')(),incTower.skillAttributes[incTower.activeSkill()].growth));
         incTower.checkSkills();
-        console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
+        incTower.skillTreeUpdateLabel(incTower.activeSkill());
+        //console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
         var poppedSkill = incTower.skillQueue.shift();
         if (poppedSkill[0] !== incTower.activeSkill()) { console.log(' ERROR: ' + poppedSkill[0] + ' !== ' + incTower.activeSkill() ); }
         if (incTower.skillQueue().length > 0) {
             incTower.activeSkill(incTower.skillQueue()[0][0]);
         } else {
             incTower.activeSkill(false);
+            incTower.checkQueue();
         }
-
-        //incTower.skills.get(incTower.activeSkill()).push('skillPointsCap')()();
     }
     enemys.forEachAlive(function(enemy) {
         if (enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {
