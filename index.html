@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 </div>
-                <ul class="menu" data-bind="visible: buyingCursor() == false">
+                <ul class="menu" data-bind="visible: cursor() == false || cursor().type === 'spell'">
                     <li>Build
                         <ul>
                             <li>Blocks
@@ -79,17 +79,28 @@
                         </ul>
                     </li>
                 </ul>
-                <div id="buyBlockActive" data-bind="visible: buyingCursor() === 'block'">
-                    <p>Click on the map to place your block.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                <div id="buyBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
+                    <p>Click on the map to place your block. Holding CTRL will allow you to place multiple blocks.</p>
+                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
-                <div id="sellBlockActive" data-bind="visible: buyingCursor() === 'sellBlock'">
-                    <p>Click on a tower-less block to sell it.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                <div id="sellBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'sell' && cursor().param === 'block'">
+                    <p>Click on a tower-less block to sell it. Holding CTRL will allow you to sell multiple blocks.</p>
+                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
-                <div id="buyTowerActive" data-bind="visible: buyingCursor() !== false && buyingCursor() !== 'block'">
-                    <p>Click on a tile with a block to build your tower.</p>
-                    <button data-bind="click: function () { incTower.buyingCursor(false); }">Cancel</button>
+                <div id="buyTowerActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param !== 'block'">
+                    <p>Click on a tile with a block to build your tower. Holding CTRL will allow you to buy multiple towers.</p>
+                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+                </div>
+
+                <div data-bind="if: availableSpells().length > 0">
+
+                    <p><b>Spells:</b></p>
+                    <span data-bind="foreach: availableSpells">
+                        <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() } " class="tooltip">
+                            <span data-bind="text: incTower.spellAttributes[$data].fullName"></span> - <span data-bind="text: incTower.spellAttributes[$data].manaCost"></span> Mana
+                        </button>
+                    </span>
+
                 </div>
 
                 <div data-bind="if: currentlySelected()">
@@ -118,7 +129,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </span>
         </div>
         <div id="credits" title="Credits">
             <p>The basis for this whole project started as clone of <a href="https://github.com/theodufay/phaser-tower-defense" target="_blank">this GitHub repo</a>. I used this initial code to teach myself about Phaser.io and many of the enemy sprites and the terrain tiles are from this original project.</p>
@@ -160,9 +171,14 @@
 
             </div>
         </div>
-        <div id="changelog">
+        <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-13: Added the first spell, mana burst upon learning magical affinity. Spell damage currently scales on the total damage of all your towers.</li>
+                <li>2015-12-13: Greatly improved how enemies respond to path recalculation.</li>
+                <li>2015-12-13: There is now a visual indicator for building towers and blocks.</li>
+                <li>2015-12-13: Refactored how cursors work for buying, this is to make way for spells.</li>
+                <li>2015-12-13: Holding CTRL now allows you to buy/sell multiple times in a row for towers and blocks.</li>
                 <li>2015-12-11: Skill labels now update in the tree based on their level.</li>
                 <li>2015-12-11: Added skill queueing! Hopefully I resolved all the bugs I introduced by doing this, but probably not. </li>
                 <li>2015-12-11: Reworked skills UI into a separate dialog box instead of the table.</li>

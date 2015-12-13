@@ -313,7 +313,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
                 "smokefire-0017.png",
                 "smokefire-0018.png",
                 "smokefire-0019.png",
-                "smokefire-0020.png",
+                "smokefire-0020.png"
             ], 10, true, false);
             this.burningSprite.animations.play('burn');
         } else {

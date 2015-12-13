@@ -15,6 +15,24 @@ function okDialog(opts) {
         title: opts.title
     });
 }
+//This is a cursor object used for keeping track of building locations, spells etc.
+function Cursor(type, param, action) {
+    'use strict';
+    this.type = type;
+    this.param = param;
+    this.indicator = game.add.graphics(0,0);
+    if (type === 'buy' || type === 'sell') {
+        //incTower.currentlySelectedIndicator.lineStyle(2, 0x66cc00, 3);
+        this.indicator.beginFill(0x3333FF, 0.5);
+        this.indicator.drawRect(0,0,32,32);
+    }
+    if (type === 'spell') {
+        this.indicator.beginFill(0xFF3333, 0.5);
+        this.indicator.drawCircle(0,0,incTower.spellAttributes[param].diameter);
+    }
+    this.action = action;
+}
+
 //Stolen from http://lostsouls.org/grimoire_diminishing_returns
 function diminishingReturns(val, scale) {
     'use strict';
@@ -451,6 +469,58 @@ var incTower = {
     },
     maxMana: ko.observable(new BigNumber(0)),
     mana: ko.observable(new BigNumber(0)),
+    availableSpells: ko.observableArray([]),
+    castSpell: function (spell) {
+        'use strict';
+        var manaCost = incTower.spellAttributes[spell].manaCost;
+        if (incTower.mana().lt(manaCost)) { return; }
+        incTower.cursor(new Cursor('spell',spell, function (pointer) {
+            if (incTower.mana().lt(manaCost)) {
+                incTower.clearCursor();
+                return;
+            }
+            incTower.spellAttributes[spell].perform(pointer, spell);
+            incrementObservable(incTower.mana,-manaCost);
+            if (!ctrlKey.isDown) {
+                incTower.clearCursor();
+            }
+
+        }));
+    },
+
+    spellAttributes: {
+        manaBurst: {
+            fullName: 'Mana Burst',
+            damageType: 'arcane',
+            manaCost: 100,
+            diameter: 200,
+            describe: function () {
+                var damage = incTower.totalTowerDamage();
+                var fullManaDamage = damage.times(10);
+                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by 1%.'
+            },
+            perform: function (pointer, spellName) {
+                var cursor = incTower.cursor();
+                var diameter = incTower.spellAttributes[spellName].diameter;
+                var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
+                var damage = incTower.totalTowerDamage();
+                if (incTower.mana().eq(incTower.maxMana())) { damage = damage.times(10); }
+
+                enemys.forEachAlive(function(enemy) {
+                    if (area.contains(enemy.x, enemy.y)) {
+                        console.log(damage.toJSON());
+                        enemy.assignDamage(damage,'arcane');
+                    }
+                });
+                var perMana = incTower.mana().div(incTower.maxMana()).toNumber();
+                if (game.rnd.frac() < 1 - perMana) {
+                    incTower.maxMana(incTower.maxMana().times(1.01));
+                }
+
+            }
+
+        }
+    },
 
     skillAttributes: {
         construction: {
@@ -566,6 +636,7 @@ var incTower = {
                     incTower.maxMana(new BigNumber(1000));
                     incTower.mana(incTower.maxMana());
                 }
+                if (incTower.availableSpells.indexOf('manaBurst') < 0) { incTower.availableSpells.push('manaBurst'); }
             },
             grants: {
                 1: ['fireAffinity', 'waterAffinity', 'earthAffinity', 'airAffinity']
@@ -1008,7 +1079,13 @@ var incTower = {
             incTower.createFloatingText({'color':'#C9960C', 'duration':3000, 'around':floatAround,'text':'+'+humanizeNumber(amount) + 'g', 'scatter':16, 'type':'gold'});
         }
     },
-    buyingCursor: ko.observable(false),
+    cursor: ko.observable(false),
+    clearCursor: function () {
+        if (incTower.cursor() !== false && incTower.cursor().indicator) {
+            incTower.cursor().indicator.destroy();
+        }
+        incTower.cursor(false);
+    },
     numBlocks: ko.observable(1),
     blocks: [{x:13, y:9}],
     blockCost: function () {
@@ -1019,12 +1096,49 @@ var incTower = {
         'use strict';
         var cost = incTower.blockCost();
         if (incTower.gold().gt(cost)) {
-            incTower.buyingCursor('block');
+            incTower.cursor(new Cursor('buy','block', function(pointer) {
+                var tileX = Math.floor(pointer.worldX / tileSquare);
+                var tileY = Math.floor(pointer.worldY / tileSquare);
+                if (tileX > 24 || tileY > 18) { return; }
+                if (tileX === 0 && tileY === 0) { return; }
+                var cost = incTower.blockCost();
+                if (incTower.gold().gte(cost) && map.layers[0].data[tileY][tileX].index > 8) {
+                    incrementObservable(incTower.numBlocks);
+                    incrementObservable(incTower.gold, -cost);
+                    map.putTile(game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
+                    incTower.blocks.push({x: tileX, y: tileY});
+                    recalcPath();
+                    if (!ctrlKey.isDown) {
+                        incTower.clearCursor();
+                    }
+                }
+            }));
+
         }
     },
     sellBlock: function () {
         'use strict';
-        incTower.buyingCursor('sellBlock');
+        incTower.cursor(new Cursor('sell','block', function (pointer) {
+            var tileX = Math.floor(pointer.worldX / tileSquare);
+            var tileY = Math.floor(pointer.worldY / tileSquare);
+            if (tileX > 24 || tileY > 18) { return; }
+            if (tileX === 0 && tileY === 0) { return; }
+            var tileIndex = map.layers[0].data[tileY][tileX].index;
+            if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
+                map.putTile(30,tileX,tileY,"Ground");
+                incrementObservable(incTower.numBlocks,-1);
+                incrementObservable(incTower.gold,incTower.blockCost());
+                for (var i = 0; i < incTower.blocks.length; i++) {
+                    var curBlock = incTower.blocks[i];
+                    if (curBlock.x === tileX && curBlock.y === tileY) {
+                        incTower.blocks.splice(i,1);
+                        break;
+                    }
+                }
+                recalcPath();
+                if (!ctrlKey.isDown) { incTower.clearCursor(); }
+            }
+        }));
     },
     buyTower: function(type) {
         'use strict';
@@ -1033,9 +1147,33 @@ var incTower = {
         var cost = incTower.towerCost(baseCost);
         if (incTower.gold().gt(cost)) {
             console.log("Setting cursor to " + type);
-            incTower.buyingCursor(type);
+            incTower.cursor(new Cursor('buy',type, function (pointer) {
+                var tileX = Math.floor(pointer.worldX / tileSquare);
+                var tileY = Math.floor(pointer.worldY / tileSquare);
+                if (tileX > 24 || tileY > 18) { return; }
+                var towerType = incTower.cursor().param;
+                var cost = incTower.towerCost(incTower.towerAttributes[towerType].baseCost);
+                var tileIndex = map.layers[0].data[tileY][tileX].index;
+                if (!tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 5 && tileIndex <= 8) {
+                    var opt = {};
+                    opt.towerType = towerType;
+                    opt.cost = cost;
+                    Tower.prototype.posit(pointer,opt);
+                    incrementObservable(incTower.gold,-cost);
+                    if (!ctrlKey.isDown) { incTower.clearCursor(); }
+                }
+            }));
         }
     },
+    totalTowerDamage: ko.pureComputed(function () {
+        'use strict';
+        var tally = new BigNumber(0);
+        for (var i = 0;i < incTower.numTowers();++i) {
+            var tower = towers.getAt(i);
+            tally = tally.plus(tower.totalDamage());
+        }
+        return tally;
+    }),
     averageDamage: ko.pureComputed(function () {
         'use strict';
         var tally = new BigNumber(0);
@@ -1324,20 +1462,19 @@ function recalcPath() {
         incTower.pathGraphic.endFill();
         game.world.bringToTop(enemys);
         enemys.forEachAlive(function(enemy) {
-            //console.log("CALLED FUNC");
-            var valid = true;
-            for (var i = 0;i < enemy.path.length;++i) {
-                //console.log("Test: " + map.layers[0].data[enemy.path[i].y][enemy.path[i].x].index);
-                if (map.layers[0].data[enemy.path[i].y][enemy.path[i].x].index !== 30) {
-                    valid = false;
-                    //console.log('INVALID!')
-                    break;
+            var curTileCoord = enemy.path[enemy.curTile];
+            var bestDist = -1;
+            var bestIndex = -1;
+            _.forEach(p,function (pathEntry, index) {
+                var dist = Math.abs(pathEntry.x - curTileCoord.x) + Math.abs(pathEntry.y - curTileCoord.y);
+                if (bestIndex < 0 || dist < bestDist) {
+                    bestIndex = index;
+                    bestDist = dist;
                 }
-            }
-            if (!valid) {
-                //var curPathTile = enemy.path[enemy.curTile];
-                enemy.path = p.slice(0);
-            }
+            });
+
+            enemy.path = p.slice(0); //Make a shallow copy of hte array
+            enemy.curTile = bestIndex;
         });
 
     });
@@ -1420,67 +1557,30 @@ function create() {
     layer = map.createLayer('Ground');
     layer.resizeWorld();
 
+    ctrlKey = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
+
 
     pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     recalcPath();
+    game.input.addMoveCallback(function(pointer, x, y) {
+        // pointer returns the active pointer, x and y return the position on the canvas
+        if (!incTower.cursor()) { return; }
+        //console.log(x + ", "+ y);
+        var cursor = incTower.cursor();
+        if (cursor.type === 'buy' || cursor.type === 'sell') {
+            cursor.indicator.x = Math.floor(x / 32) * 32;
+            cursor.indicator.y = Math.floor(y / 32) * 32;
+        } else {
+            cursor.indicator.x = x;
+            cursor.indicator.y = y;
+
+        }
+
+    });
     game.input.onDown.add(function (pointer) {
-        var tileX = Math.floor(pointer.worldX / tileSquare);
-        var tileY = Math.floor(pointer.worldY / tileSquare);
-        console.log(tileX + ", " + tileY);
-        if (tileX > 24 || tileY > 18) { return; }
-
-        if (!incTower.buyingCursor()) { return; }
-        if (incTower.buyingCursor() === 'block') {
-            if (tileX === 0 && tileY === 0) { return; }
-            var cost = incTower.blockCost();
-            if (incTower.gold().gte(cost) && map.layers[0].data[tileY][tileX].index > 8) {
-
-                incrementObservable(incTower.numBlocks);
-                incrementObservable(incTower.gold,-cost);
-                map.putTile(game.rnd.integerInRange(5,8),tileX,tileY,"Ground");
-                incTower.blocks.push({x:tileX, y:tileY});
-                recalcPath();
-                incTower.buyingCursor(false);
-            }
-            return;
-        }
-        if (incTower.buyingCursor() === 'sellBlock') {
-            if (tileX === 0 && tileY === 0) { return; }
-            var tileIndex = map.layers[0].data[tileY][tileX].index;
-            if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
-                map.putTile(30,tileX,tileY,"Ground");
-                incrementObservable(incTower.numBlocks,-1);
-                incrementObservable(incTower.gold,incTower.blockCost());
-                recalcPath();
-                for (var i = 0; i < incTower.blocks.length; i++) {
-                    var curBlock = incTower.blocks[i];
-                    if (curBlock.x === tileX && curBlock.y === tileY) {
-                        incTower.blocks.splice(i,1);
-                        break;
-                    }
-                }
-
-                incTower.buyingCursor(false);
-            }
-            return;
-        }
-
-        var cost = incTower.towerCost(incTower.towerAttributes[incTower.buyingCursor()].baseCost);
-        var tileIndex = map.layers[0].data[tileY][tileX].index;
-        if (!tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 5 && tileIndex <= 8) {
-            var opt = {};
-            opt.towerType = incTower.buyingCursor();
-            opt.cost = cost;
-            Tower.prototype.posit(pointer,opt);
-            incrementObservable(incTower.gold,-cost);
-            incTower.buyingCursor(false);
-
-        }
-
-        console.log(tileX + ", " + tileY);
-
-
-    },this);
+        if (!incTower.cursor()) { return; }
+        incTower.cursor().action(pointer);
+    });
 
     /*
      * Tower
@@ -1603,7 +1703,7 @@ function createSaveObj(obj) {
         'currentlySelectedIndicator',
         'bossEnemyPacks',
         'normalEnemyPacks',
-        'buyingCursor',
+        'cursor',
         'deadBullets',
         'frame',
         'enemyAnimations',
@@ -1701,22 +1801,26 @@ function everySecond() {
 
 
     var skill = incTower.skills.get(incTower.activeSkill())();
-    incrementObservable(skill.get('skillPoints'), incTower.skillRate());
-    while (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
-        skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
-        incrementObservable(skill.get('skillLevel'));
-        //console.log(incTower.activeSkill());
-        skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost,skill.get('skillLevel')(),incTower.skillAttributes[incTower.activeSkill()].growth));
-        incTower.checkSkills();
-        incTower.skillTreeUpdateLabel(incTower.activeSkill());
-        //console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
-        var poppedSkill = incTower.skillQueue.shift();
-        if (poppedSkill[0] !== incTower.activeSkill()) { console.log(' ERROR: ' + poppedSkill[0] + ' !== ' + incTower.activeSkill() ); }
-        if (incTower.skillQueue().length > 0) {
-            incTower.activeSkill(incTower.skillQueue()[0][0]);
-        } else {
-            incTower.activeSkill(false);
-            incTower.checkQueue();
+    if (skill !== null) {
+        incrementObservable(skill.get('skillPoints'), incTower.skillRate());
+        while (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
+            skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
+            incrementObservable(skill.get('skillLevel'));
+            //console.log(incTower.activeSkill());
+            skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost, skill.get('skillLevel')(), incTower.skillAttributes[incTower.activeSkill()].growth));
+            incTower.checkSkills();
+            incTower.skillTreeUpdateLabel(incTower.activeSkill());
+            //console.log("Hit: " + skill.get('skillLevel')() + " out of " + incTower.skillAttributes[incTower.activeSkill()].maxLevel);
+            var poppedSkill = incTower.skillQueue.shift();
+            if (poppedSkill[0] !== incTower.activeSkill()) {
+                console.log(' ERROR: ' + poppedSkill[0] + ' !== ' + incTower.activeSkill());
+            }
+            if (incTower.skillQueue().length > 0) {
+                incTower.activeSkill(incTower.skillQueue()[0][0]);
+            } else {
+                incTower.activeSkill(false);
+                incTower.checkQueue();
+            }
         }
     }
     enemys.forEachAlive(function(enemy) {
