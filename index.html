@@ -91,7 +91,10 @@
                     <p>Click on a tile with a block to build your tower. Holding CTRL will allow you to buy multiple towers.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
-
+                <div data-bind="visible: cursor() !== false && cursor().type === 'spell'">
+                    <p>Hover over the map to see the area of effect of your spell, click to cast. Holding CTRL will allow you to cast the same spell again.</p>
+                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+                </div>
                 <div data-bind="if: availableSpells().length > 0">
 
                     <p><b>Spells:</b></p>
@@ -174,6 +177,7 @@
         <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-13: Now allows you to cancel spell casting and the various cursors will disappear if you move them off of the screen.</li>
                 <li>2015-12-13: Added the first spell, mana burst upon learning magical affinity. Spell damage currently scales on the total damage of all your towers.</li>
                 <li>2015-12-13: Greatly improved how enemies respond to path recalculation.</li>
                 <li>2015-12-13: There is now a visual indicator for building towers and blocks.</li>

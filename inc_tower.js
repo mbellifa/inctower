@@ -1581,6 +1581,14 @@ function create() {
         if (!incTower.cursor()) { return; }
         incTower.cursor().action(pointer);
     });
+    game.input.mouse.mouseOutCallback = function() {
+        if (!incTower.cursor()) { return; }
+        incTower.cursor().indicator.alpha = 0;
+    };
+    game.input.mouse.mouseOverCallback = function() {
+        if (!incTower.cursor()) { return; }
+        incTower.cursor().indicator.alpha = 1;
+    };
 
     /*
      * Tower
