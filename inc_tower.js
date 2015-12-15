@@ -33,6 +33,12 @@ function Cursor(type, param, action) {
     this.action = action;
 }
 
+function addToObsArray(arr, value) {
+    'use strict';
+    //Adds a value to an observable array (or regular array) if it doesn't already exist.
+    if (arr.indexOf(value) < 0) { arr.push(value); }
+}
+
 //Stolen from http://lostsouls.org/grimoire_diminishing_returns
 function diminishingReturns(val, scale) {
     'use strict';
@@ -384,6 +390,7 @@ var incTower = {
     UIselectedSkill: ko.observable(false),
     activeSkill: ko.observable(false),
     skillTreeUpdateLabel: function (skillName) {
+        'use strict';
         var maxLevel = incTower.skillAttributes[skillName].maxLevel;
         if (maxLevel === undefined) { maxLevel = '&infin;'; }
         var currentLevel = '--';
@@ -416,6 +423,7 @@ var incTower = {
         return false;
     },
     directlyQueueable: function (skill) {
+        'use strict';
         if (!(skill in incTower.skillAttributes)) { return false; }
         //Returns the rank trainable in the skill if it is directly trainable, meaning all prereqs are met in the queue already, otherwise false
         var minRank = incTower.getSkillLevel(skill) + 1;
@@ -447,6 +455,7 @@ var incTower = {
 
     },
     enqueueSkill: function(skill) {
+        'use strict';
         var minRank = incTower.directlyQueueable(skill);
         if (minRank === false) { return false; }
         incTower.skillQueue.push([skill, minRank]);
@@ -497,7 +506,7 @@ var incTower = {
             describe: function () {
                 var damage = incTower.totalTowerDamage();
                 var fullManaDamage = damage.times(10);
-                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by 1%.'
+                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by 3%.'
             },
             perform: function (pointer, spellName) {
                 var cursor = incTower.cursor();
@@ -508,17 +517,51 @@ var incTower = {
 
                 enemys.forEachAlive(function(enemy) {
                     if (area.contains(enemy.x, enemy.y)) {
-                        console.log(damage.toJSON());
                         enemy.assignDamage(damage,'arcane');
                     }
                 });
                 var perMana = incTower.mana().div(incTower.maxMana()).toNumber();
                 if (game.rnd.frac() < 1 - perMana) {
-                    incTower.maxMana(incTower.maxMana().times(1.01));
+                    incTower.maxMana(incTower.maxMana().times(1.03));
                 }
 
             }
 
+        },
+        frostShatter: {
+            fullName: 'Frost Shatter',
+            damageType: 'water',
+            manaCost: 200,
+            diameter: 150,
+            describe: function () {
+                var damage = incTower.totalTowerDamage().div(2);
+                var frozenDamage = damage.times(5);
+                return 'Deals ' + humanizeNumber(damage) + ' water damage in an area, adding three water runes to each enemy that is not already frozen. If an enemy is frozen it takes ' + humanizeNumber(frozenDamage) + ' damage and gains one water rune instead.<br><br>If all enemies in the area are frozen 50% of the mana cost is refunded.';
+            },
+            perform: function (pointer, spellName) {
+                var cursor = incTower.cursor();
+                var diameter = incTower.spellAttributes[spellName].diameter;
+                var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
+                var damage = incTower.totalTowerDamage().div(2);
+                var frozenDamage = damage.times(5);
+                var allFrozen = true;
+
+                enemys.forEachAlive(function(enemy) {
+                    if (area.contains(enemy.x, enemy.y)) {
+                        if (enemy.statusEffects.chilled().gte(100)) {
+                            enemy.addElementalRune('water');
+                            enemy.assignDamage(frozenDamage,'water');
+                        } else {
+                            enemy.assignDamage(damage,'water');
+                            enemy.addElementalRune('water');
+                            enemy.addElementalRune('water');
+                            enemy.addElementalRune('water');
+                            allFrozen = false;
+                        }
+                    }
+                });
+                if (allFrozen) { incrementObservable(incTower.mana, 100); }
+            }
         }
     },
 
@@ -527,8 +570,8 @@ var incTower = {
             fullName: 'Construction',
             baseCost: 20,
             growth: 1.1,
-            description: 'Reduces the cost of towers and their upgrades by 1% per rank.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Reduces the cost of towers and their upgrades by ' + rank + '%.';
             },
             maxLevel: 10,
@@ -540,8 +583,8 @@ var incTower = {
             fullName: 'Modular Construction',
             baseCost: 135,
             growth: 1.15,
-            description: 'Reduces the cost of upgrading all towers by 5% per level.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Reduces the cost of upgrading all towers by ' + (rank * 5) + '%.';
             },
             maxLevel: 5,
@@ -550,8 +593,8 @@ var incTower = {
             fullName: 'Initial Engineering',
             baseCost: 135,
             growth: 1.15,
-            description: 'Increases the starting damage, attack speed, and range for all towers by 5% per rank.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Increases the starting damage, attack speed, and range for all towers by ' + (rank * 5) + '%.';
             },
 
@@ -564,8 +607,8 @@ var incTower = {
             fullName: 'Tower Templates',
             baseCost: 120,
             growth: 2,
-            description: 'Increases the starting damage of towers by a factor of 10 per rank.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Increases the starting damage of towers by a factor of ' + Math.pow(10,rank) + '.';
             },
             maxLevel: 5,
@@ -578,8 +621,8 @@ var incTower = {
             fullName: 'Scrapping',
             baseCost: 80,
             growth: 1.5,
-            description: 'Returns an additional 5% of spent gold on the sale of a tower.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Refunds an additional ' + (rank * 5) + '% of gold spent after the sale of a tower.';
             },
             maxLevel: 5,
@@ -588,8 +631,8 @@ var incTower = {
             fullName: 'Refined Blueprints',
             baseCost: 15,
             growth: 1.2,
-            description: 'Increases the starting damage of towers by 5% per rank.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Increases the starting damage of towers by ' + (rank * 5) + '%.';
             },
         },
@@ -597,8 +640,8 @@ var incTower = {
             fullName: 'Market Connections',
             baseCost: 45,
             growth: 1.2,
-            description: 'Increases the gold reward on each kill by 1% per level.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Increases the gold reward on each kill by ' + (rank) + '%.';
             }
 
@@ -609,8 +652,8 @@ var incTower = {
             baseCost: 20,
             growth: 1.1,
             maxLevel: 10,
-            description: 'Increases the damage that kinetic towers deal by 1% per level.',
             describeRank: function (rank) {
+                'use strict';
                 return 'Increases the damage that kinetic towers deal by ' + (rank) + '%.';
             },
         },
@@ -626,8 +669,8 @@ var incTower = {
             baseCost: 300,
             growth: 1.1,
             maxLevel: 1,
-            description: "Grants magical affinity opening the path to casting spells and elemental towers.",
             describeRank: function () {
+                'use strict';
                 return "Grants magical affinity opening the path to casting spells and elemental towers.";
             },
             onMax: function () {
@@ -636,7 +679,8 @@ var incTower = {
                     incTower.maxMana(new BigNumber(1000));
                     incTower.mana(incTower.maxMana());
                 }
-                if (incTower.availableSpells.indexOf('manaBurst') < 0) { incTower.availableSpells.push('manaBurst'); }
+                addToObsArray(incTower.availableSpells,'manaBurst');
+
             },
             grants: {
                 1: ['fireAffinity', 'waterAffinity', 'earthAffinity', 'airAffinity']
@@ -647,13 +691,13 @@ var incTower = {
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
-            description: "Attunes yourself with fire which allows you to build fire towers which burn enemies over time, causing them to take increased damage from all sources.",
             describeRank: function (rank) {
+                'use strict';
                 return "Attunes yourself with fire which allows you to build fire towers which burn enemies over time, causing them to take increased damage from all sources.";
             },
             onMax: function () {
                 'use strict';
-                if (incTower.availableTowers.indexOf('fire') < 0) { incTower.availableTowers.push('fire'); }
+                addToObsArray(incTower.availableTowers,'fire');
             },
             grants: {
                 1: ['fireRuneApplication']
@@ -666,8 +710,8 @@ var incTower = {
             baseCost: 100,
             growth: 1.266,
             maxLevel: 10,
-            description: "Increases the chance that a fire tower successfully applies a rune by 5% per rank.",
             describeRank: function (rank) {
+                'use strict';
                 return "Increases the chance that a fire tower successfully applies a rune by " + (rank * 5) + '%.';
             },
             grants: {
@@ -679,24 +723,25 @@ var incTower = {
             baseCost: 200,
             growth: 1.406,
             maxLevel: 10,
-            description: "When a fire tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
             describeRank: function (rank) {
+                'use strict';
                 return "When a fire tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
-            },
+            }
         },
         waterAffinity: {
             fullName: 'Water Affinity',
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
-            description: "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.",
             describeRank: function (rank) {
+                'use strict';
                 return "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.";
             },
 
             onMax: function () {
                 'use strict';
-                if (incTower.availableTowers.indexOf('water') < 0) { incTower.availableTowers.push('water'); }
+                addToObsArray(incTower.availableTowers,'water');
+                addToObsArray(incTower.availableSpells,'frostShatter');
             },
             grants: {
                 1: ['waterRuneApplication']
@@ -707,8 +752,8 @@ var incTower = {
             baseCost: 100,
             growth: 1.266,
             maxLevel: 10,
-            description: "Increases the chance that a water tower successfully applies a rune by 5% per rank.",
             describeRank: function (rank) {
+                'use strict';
                 return "Increases the chance that a water tower successfully applies a rune by " + (rank * 5) + '%.';
             },
             grants: {
@@ -720,8 +765,8 @@ var incTower = {
             baseCost: 200,
             growth: 1.406,
             maxLevel: 10,
-            description: "When a water tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
             describeRank: function (rank) {
+                'use strict';
                 return "When a water tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
         },
@@ -731,14 +776,14 @@ var incTower = {
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
-            description: "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.",
             describeRank: function (rank) {
+                'use strict';
                 return "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.";
             },
 
             onMax: function () {
                 'use strict';
-                if (incTower.availableTowers.indexOf('earth') < 0) { incTower.availableTowers.push('earth'); }
+                addToObsArray(incTower.availableTowers,'earth');
             },
             grants: {
                 1: ['earthRuneApplication']
@@ -750,8 +795,8 @@ var incTower = {
             baseCost: 100,
             growth: 1.266,
             maxLevel: 10,
-            description: "Increases the chance that an earth tower successfully applies a rune by 5% per rank.",
             describeRank: function (rank) {
+                'use strict';
                 return "Increases the chance that an earth tower successfully applies a rune by " + (rank * 5) + '%.';
             },
             grants: {
@@ -763,8 +808,8 @@ var incTower = {
             baseCost: 200,
             growth: 1.406,
             maxLevel: 10,
-            description: "When an earth tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
             describeRank: function (rank) {
+                'use strict';
                 return "When an earth tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
         },
@@ -774,14 +819,14 @@ var incTower = {
             baseCost: 900,
             growth: 1.1,
             maxLevel: 1,
-            description: "Attunes yourself with air which allows you to build air towers which will occasionally trap enemies in a whirlwind, knocking them back.",
             describeRank: function (rank) {
+                'use strict';
                 return "Attunes yourself with air which allows you to build air towers which will occasionally trap enemies in a whirlwind, knocking them back.";
             },
 
             onMax: function () {
                 'use strict';
-                if (incTower.availableTowers.indexOf('air') < 0) { incTower.availableTowers.push('air'); }
+                addToObsArray(incTower.availableTowers,'air');
             },
             grants: {
                 1: ['airRuneApplication']
@@ -792,8 +837,8 @@ var incTower = {
             baseCost: 100,
             growth: 1.266,
             maxLevel: 10,
-            description: "Increases the chance that an air tower successfully applies a rune by 5% per rank.",
             describeRank: function (rank) {
+                'use strict';
                 return "Increases the chance that an air tower successfully applies a rune by " + (rank * 5) + '%.';
             },
 
@@ -806,8 +851,8 @@ var incTower = {
             baseCost: 200,
             growth: 1.406,
             maxLevel: 10,
-            description: "When an air tower successfully applies a rune, there is a 5% chance per rank that it will apply two instead.",
             describeRank: function (rank) {
+                'use strict';
                 return "When an air tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
         },
@@ -1011,7 +1056,7 @@ var incTower = {
     generateBossPack: function () {
         'use strict';
         var bossPowers = Object.keys(incTower.bossPowers);
-        var totalPowers = (incTower.wave() / 25) + 1 | 0;
+        var totalPowers = Math.floor((incTower.wave() / 25) + 1);
         var possAnimations = Object.keys(incTower.enemyAnimations);
         var ret = [];
         while (totalPowers >= 1) {
@@ -1081,6 +1126,7 @@ var incTower = {
     },
     cursor: ko.observable(false),
     clearCursor: function () {
+        'use strict';
         if (incTower.cursor() !== false && incTower.cursor().indicator) {
             incTower.cursor().indicator.destroy();
         }
@@ -1414,7 +1460,7 @@ incTower.skillTreeData = function () {
                 addSkillToData(skill, origin);
             });
         }
-    };
+    }
     _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
     return data;
 };
@@ -1558,8 +1604,6 @@ function create() {
     layer.resizeWorld();
 
     ctrlKey = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
-
-
     pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     recalcPath();
     game.input.addMoveCallback(function(pointer, x, y) {
@@ -2108,13 +2152,5 @@ function calcSkillGrowth(skill,toLevel,targetTime) {
             console.log("Within " + negval.toJSON() + " at " + negGrowth);
             incTower.skillAttributes[skill].growth = negGrowth;
         }
-
-
-
-
-
-
     }
-
-
 }

@@ -56,7 +56,7 @@
     <option passfail="false" />
     <option phantom="false" />
     <option plusplus="false" />
-    <option predef="ko, BigNumber" />
+    <option predef="ko, BigNumber, _, Phaser, moment" />
     <option proto="false" />
     <option prototypejs="false" />
     <option qunit="false" />
