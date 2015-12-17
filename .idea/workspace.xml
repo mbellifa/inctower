@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/jsLinters/jshint.xml" afterPath="$PROJECT_DIR$/.idea/jsLinters/jshint.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/css/incTower.css" afterPath="$PROJECT_DIR$/css/incTower.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inc_tower.js" afterPath="$PROJECT_DIR$/inc_tower.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Enemy.class.js" afterPath="$PROJECT_DIR$/js/Enemy.class.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Tower.class.js" afterPath="$PROJECT_DIR$/js/Tower.class.js" />
     </list>
     <ignored path="Incremental Tower Defense.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,8 +31,8 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.2895377">
-              <caret line="179" column="89" selection-start-line="179" selection-start-column="89" selection-end-line="179" selection-end-column="89" />
+            <state vertical-scroll-proportion="0.45742092">
+              <caret line="181" column="104" selection-start-line="181" selection-start-column="104" selection-end-line="181" selection-end-column="104" />
               <folding>
                 <element signature="n#style#0;n#button#0;n#span#0;n#div#5;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#span#0;n#span#0;n#div#2;n#div#1;n#div#0;n#div#6;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -42,8 +44,8 @@
       <file leaf-file-name="incTower.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/css/incTower.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-23.26923">
-              <caret line="238" column="23" selection-start-line="238" selection-start-column="23" selection-end-line="238" selection-end-column="23" />
+            <state vertical-scroll-proportion="-5.8076925">
+              <caret line="198" column="15" selection-start-line="198" selection-start-column="15" selection-end-line="198" selection-end-column="15" />
               <folding />
             </state>
           </provider>
@@ -52,8 +54,8 @@
       <file leaf-file-name="inc_tower.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/inc_tower.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-13.896552">
-              <caret line="550" column="0" selection-start-line="550" selection-start-column="0" selection-end-line="550" selection-end-column="0" />
+            <state vertical-scroll-proportion="-8.5172415">
+              <caret line="407" column="40" selection-start-line="407" selection-start-column="40" selection-end-line="407" selection-end-column="40" />
               <folding />
             </state>
           </provider>
@@ -62,8 +64,8 @@
       <file leaf-file-name="Enemy.class.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.0">
-              <caret line="228" column="22" selection-start-line="228" selection-start-column="9" selection-end-line="228" selection-end-column="22" />
+            <state vertical-scroll-proportion="-6.7586207">
+              <caret line="28" column="49" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -73,7 +75,7 @@
         <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="-5.0">
-              <caret line="86" column="27" selection-start-line="86" selection-start-column="26" selection-end-line="86" selection-end-column="27" />
+              <caret line="92" column="80" selection-start-line="92" selection-start-column="79" selection-end-line="92" selection-end-column="80" />
               <folding />
             </state>
           </provider>
@@ -147,9 +149,9 @@
         <option value="$PROJECT_DIR$/build/js/incTower.min.js" />
         <option value="$PROJECT_DIR$/build/css/incTower.min.css" />
         <option value="$PROJECT_DIR$/gulpfile.js" />
-        <option value="$PROJECT_DIR$/js/Tower.class.js" />
         <option value="$PROJECT_DIR$/js/lodash.min.js" />
         <option value="$PROJECT_DIR$/css/incTower.css" />
+        <option value="$PROJECT_DIR$/js/Tower.class.js" />
         <option value="$PROJECT_DIR$/js/Enemy.class.js" />
         <option value="$PROJECT_DIR$/inc_tower.js" />
         <option value="$PROJECT_DIR$/index.html" />
@@ -615,7 +617,13 @@
       <option name="project" value="LOCAL" />
       <updated>1450074579920</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="Added frost spell.">
+      <created>1450140345886</created>
+      <option name="number" value="00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1450140345886</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TodoView">
@@ -711,7 +719,8 @@
     <MESSAGE value="Added skill queuing and reworked skills UI.&#10;&#10;" />
     <MESSAGE value="Added spells, refactored cursor logic, and made path recovery on recalculation better." />
     <MESSAGE value="Fixed some cursor issues and added the ability to cancel." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed some cursor issues and added the ability to cancel." />
+    <MESSAGE value="Added frost spell." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added frost spell." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1099,14 +1108,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.0">
-          <caret line="86" column="27" selection-start-line="86" selection-start-column="26" selection-end-line="86" selection-end-column="27" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.038724374">
@@ -1117,32 +1118,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
       <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-6.7586207">
+          <caret line="28" column="49" selection-start-line="28" selection-start-column="49" selection-end-line="28" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
+      <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.0">
-          <caret line="228" column="22" selection-start-line="228" selection-start-column="9" selection-end-line="228" selection-end-column="22" />
+          <caret line="92" column="80" selection-start-line="92" selection-start-column="79" selection-end-line="92" selection-end-column="80" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/css/incTower.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-23.26923">
-          <caret line="238" column="23" selection-start-line="238" selection-start-column="23" selection-end-line="238" selection-end-column="23" />
+        <state vertical-scroll-proportion="-5.8076925">
+          <caret line="198" column="15" selection-start-line="198" selection-start-column="15" selection-end-line="198" selection-end-column="15" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/inc_tower.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-13.896552">
-          <caret line="550" column="0" selection-start-line="550" selection-start-column="0" selection-end-line="550" selection-end-column="0" />
+        <state vertical-scroll-proportion="-8.5172415">
+          <caret line="407" column="40" selection-start-line="407" selection-start-column="40" selection-end-line="407" selection-end-column="40" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2895377">
-          <caret line="179" column="89" selection-start-line="179" selection-start-column="89" selection-end-line="179" selection-end-column="89" />
+        <state vertical-scroll-proportion="0.45742092">
+          <caret line="181" column="104" selection-start-line="181" selection-start-column="104" selection-end-line="181" selection-end-column="104" />
           <folding>
             <element signature="n#style#0;n#button#0;n#span#0;n#div#5;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#span#0;n#span#0;n#div#2;n#div#1;n#div#0;n#div#6;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />

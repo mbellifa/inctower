@@ -113,7 +113,7 @@
                             <p><b>Currently Selected Tower:</b></p>
                             <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
                             <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
-                            <div>Range: <span data-bind="text: currentlySelected().range"></span></div>
+                            <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
                             <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
                             <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
                             <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
@@ -162,7 +162,9 @@
                 <span id="skills_desc_text">
                     Click a skill on the left to see its description.
                 </span>
-                <div data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue</button></div>
+                <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue</button></span>
+                <span data-bind="if: !incTower.directlyQueueable(incTower.UIselectedSkill()) && !incTower.skillMaxedInQueue(incTower.UIselectedSkill()) && !incTower.skillIsMaxed(incTower.UIselectedSkill())"><button id="skill_queue_prereqs">Add Prerequisites to Queue</button></span>
+
             </div>
             <div id="skills_queue">
                 <h3>Training Queue</h3>
@@ -177,6 +179,12 @@
         <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-16: Added the ability to queue up all of the prerequisites for a given skill.</li>
+                <li>2015-12-16: Added some additional checks to the skill queue.</li>
+                <li>2015-12-16: Buffed the kinetic tower skill from 1% increase per rank to 5%.</li>
+                <li>2015-12-15: Tower range indicators no longer fire when your cursor is loaded.</li>
+                <li>2015-12-15: The nerf hammer has been dropped on range. It now suffers diminishing returns.</li>
+                <li>2015-12-14: Added the Smolder spell on learning fire affinity.</li>
                 <li>2015-12-14: Added the Frost Shatter spell on learning water affinity.</li>
                 <li>2015-12-13: Now allows you to cancel spell casting and the various cursors will disappear if you move them off of the screen.</li>
                 <li>2015-12-13: Added the first spell, mana burst upon learning magical affinity. Spell damage currently scales on the total damage of all your towers.</li>

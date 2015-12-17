@@ -26,7 +26,8 @@ var Enemy = function(x, y, opts) {
     this.statusEffects = {
         chilled: ko.observable(new BigNumber(0)),
         sensitivity: ko.observable(new BigNumber(0)),
-        burning: ko.observable(new BigNumber(0))
+        burning: ko.observable(new BigNumber(0)),
+        bleeding: ko.observable(new BigNumber(0))
     };
     this.events.onKilled.add(function () {
 

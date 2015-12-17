@@ -3,13 +3,16 @@ function TowerInputOver(sprite,pointer) {
     if (incTower.rangeIndicator !== undefined) {
         return;
     }
+    if (incTower.cursor()) {
+        return;
+    }
     incTower.rangeIndicator = game.add.graphics(0,0);
     incTower.rangeIndicator.x = sprite.x; //+ (tileSquare / 2);
     incTower.rangeIndicator.y = sprite.y; //+ (tileSquare / 2);
 
     incTower.rangeIndicator.beginFill(0xFF0000,0.3);
     incTower.rangeIndicator.lineStyle(1,0x000000,2);
-    incTower.rangeIndicator.drawCircle(0,0,(sprite.range * 2) - 32);
+    incTower.rangeIndicator.drawCircle(0,0,(sprite.trueRange() * 2) - 32);
 
 
 }
@@ -22,24 +25,7 @@ function TowerInputOut(sprite,pointer) {
 
 }
 function UpgradeTower(tower) {
-    incrementObservable(tower.level);
-    if (tower.level() % 10 === 0) {
-        incrementObservable(tower.damage,tower.damage());
-        if (!incTower.dialogTowerUpgradeDouble) {
-            incTower.dialogTowerUpgradeDouble = true;
-            okDialog({
-                title: "Tower Upgrades",
-                message: "Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles."
-            });
-        }
-    } else {
-        incrementObservable(tower.damage,incTower.towerAttributes[tower.towerType].damagePerLevel);
-    }
-
-
-    tower.fireTime *= 0.99;
-    tower.range += 2;
-    TowerInputDown(tower);
+    tower.upgrade();
 }
 function SellTower(tower) {
     incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
@@ -60,6 +46,7 @@ function PayToUpgradeTower(tower) {
     if (incTower.gold().gte(cost)) {
         incrementObservable(tower.goldSpent,cost);
         incrementObservable(incTower.gold, new BigNumber(-1).times(cost));
+        tower.upgrade();
         UpgradeTower(tower);
     }
 
@@ -67,6 +54,12 @@ function PayToUpgradeTower(tower) {
 function TowerInputDown(sprite,pointer) {
     console.log("TOWER CLICKED");
     incTower.currentlySelected(sprite);
+}
+function calculateTowerUpgradeCost(towerType, level) {
+    var amount = costCalc(incTower.towerAttributes[towerType].baseCost,level,1.2);
+    amount = amount.times(1 - (incTower.getSkillLevel('construction') * 0.01));
+    amount = amount.times(1 - (incTower.getSkillLevel('modularConstruction') * 0.05));
+    return amount;
 }
 Tower = function(opt) {
     if (opt === undefined) {
@@ -97,11 +90,12 @@ Tower = function(opt) {
 
             var ret = this.damage();
             if (this.towerType === 'kinetic') {
-                ret = ret.times(1 + 0.01 * incTower.getSkillLevel('kineticTowers'));
+                ret = ret.times(1 + 0.05 * incTower.getSkillLevel('kineticTowers'));
             }
             //console.log(this.towerType);
             return ret;
         },this);
+
         this.anchor.setTo(0.5,0.5);
         this.tile = tile;
         var defaultDamage = 1 * Math.pow(10, incTower.getSkillLevel('towerTemplates'));
@@ -116,15 +110,29 @@ Tower = function(opt) {
         }
         defaultFireRate *= 1 - 0.01 * incTower.getSkillLevel('initialEngineering');
         this.fireTime = opt.fireTime || defaultFireRate;
-        var defaultRange = 100;
+        var defaultRange = 150;
         defaultRange *= 1 + 0.01 * incTower.getSkillLevel('initialEngineering');
-        this.range = opt.range || defaultRange;
-
+        this.range = ko.observable(opt.range || defaultRange);
+        this.trueRange = ko.pureComputed(function () {
+            //var ret = this.range;
+            return diminishingReturns(this.range(), 50);
+        }, this);
         this.inputEnabled = true;
         this.events.onInputOver.add(TowerInputOver,this);
         this.events.onInputOut.add(TowerInputOut,this);
         this.events.onInputDown.add(TowerInputDown,this);
         this.fireLastTime = game.time.now + this.fireTime;
+        var upgradeCost = opt.remainingUpgradeCost;
+        if (upgradeCost === undefined || isNaN(upgradeCost)) { upgradeCost = calculateTowerUpgradeCost(this.towerType, this.level()); }
+        else {
+            upgradeCost = new BigNumber(upgradeCost);
+        }
+        this.remainingUpgradeCost = ko.observable(upgradeCost);
+        this.remainingUpgradeCost.subscribe(function (newVal) {
+            if (newVal.lte(0)) {
+                this.upgrade();
+            }
+        }, this);
         towers.add(this);
         incTower.towers.push(this);
         tileForbidden[tileX][tileY] = true;
@@ -138,11 +146,9 @@ Tower.prototype.add = function(pointer) {
 };
 Tower.prototype.upgradeCost = function () {
     'use strict';
-    var amount = costCalc(incTower.towerAttributes[this.towerType].baseCost,this.level(),1.2);
-    amount = amount.times(1 - (incTower.getSkillLevel('construction') * 0.01));
-    amount = amount.times(1 - (incTower.getSkillLevel('modularConstruction') * 0.05));
-    return amount;
-},
+    if (this.remainingUpgradeCost === undefined) { return new BigNumber(0); }
+    return this.remainingUpgradeCost();
+};
 
 Tower.prototype.posit = function(pointer,opt) {
     opt.worldX = pointer.worldX - (pointer.worldX % tileSquare);
@@ -164,7 +170,7 @@ Tower.prototype.fire = function() {
         for (var i = 0;i < enemys.children.length;i++) {
             if (!enemys.children[i].alive) { continue; }
             if (enemys.children[i].x < 0 || enemys.children[i].y < 0) { continue; }
-            if (game.physics.arcade.distanceBetween(enemys.children[i],this) < this.range) {
+            if (game.physics.arcade.distanceBetween(enemys.children[i],this) < this.trueRange()) {
                 enemiesInRange.push(enemys.children[i]);
             }
         }
@@ -189,3 +195,22 @@ Tower.prototype.fire = function() {
         }
     }
 };
+Tower.prototype.upgrade = function () {
+    incrementObservable(this.level);
+    if (this.level() % 10 === 0) {
+        incrementObservable(this.damage,this.damage());
+        if (!incTower.dialogTowerUpgradeDouble) {
+            incTower.dialogTowerUpgradeDouble = true;
+            okDialog({
+                title: "Tower Upgrades",
+                message: "Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles."
+            });
+        }
+    } else {
+        incrementObservable(this.damage,incTower.towerAttributes[this.towerType].damagePerLevel);
+    }
+    this.fireTime *= 0.99;
+    incrementObservable(this.range, 2);
+    this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, this.level()));
+    //TowerInputDown(tower);
+}
