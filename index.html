@@ -41,6 +41,9 @@
                             <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
                         </div>
                         <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
+                        <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }" class="tooltip"></span></div>
+                        <div data-bind="if: prestigePointsNext() > 0"><b>Prestige (Next Reset)</b>: <span data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }" class="tooltip"></span><br><button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></div>
+
                         <b>Currently Training:</b> <span data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }" class="tooltip"></span>.
                         <div class="progressBar">
                             <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
@@ -179,6 +182,9 @@
         <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-18: Prestige system added. Make sure to save your game first.</li>
+                <li>2015-12-18: Added several new infinitely expanding skills, there is now at least one in each major skill branch.</li>
+                <li>2015-12-18: Experimental Change: Skills become twice as effective when you reach rank 20 in them, this repeats for every 20 ranks.</li>
                 <li>2015-12-16: Added the ability to queue up all of the prerequisites for a given skill.</li>
                 <li>2015-12-16: Added some additional checks to the skill queue.</li>
                 <li>2015-12-16: Buffed the kinetic tower skill from 1% increase per rank to 5%.</li>

@@ -34,10 +34,11 @@ function SellTower(tower) {
     if (index >= 0) { incTower.towers.splice(index, 1); }
 
     tileForbidden[tower.tileX][tower.tileY] = false;
-    tower.destroy();
     if (tower.icon) {
         tower.icon.destroy();
     }
+    tower.destroy();
+
     incTower.currentlySelected(null);
 }
 function PayToUpgradeTower(tower) {
@@ -57,8 +58,8 @@ function TowerInputDown(sprite,pointer) {
 }
 function calculateTowerUpgradeCost(towerType, level) {
     var amount = costCalc(incTower.towerAttributes[towerType].baseCost,level,1.2);
-    amount = amount.times(1 - (incTower.getSkillLevel('construction') * 0.01));
-    amount = amount.times(1 - (incTower.getSkillLevel('modularConstruction') * 0.05));
+    amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
+    amount = amount.times(1 - (incTower.getEffectiveSkillLevel('modularConstruction') * 0.05));
     return amount;
 }
 Tower = function(opt) {
@@ -90,28 +91,30 @@ Tower = function(opt) {
 
             var ret = this.damage();
             if (this.towerType === 'kinetic') {
-                ret = ret.times(1 + 0.05 * incTower.getSkillLevel('kineticTowers'));
+                ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticTowers'));
+                ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticAmmo'));
             }
+            ret = ret.times(1 + 0.1 * incTower.prestigePoints());
             //console.log(this.towerType);
             return ret;
         },this);
 
         this.anchor.setTo(0.5,0.5);
         this.tile = tile;
-        var defaultDamage = 1 * Math.pow(10, incTower.getSkillLevel('towerTemplates'));
+        var defaultDamage = 1 * Math.pow(10, incTower.getEffectiveSkillLevel('towerTemplates'));
 
-        defaultDamage *= 1 + 0.05 * incTower.getSkillLevel('initialEngineering');
-        defaultDamage *= 1 + 0.01 * incTower.getSkillLevel('refinedBlueprints');
+        defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
+        defaultDamage *= 1 + 0.01 * incTower.getEffectiveSkillLevel('refinedBlueprints');
         this.damage = ko.observable(new BigNumber(opt.damage || defaultDamage));
         this.level = ko.observable(opt.level || 1);
         var defaultFireRate = 2000;
         if ('startingFireRate' in incTower.towerAttributes[this.towerType]) {
             defaultFireRate = incTower.towerAttributes[this.towerType].startingFireRate;
         }
-        defaultFireRate *= 1 - 0.01 * incTower.getSkillLevel('initialEngineering');
+        defaultFireRate *= 1 - 0.01 * incTower.getEffectiveSkillLevel('initialEngineering');
         this.fireTime = opt.fireTime || defaultFireRate;
         var defaultRange = 150;
-        defaultRange *= 1 + 0.01 * incTower.getSkillLevel('initialEngineering');
+        defaultRange *= 1 + 0.01 * incTower.getEffectiveSkillLevel('initialEngineering');
         this.range = ko.observable(opt.range || defaultRange);
         this.trueRange = ko.pureComputed(function () {
             //var ret = this.range;

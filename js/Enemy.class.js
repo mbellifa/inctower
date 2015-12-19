@@ -116,6 +116,16 @@ Enemy.prototype.assignDamage = function (damage, type) {
     if (type in this.elementalRuneCounts) {
         damage = damage.times(1 + (this.elementalRuneCounts[type] * 0.20));
     }
+    if (type === 'water') {
+        damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('waterMastery'));
+    } else if (type === 'air') {
+        damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('airMastery'));
+    } else if (type === 'fire') {
+        damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('fireMastery'));
+    } else if (type === 'earth') {
+        damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('earthMastery'));
+    }
+
     if (this.shielded) {
         damage = BigNumber(0);
         this.shieldSprite.visible = false;
