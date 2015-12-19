@@ -291,9 +291,9 @@ var incTower = {
     }),
     describePrestige: function (points, next) {
         if (next) {
-            return 'On your next prestige reset your prestige points will be increased by ' + points + ' which will increase damage, learning rate, and gold generation by ' + (points * 10) + '%. Potential points are earned by defeating bosses after wave 100.';
+            return 'On your next prestige reset your prestige points will be increased by ' + points + ' which will increase your learning rate by ' + (points * 10) + '%. Potential points are earned by defeating bosses after wave 100.';
         }
-        return 'Increases your damage, learning rate, and gold generation by ' + (points * 10) + '%.';
+        return 'Increases your skill learning rate by ' + (points * 10) + '%.';
     },
     prestigePoints: ko.observable(0),
     prestigePointsNext: ko.pureComputed(function () {
@@ -301,7 +301,7 @@ var incTower = {
         if (wave < 100) { return 0; }
         var points = 1;
         wave--;
-        while (wave > 100) {
+        while (wave >= 100) {
             points += Math.floor((wave / 25) + 1);
             wave -= 5;
         }
@@ -320,9 +320,7 @@ var incTower = {
                 incTower.gainSkill(skill);
             }
         });
-        while (incTower.skillQueue().length > 0) {
-            incTower.skillQueue.shift();
-        }
+        incTower.clearQueue();
         incTower.UIselectedSkill(false);
         incTower.maxMana(new BigNumber(0));
         incTower.mana(new BigNumber(0));
@@ -414,8 +412,15 @@ var incTower = {
     },
     skills: ko.observableDictionary({}),
     skillQueue: ko.observableArray([]),
+    clearQueue: function () {
+        'use strict';
+        while (incTower.skillQueue().length > 0) {
+            incTower.skillQueue.shift();
+        }
+    },
     UIselectedSkill: ko.observable(false),
     activeSkill: ko.pureComputed(function() {
+        'use strict';
         if (incTower.skillQueue().length === 0) { return false; }
         return incTower.skillQueue()[0][0];
     }),
@@ -1367,7 +1372,7 @@ var incTower = {
     },
     gainGold: function (amount, floatAround) {
         'use strict';
-        amount = amount.times(1 + 0.1 * incTower.prestigePoints());
+        //amount = amount.times(1 + 0.1 * incTower.prestigePoints());
         incrementObservable(incTower.gold,amount);
         if (floatAround !== undefined) {
             incTower.createFloatingText({'color':'#C9960C', 'duration':3000, 'around':floatAround,'text':'+'+humanizeNumber(amount) + 'g', 'scatter':16, 'type':'gold'});
@@ -2020,6 +2025,7 @@ function createSaveObj(obj) {
         'numSuffixes',
         'skillAttributes',
         'startingSkills',
+        'UIselectedSkill',
         //The following are extra cruft (for save purposes) caused by subclassing tower to sprite
         '_width',
         '_height',
@@ -2045,8 +2051,8 @@ function createSaveObj(obj) {
         'children',
         'rotation',
         'type',
-        'physicsType',
-        'UIselectedSkill'
+        'physicsType'
+
     ];
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -2063,7 +2069,6 @@ function createSaveObj(obj) {
                     }
                 } else {
                     //Should be a big number if we get to ehre
-                    console.log(prop);
                     if (obj[prop]().toJSON === undefined) { console.log(prop + " ERROR"); }
                     save[prop] = obj[prop]().trunc().toJSON();
                 }
@@ -2072,7 +2077,6 @@ function createSaveObj(obj) {
             if (prop === 'towers') {
                 save[prop] = [];
                 for (var i = 0; i < obj[prop].length; ++i) {
-
                     save[prop].push(createSaveObj(obj[prop][i]));
                 }
                 continue;

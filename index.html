@@ -176,12 +176,15 @@
                 <ul data-bind="foreach: skillQueue" id="sortable_queue">
                     <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>)</li>
                 </ul>
+                <br>
+                <button data-bind="click: function () { incTower.clearQueue(); }">Clear Queue</button>
 
             </div>
         </div>
         <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-19: Added a button to clear the queue and a massive nerf to the prestige system, it now only impacts learning rate.</li>
                 <li>2015-12-18: Prestige system added. Make sure to save your game first.</li>
                 <li>2015-12-18: Added several new infinitely expanding skills, there is now at least one in each major skill branch.</li>
                 <li>2015-12-18: Experimental Change: Skills become twice as effective when you reach rank 20 in them, this repeats for every 20 ranks.</li>

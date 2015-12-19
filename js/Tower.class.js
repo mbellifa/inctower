@@ -94,7 +94,7 @@ Tower = function(opt) {
                 ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticTowers'));
                 ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticAmmo'));
             }
-            ret = ret.times(1 + 0.1 * incTower.prestigePoints());
+            //ret = ret.times(1 + 0.1 * incTower.prestigePoints());
             //console.log(this.towerType);
             return ret;
         },this);
