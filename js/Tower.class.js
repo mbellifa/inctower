@@ -29,7 +29,6 @@ function UpgradeTower(tower) {
 }
 function SellTower(tower) {
     incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
-    incrementObservable(incTower.numTowers,-1);
     var index = incTower.towers.indexOf(tower);
     if (index >= 0) { incTower.towers.splice(index, 1); }
 
@@ -139,7 +138,6 @@ Tower = function(opt) {
         towers.add(this);
         incTower.towers.push(this);
         tileForbidden[tileX][tileY] = true;
-        incrementObservable(incTower.numTowers);
     }
 };
 Tower.prototype = Object.create(Phaser.Sprite.prototype);

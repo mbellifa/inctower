@@ -239,3 +239,7 @@ body {
     padding-left: 25px;
     text-indent: -25px;
 }
+
+.remove-queue {
+    position: relative !important;
+}

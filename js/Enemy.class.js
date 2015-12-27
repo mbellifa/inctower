@@ -65,8 +65,16 @@ var Enemy = function(x, y, opts) {
                 this.speed = opts[opt];
             } else if (!(opt in this)) {
                 this[opt] = opts[opt];
+                if (opt === 'powers') {
+                    var powers = opts[opt];
+                    var ret = [];
+                    _.forEach(_.keys(powers), function (power) {
+                        ret.push({'power': power, 'level': powers[power]});
+                    });
+                    ret = _.sortBy(ret, 'level');
+                    this.sortedPowers = ret.reverse();
+                }
             }
-
         }
     }
     if (this.shielding > 0) {
@@ -102,6 +110,7 @@ var Enemy = function(x, y, opts) {
     this.elementalRuneDiminishing = {};
 
 
+
 };
 
 Enemy.prototype = Object.create(Phaser.Sprite.prototype);
@@ -118,13 +127,20 @@ Enemy.prototype.assignDamage = function (damage, type) {
     }
     if (type === 'water') {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('waterMastery'));
+        damage = damage.times(1 - 0.2 * (this['water-resistant'] || 0));
     } else if (type === 'air') {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('airMastery'));
+        damage = damage.times(1 - 0.2 * (this['air-resistant'] || 0));
     } else if (type === 'fire') {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('fireMastery'));
+        damage = damage.times(1 - 0.2 * (this['fire-resistant'] || 0));
     } else if (type === 'earth') {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('earthMastery'));
+        damage = damage.times(1 - 0.2 * (this['earth-resistant'] || 0));
+    } else if (type === 'arcane') {
+        damage = damage.times(1 - 0.2 * (this['arcane-resistant'] || 0));
     }
+
 
     if (this.shielded) {
         damage = BigNumber(0);
@@ -355,6 +371,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         boulderTween.onComplete.add(function () {
             game.physics.arcade.overlap(this, enemys, function (boulder, enemy) {
                 enemy.assignDamage(boulder.damageOnImpact,'earth');
+                incrementObservable(enemy.statusEffects.bleeding, boulder.damageOnImpact);
             }, null, this);
             this.destroy();
         },boulder);
@@ -365,7 +382,7 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         var maxX = Math.min(800,originX + 32 * reactionCounts.air);
         var minY = Math.max(0,originY - 32 * reactionCounts.air);
         var maxY = Math.min(608,originY + 32 * reactionCounts.air);
-        var tweenLength = Math.max(1000, 250 * Math.pow(1.5,Math.max(0,reactionCounts.air-1)));
+        var tweenLength = Math.max(500,Math.min(1500, 250 * reactionCounts.air - 1));
         var windStormChance = reactionCounts.air - 4;
         var windStorm = false;
         if (windStormChance > 0 && !opts.noStorm && game.rnd.integerInRange(1,100) >= windStormChance) {
@@ -421,6 +438,6 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         }
 
     }
-    console.log(reactionCounts);
+//    console.log(reactionCounts);
 
 };

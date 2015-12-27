@@ -90,7 +90,7 @@ function loadSave(save) {
         }
     }
     if ('blocks' in save) {
-        incTower.blocks = [];
+        incTower.blocks([]);
         _.forEach(save.blocks, function (block) {
             map.putTile(game.rnd.integerInRange(5,8),block.x,block.y,"Ground");
             incTower.blocks.push({x:block.x, y: block.y});
@@ -144,6 +144,16 @@ $(document).ready(function () {
         incTower.enqueueSkill(incTower.UIselectedSkill());
         e.preventDefault();
     });
+    $('#skills').on('click','.remove-queue', function (e) {
+        var jthis = $(this);
+        var parent = jthis.parent();
+        var skill = parent.attr('data-skill');
+        var rank = parseInt(parent.attr('data-rank'));
+        incTower.skillQueue.remove(function (item) {
+            return item[0] === skill && item[1] === rank;
+        });
+        e.preventDefault();
+    });
     $('#skills').on('click','#skill_queue_prereqs', function (e) {
         var prereqs = [];
         var toFind = incTower.UIselectedSkill();
@@ -175,7 +185,6 @@ $(document).ready(function () {
         var selected = data.selected[0];
         if (selected in incTower.skillAttributes) {
             incTower.UIselectedSkill(selected);
-            $('#skills_desc_text').html(incTower.describeSkill(selected));
         }
     }).jstree({
         core: {
@@ -275,7 +284,9 @@ var incTower = {
     lastUpdateRealTime: Date.now(),
     generatingEnemies: false,
     availableTowers: ko.observableArray(['kinetic']),
-    numTowers: ko.observable(0),
+    numTowers: ko.pureComputed(function () {
+        return incTower.towers().length || 0;
+    }),
     currentlySelected: ko.observable(null),
     currentlySelectedIndicator: null, //Holds the graphic we'll use to show what we have selected.
     frame: 0,
@@ -331,13 +342,12 @@ var incTower = {
 
 
         towers.forEach(function(tower) {
+
             if (tower.icon) { tower.icon.destroy(); }
             tower.kill();
 
         });
         towers.removeAll(true);
-        incTower.numTowers(0);
-        incTower.numBlocks(0);
         tileForbidden = new Array(25);
         for (var i = 0;i < 25;++i) {
             tileForbidden[i] = new Array(19);
@@ -345,17 +355,14 @@ var incTower = {
                 tileForbidden[i][j] = false;
             }
         }
-        _.forEach(incTower.blocks, function (block) {
+        _.forEach(incTower.blocks(), function (block) {
             map.putTile(30,block.x,block.y,"Ground");
         });
-        incTower.blocks = [{x:13, y:9}];
+        incTower.blocks([{x:13, y:9}]);
         map.putTile(game.rnd.integerInRange(5,8),13,9,"Ground");
-
-        enemys.forEach(function(theEnemy) {
-            theEnemy.kill();
-        });
-        towers.removeAll();
-        incTower.towers = [];
+        enemys.removeAll(true);
+        towers.removeAll(true);
+        incTower.towers([]);
         incTower.selectedBossPack = false;
         recalcPath();
 
@@ -545,8 +552,24 @@ var incTower = {
             if (!_.includes(grants,skill)) { return false; }
         }
         return minRank;
+    },
+    directlyRemovable: function (skill, rank) {
+        'use strict';
+        var removable = true;
+        var possGrants = incTower.possibleGrants(skill,rank);
+        _.forEach(incTower.skillQueue(), function (item) {
+            if (item[0] === skill && item[1] === rank + 1) {
+                removable = false;
+                return false;
+            }
+            if (_.includes(possGrants,item[0])) {
+                removable = false;
+                return false;
+            }
 
 
+        });
+        return removable;
     },
     enqueueSkill: function(skill) {
         'use strict';
@@ -859,6 +882,26 @@ var incTower = {
             describeRank: function (rank) {
                 'use strict';
                 return 'There is a ' + (5 * rank) + '% chance on hit that the target will bleed for 100% of tower damage.';
+            },
+            grants: {
+                5: ['anticoagulants']
+            }
+        },
+        anticoagulants: {
+            fullName: 'Anti-Coagulants',
+            baseCost: 20,
+            growth: 2.386,
+            describeRank: function (rank) {
+                'use strict';
+                if (rank < 10) {
+                    return 'Bleeding is reduced by ' + (50 - 5 * rank) + '% each tick instead of the base 50%.';
+                }
+                if (rank === 10) {
+                    return 'Bleeding no longer reduced over time.';
+                }
+                if (rank > 10) {
+                    return 'Instead of bleed damage being reduced it is increased by ' + (rank * 5) + '%.';
+                }
             }
         },
         kineticAmmo:{
@@ -1144,9 +1187,18 @@ var incTower = {
     levelToEffective: function (skillLevel) {
         return skillLevel * Math.pow(2,Math.floor(skillLevel / 20));
     },
-    possibleGrants: function(skill) {
+    possibleGrants: function(skill, atLevel) {
         'use strict';
-        return _.flatten(_.values(incTower.skillAttributes[skill].grants));
+        if (atLevel === undefined) {
+            return _.flatten(_.values(incTower.skillAttributes[skill].grants));
+        }
+        var grants = [];
+        _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
+            if (atLevel >= level) {
+                grants = grants.concat(skills);
+            }
+        });
+        return grants;
     },
     checkSkills: function () {
         'use strict';
@@ -1204,7 +1256,7 @@ var incTower = {
 
 
 
-    towers: [],
+    towers: ko.observableArray([]),
     towerAttributes: {
         kinetic: {
             name: 'Kinetic',
@@ -1265,52 +1317,123 @@ var incTower = {
 
     bossPowers: {
         swarm: {
+            name: 'Swarm',
             describe: function () {
                 'use strict';
                 return "This unit is part of a swarm which causes it to spawn several copies with less health.";
-            }
+            },
+            maxLevel: 2
         },
         regenerating: {
+            name: 'Regenerating',
             describe: function (mult) {
                 'use strict';
                 return "Regenerates " + (0.5 * mult) + "% of its max health a second.";
             }
         },
         healthy: {
+            name: 'Healthy',
             describe: function (mult) {
                 'use strict';
                 return "Has " + (10 * mult) + "% bonus health.";
             }
         },
         fast: {
+            name: 'Fast',
             describe: function (mult) {
                 'use strict';
                 return "Moves " + (10 * mult) + "% faster.";
             }
         },
         teleport: {
+            name: 'Teleport',
             describe: function (mult) {
                 'use strict';
                 return "Has a 10% chance each second to teleport " + mult + " space(s).";
             }
         },
         shielding: {
+            name: 'Shielding',
             describe: function (mult) {
                 'use strict';
                 return "This unit gets a shield that stops the next source of damage every " + humanizeNumber(4 / mult) + " seconds.";
             }
+        },
+        'fire-resistant': {
+            name: 'Fire-Resistant',
+            describe: function (mult) {
+                'use strict';
+                return "Reduces fire damage taken and fire rune attachment chance by " + humanizeNumber(20 * mult) + "%.";
+            },
+            maxLevel: 5,
+            requirements: function () {
+                'use strict';
+                return incTower.haveSkill('fireAffinity');
+            }
+        },
+        'water-resistant': {
+            name: 'Water-Resistant',
+            describe: function (mult) {
+                'use strict';
+                return "Reduces water damage taken and water rune attachment chance by " + humanizeNumber(20 * mult) + "%.";
+            },
+            maxLevel: 5,
+            requirements: function () {
+                'use strict';
+                return incTower.haveSkill('waterAffinity');
+            }
+        },
+        'air-resistant': {
+            name: 'Air-Resistant',
+            describe: function (mult) {
+                'use strict';
+                return "Reduces air damage taken and air rune attachment chance by " + humanizeNumber(20 * mult) + "%.";
+            },
+            maxLevel: 5,
+            requirements: function () {
+                'use strict';
+                return incTower.haveSkill('airAffinity');
+            }
+
+        },
+        'earth-resistant': {
+            name: 'Earth-Resistant',
+            describe: function (mult) {
+                'use strict';
+                return "Reduces earth damage taken and earth rune attachment chance by " + humanizeNumber(20 * mult) + "%.";
+            },
+            maxLevel: 5,
+            requirements: function () {
+                'use strict';
+                return incTower.haveSkill('earthAffinity');
+            }
+        },
+        'arcane-resistant': {
+            name: 'Arcane-Resistant',
+            describe: function (mult) {
+                'use strict';
+                return "Reduces arcane damage taken and arcane rune attachment chance by " + humanizeNumber(20 * mult) + "%.";
+            },
+            maxLevel: 5,
+            requirements: function () {
+                'use strict';
+                return incTower.haveSkill('magicalAffinity');
+            }
         }
+
+
         /*nullzone: {
             describe: function (mult) {
                 return "Towers within " + mult + "space(s) of this unit cannot fire.";
             }
         }*/
     },
+    seenPowers: {},
     generateBossPack: function () {
         'use strict';
-        var bossPowers = Object.keys(incTower.bossPowers);
+        var bossPowers = _.keys(incTower.bossPowers);
         var totalPowers = Math.floor((incTower.wave() / 25) + 1);
-        var possAnimations = Object.keys(incTower.enemyAnimations);
+        var possAnimations = _.keys(incTower.enemyAnimations);
         var ret = [];
         while (totalPowers >= 1) {
             var baseEntry = {
@@ -1318,21 +1441,41 @@ var incTower = {
                 count: 1,
                 bonusHealthPercentage: 0,
                 regenerating: 0,
-                teleport: 0,
                 speed: 1,
                 scale: 1.3,
-                shielding: 0,
                 powers: {}
             };
             baseEntry.length = incTower.enemyAnimations[baseEntry.name].length;
             var thisPowers = game.rnd.integerInRange(Math.min(5,totalPowers),totalPowers);
             totalPowers -= thisPowers;
+            var eligiblePowers = _.clone(bossPowers);
+
+
+
 
             for (var i = 0;i < thisPowers;++i) {
-                var power = game.rnd.pick(bossPowers);
+                shuffle(eligiblePowers);
+                var power = _.find(eligiblePowers, function (power) {
+                    console.log(power);
+                    var seenBefore = incTower.seenPowers[power] || 0;
+                    var currentPowerLevel = baseEntry.powers[power] || 0;
+                    if (currentPowerLevel > incTower.bossPowers[power].maxLevel) { return false; }
+                    if (incTower.bossPowers[power].requirements && !incTower.bossPowers[power].requirements()) { return false; }
+                    if (currentPowerLevel > seenBefore) { return false; }
+                    return true;
+                });
+                if (power === undefined) {
+                    power = _.find(eligiblePowers, function (power) {
+                        var currentPowerLevel = baseEntry.powers[power] || 0;
+                        if (currentPowerLevel > incTower.bossPowers[power].maxLevel) { return false; }
+                        if (incTower.bossPowers[power].requirements && !incTower.bossPowers[power].requirements()) { return false; }
+                        return true;
+                    });
+                }
+
                 if (power === 'swarm') {
                     baseEntry.swarm = true;
-                    baseEntry.count += game.rnd.integerInRange(5, 10);
+                    baseEntry.count += game.rnd.integerInRange(3, 7);
                     if (baseEntry.scale > 0.7) {
                         baseEntry.scale *= 0.8;
                     }
@@ -1343,12 +1486,8 @@ var incTower = {
                     baseEntry.speed += 0.1;
                 } else if (power === 'healthy') {
                     baseEntry.bonusHealthPercentage += 10;
-                } else if (power === 'teleport') {
-                    baseEntry.teleport += 1;
-                } else if (power === 'nullzone') {
-                    baseEntry.nullzone += 1;
-                } else if (power === 'shielding') {
-                    baseEntry.shielding += 1;
+                } else {
+                    baseEntry[power] = (baseEntry[power] || 0) + 1;
                 }
                 if (power in baseEntry.powers) {
                     baseEntry.powers[power]++;
@@ -1357,6 +1496,12 @@ var incTower = {
                 }
             }
             if (baseEntry.swarm) { baseEntry.bonusHealthPercentage -= 20; }
+            _.mapValues(baseEntry.powers, function (level, power) {
+                var prevSeen = incTower.seenPowers[power] || 0;
+                if (level > prevSeen) {
+                    incTower.seenPowers[power] = level;
+                }
+            });
             ret.push(baseEntry);
 
         }
@@ -1386,8 +1531,11 @@ var incTower = {
         }
         incTower.cursor(false);
     },
-    numBlocks: ko.observable(1),
-    blocks: [{x:13, y:9}],
+    numBlocks: ko.pureComputed(function () {
+        'use strict';
+        return incTower.blocks().length;
+    }),
+    blocks: ko.observableArray([{x:13, y:9}]),
     blockCost: function () {
         'use strict';
         return costCalc(1,incTower.numBlocks(),1.2);
@@ -1403,7 +1551,6 @@ var incTower = {
                 if (tileX === 0 && tileY === 0) { return; }
                 var cost = incTower.blockCost();
                 if (incTower.gold().gte(cost) && map.layers[0].data[tileY][tileX].index > 8) {
-                    incrementObservable(incTower.numBlocks);
                     incrementObservable(incTower.gold, -cost);
                     map.putTile(game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
                     incTower.blocks.push({x: tileX, y: tileY});
@@ -1426,10 +1573,9 @@ var incTower = {
             var tileIndex = map.layers[0].data[tileY][tileX].index;
             if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
                 map.putTile(30,tileX,tileY,"Ground");
-                incrementObservable(incTower.numBlocks,-1);
                 incrementObservable(incTower.gold,incTower.blockCost());
-                for (var i = 0; i < incTower.blocks.length; i++) {
-                    var curBlock = incTower.blocks[i];
+                for (var i = 0; i < incTower.blocks().length; i++) {
+                    var curBlock = incTower.blocks()[i];
                     if (curBlock.x === tileX && curBlock.y === tileY) {
                         incTower.blocks.splice(i,1);
                         break;
@@ -1747,7 +1893,6 @@ function recalcPath() {
         if (p === null) {
             var block = incTower.blocks.pop();
             map.putTile(30,block.x,block.y,"Ground");
-            incrementObservable(incTower.numBlocks,-1);
             incrementObservable(incTower.gold,incTower.blockCost());
             recalcPath();
             return;
@@ -2026,6 +2171,8 @@ function createSaveObj(obj) {
         'skillAttributes',
         'startingSkills',
         'UIselectedSkill',
+        'pathGraphic',
+        'spellAttributes',
         //The following are extra cruft (for save purposes) caused by subclassing tower to sprite
         '_width',
         '_height',
@@ -2043,6 +2190,7 @@ function createSaveObj(obj) {
         '_cacheIsDirty',
         '_cr',
         '_sr',
+        '_frame',
         'alpha',
         'renderable',
         'visible',
@@ -2051,9 +2199,9 @@ function createSaveObj(obj) {
         'children',
         'rotation',
         'type',
-        'physicsType'
-
+        'physicsType',
     ];
+    if (typeof obj !== 'object') { return obj; }
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
             if (ko.isComputed(obj[prop])) { continue; }
@@ -2065,19 +2213,12 @@ function createSaveObj(obj) {
                 } else if (isArray(obj[prop]())) {
                     save[prop] = [];
                     for (var i = 0;i < obj[prop]().length;i++) {
-                        save[prop][i] = obj[prop]()[i];
+                        save[prop][i] = createSaveObj(obj[prop]()[i]) ;
                     }
                 } else {
                     //Should be a big number if we get to ehre
                     if (obj[prop]().toJSON === undefined) { console.log(prop + " ERROR"); }
                     save[prop] = obj[prop]().trunc().toJSON();
-                }
-                continue;
-            }
-            if (prop === 'towers') {
-                save[prop] = [];
-                for (var i = 0; i < obj[prop].length; ++i) {
-                    save[prop].push(createSaveObj(obj[prop][i]));
                 }
                 continue;
             }
@@ -2090,10 +2231,14 @@ function createSaveObj(obj) {
                     var value = obj[prop].get(keys[key])();
                     save[prop][keys[key]] = {
                         skillLevel: value.get('skillLevel')(),
-                        skillPoints: value.get('skillPoints')().toJSON(),
-                        skillPointsCap: value.get('skillPointsCap')().toJSON()
+                        skillPoints: value.get('skillPoints')().trunc().toJSON(),
+                        skillPointsCap: value.get('skillPointsCap')().trunc().toJSON()
                     };
                 }
+                continue;
+            }
+            if (prop === 'seenPowers') {
+                save[prop] = obj[prop];
             }
             if (typeof(obj[prop]) === 'object' && !isArray(obj[prop])) { continue; }
             if (typeof(obj[prop]) === 'function') { continue; }
@@ -2162,7 +2307,11 @@ function everySecond() {
         }
         _.mapValues(enemy.statusEffects, function (effect, effectName) {
             if (effect().gt(0)) {
-                effect(effect().times(0.8));
+                var reduction = 0.8;
+                if (effectName === 'bleeding') {
+                    reduction = 0.5 + (0.05 * incTower.getEffectiveSkillLevel('anticoagulants'));
+                }
+                effect(effect().times(reduction));
                 if (effectName === 'burning') {
                     enemy.assignDamage(effect(),'fire');
                 }
@@ -2298,6 +2447,7 @@ function collisionHandler(bullet, enemy) {
         var chance = 0.10; //10% base chance of applying a rune
         chance += (0.05 * incTower.getEffectiveSkillLevel(towerType + 'RuneApplication')); //increases by 5% per rank in the relevant skill
         chance -= (0.05 * enemy.elementalRuneDiminishing[towerType] || 0);
+        chance -= (0.2 * (enemy[towerType + '-resistant'] || 0));
         if (game.rnd.frac() < chance) {
             enemy.addElementalRune(bullet.tower.towerType);
             if (game.rnd.frac() < (0.05 * incTower.getEffectiveSkillLevel(towerType + 'AdvancedRuneApplication'))) {

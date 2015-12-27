@@ -125,10 +125,10 @@
                             <p><b>Currently Selected Enemy:</b></p>
                             <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
                             <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span></div>
-                            <div data-bind="if: currentlySelected().powers">
+                            <div data-bind="if: currentlySelected().sortedPowers && currentlySelected().sortedPowers.length > 0">
                                 Powers:
-                                <span data-bind="foreach: Object.keys(currentlySelected().powers)">
-                                    <span data-bind="text: $data, attr: {'data-tooltip': incTower.bossPowers[$data].describe(incTower.currentlySelected().powers[$data])}" style="text-transform: capitalize;" class="tooltip"></span>
+                                <span data-bind="foreach: currentlySelected().sortedPowers">
+                                    <span data-bind="text: incTower.bossPowers[$data.power].name, attr: {'data-tooltip': incTower.bossPowers[$data.power].describe($data.level)}" style="text-transform: capitalize;" class="tooltip"></span>
                                 </span>
                             </div>
                             <div>Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())"></span></div>
@@ -153,7 +153,6 @@
             <p>If you have a save game you wish to load paste it here:<br>
                 <textarea id="b64_load"></textarea></p>
             </p>
-
         </div>
         <div id="skills" title="Skills">
             <div id="skills_tree">
@@ -162,9 +161,8 @@
             </div>
             <div id="skills_desc">
                 <h3>Description</h3>
-                <span id="skills_desc_text">
-                    Click a skill on the left to see its description.
-                </span>
+                <span id="skills_desc_text" data-bind="html: incTower.describeSkill(incTower.UIselectedSkill())"></span>
+                <span data-bind="if: !incTower.UIselectedSkill()">Click a skill on the left to see its description.</span>
                 <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue</button></span>
                 <span data-bind="if: !incTower.directlyQueueable(incTower.UIselectedSkill()) && !incTower.skillMaxedInQueue(incTower.UIselectedSkill()) && !incTower.skillIsMaxed(incTower.UIselectedSkill())"><button id="skill_queue_prereqs">Add Prerequisites to Queue</button></span>
 
@@ -174,7 +172,7 @@
                 <p data-bind="if: skillQueue().length > 0">Queue will be exhausted in <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
                 <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
                 <ul data-bind="foreach: skillQueue" id="sortable_queue">
-                    <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>)</li>
+                    <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>) <span data-bind="visible: incTower.directlyRemovable($data[0], $data[1])" style="float: right;" class="ui-icon ui-icon-closethick remove-queue"></span></li>
                 </ul>
                 <br>
                 <button data-bind="click: function () { incTower.clearQueue(); }">Clear Queue</button>
@@ -184,6 +182,14 @@
         <div id="changelog" title="Changelog">
             <p>Changelog:</p>
             <ul>
+                <li>2015-12-26: Swarm unit increase nerfed, now produces 3-7 units instead of 5-10.</li>
+                <li>2015-12-26: The game now tracks what level of the various boss powers you've seen and tries to limit future boss levels to one increment above what you've already seen. Basically this means if you're at the point where you can receive up to 5 boss powers you shouldn't in one level receive 5x Swarm and then in another receive 5x Regeneration unless you've seen 4x those powers before.</li>
+                <li>2015-12-26: Powers are only shown when an enemy has powers, if there are multiple powers they are now shown in sorted order with the strongest power first.</li>
+                <li>2015-12-26: Nerfed the max duration on air towers, now the time that enemies are locked in a wind storm range from 0.5s to 1.5s. I wanted the air towers to be strong but it looked too goofy to have the animation slowly whisk enemies across the map.</li>
+                <li>2015-12-26: Earth towers now also cause bleed on impact equal to the boulder damage.</li>
+                <li>2015-12-26: Cleaned up some code that should make the save hash slightly smaller.</li>
+                <li>2015-12-23: Nerfed the reduction rate of bleeding damage but also added a skill called anti-coagulants that reduces this nerf, after 10 ranks it causes bleeding to be increased on tick instead of reduced.</li>
+                <li>2015-12-20: Added a button to remove individual queue items (if nothing else in the queue depended on them)</li>
                 <li>2015-12-19: Added a button to clear the queue and a massive nerf to the prestige system, it now only impacts learning rate.</li>
                 <li>2015-12-18: Prestige system added. Make sure to save your game first.</li>
                 <li>2015-12-18: Added several new infinitely expanding skills, there is now at least one in each major skill branch.</li>
