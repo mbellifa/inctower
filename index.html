@@ -99,7 +99,6 @@
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div data-bind="if: availableSpells().length > 0">
-
                     <p><b>Spells:</b></p>
                     <span data-bind="foreach: availableSpells">
                         <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() } " class="tooltip" style="margin-bottom: 5px;">
