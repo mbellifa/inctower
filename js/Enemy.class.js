@@ -52,7 +52,7 @@ var Enemy = function(x, y, opts) {
     this.healthbar = game.add.graphics(0,0);
     this.addChild(this.healthbar);
 
-    this.curTile = 0;
+    this.curTile = -1;
     for (var opt in opts) {
         if (opts.hasOwnProperty(opt)) {
             if (opt === "scale") {
@@ -159,6 +159,7 @@ Enemy.prototype.moveElmt = function() {
     if (this.knockback) { return; }
     this.x += this.speedX * this.realSpeed();
     this.y += this.speedY * this.realSpeed();
+    console.log([this.x, this.y, this.speedX, this.speedY, this.nextX, this.nextY]);
     if (this.speedX > 0 && this.x >= this.nextX) {
         this.x = this.nextX;
         this.nextTile();
@@ -181,6 +182,14 @@ Enemy.prototype.moveElmt = function() {
 };
 Enemy.prototype.nextTile = function () {
     this.curTile++;
+    if (this.curTile === 0 && this.x < 0) {
+        this.speedX = 1;
+        this.speedY = 0;
+        this.angle = 0;
+        this.nextX = this.path[this.curTile].x * tileSquare + 16 | 0;
+        this.nextY = this.path[this.curTile].y * tileSquare + 16 | 0;
+        return;
+    }
     //We ran off the edge
     if (typeof(this.path[this.curTile]) === "undefined") {
         if (incTower.wave() % 5 === 0) {

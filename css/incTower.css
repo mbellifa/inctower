@@ -243,3 +243,20 @@ body {
 .remove-queue {
     position: relative !important;
 }
+.icon-btn {
+    position: relative;
+    padding: 0px 3px 0px 20px;
+}
+.icon-btn .keybind {
+    position: absolute;
+    left: 0;
+    color: white;
+    border: 2px solid black;
+    border-radius: 0 5px 5px 0;
+    padding: 2px;
+    background-color: purple;
+}
+.icon-header {
+    clear: right;
+    margin: 0.5em 0 0.25em 0;
+}

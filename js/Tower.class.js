@@ -52,6 +52,9 @@ function PayToUpgradeTower(tower) {
 
 }
 function TowerInputDown(sprite,pointer) {
+    if (incTower.cursor() !== false) {
+        return false;
+    }
     console.log("TOWER CLICKED");
     incTower.currentlySelected(sprite);
 }
@@ -166,12 +169,12 @@ Tower.prototype.update = function () {
 
 Tower.prototype.fire = function() {
     'use strict';
-    if (game.time.now > this.fireLastTime) {
+    if (game.time.now >= this.fireLastTime) {
         var enemiesInRange = [];
         for (var i = 0;i < enemys.children.length;i++) {
             if (!enemys.children[i].alive) { continue; }
             if (enemys.children[i].x < 0 || enemys.children[i].y < 0) { continue; }
-            if (game.physics.arcade.distanceBetween(enemys.children[i],this) < this.trueRange()) {
+            if (game.physics.arcade.distanceBetween(enemys.children[i],this) <= this.trueRange()) {
                 enemiesInRange.push(enemys.children[i]);
             }
         }

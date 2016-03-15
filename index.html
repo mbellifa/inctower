@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="build/css/incTower.min.css" type="text/css">
         <link rel="stylesheet" href="css/incTower.css" type="text/css">
         <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
         <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
@@ -55,62 +54,64 @@
                         </div>
                     </div>
                 </div>
-                <ul class="menu" data-bind="visible: cursor() == false || cursor().type === 'spell'">
-                    <li>Build
-                        <ul>
-                            <li>Blocks
-                                <ul>
-                                    <li data-bind="click: function () { incTower.buyBlock(); }">Buy (<span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g)</li>
-                                    <li data-bind="click: function () { incTower.sellBlock(); }">Sell Block</li>
-                                </ul>
-                            </li>
-                            <li>Towers
-                                <ul data-bind="foreach: availableTowers">
-                                    <li data-bind="click: function () { incTower.buyTower($data); }">
-                                        Buy a <span data-bind="text: incTower.towerAttributes[$data].name"></span> Tower (<span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g)
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li data-bind="visible: numTowers() > 0">Upgrade
-                        <ul>
-                            <li data-bind="click: function () { cheapestUpgrade(); }">
-                                Least Upgraded (<span data-bind="text: humanizeNumber(cheapestUpgradeCost())"></span>g)
-                            </li>
-                            <li data-bind="click: function () { cheapestUpgradeAll(); }">Using All Gold</li>
-                        </ul>
-                    </li>
-                </ul>
+                <div class="icon-header"><b>Build:</b></div>
+                <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn" data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
+                    <div class="keybind">Q</div>
+                    <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
+                    <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
+                </button>
+                <span data-bind="foreach: availableTowers">
+                    <button data-bind="click: function () { incTower.buyTower($data); }, attr: { 'data-tooltip': incTower.towerAttributes[$data].describe() }" class="tooltip icon-btn">
+                        <div class="keybind" data-bind="text: incTower.towerKeybindLetter($index())"></div>
+                        <div style="width: 32px; height: 32px;" data-bind="style: { background: incTower.towerIconCSS($data) }"></div>
+                        <span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g
+                    </button>
+                </span>
+                <div class="icon-header"><b>Sell/Upgrade:</b></div>
+                <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn" data-tooltip="Sell towers and blocks.">
+                    <div class="keybind">S</div>
+                    <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
+                </button>
+                <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }" class="tooltip icon-btn">
+                    <div class="keybind">L</div>
+                    <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
+                </button>
+                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip icon-btn" data-tooltip="Upgrade all towers using ALL gold.">
+                    <div class="keybind">A</div>
+                    <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
+                </button>
+
+                <div data-bind="if: availableSpells().length > 0">
+                    <p class="icon-header"><b>Spells:</b></p>
+                    <span data-bind="foreach: availableSpells">
+
+                        <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() }" class="tooltip icon-btn">
+                            <div class="keybind" data-bind="text: incTower.spellKeybindLetter($index())"></div>
+                            <div style="width: 32px; height: 32px; border: 1px solid black;" data-bind="style: { background: incTower.spellIconCSS($data) }"></div>
+                            <span data-bind="text: incTower.spellAttributes[$data].manaCost"></span> Mana
+                        </button>
+                    </span>
+                </div>
+
                 <div id="buyBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
-                    <p>Click on the map to place your block. Holding CTRL will allow you to place multiple blocks.</p>
+                    <p>Click on the map to place your block. Holding SHIFT will allow you to place multiple blocks.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
-                <div id="sellBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'sell' && cursor().param === 'block'">
-                    <p>Click on a tower-less block to sell it. Holding CTRL will allow you to sell multiple blocks.</p>
+                <div id="sellToolActive" data-bind="visible: cursor() !== false && cursor().type === 'sell'">
+                    <p>Click on a tower or block to sell it. Holding SHIFT will allow you to sell multiple towers/blocks.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div id="buyTowerActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param !== 'block'">
-                    <p>Click on a tile with a block to build your tower. Holding CTRL will allow you to buy multiple towers.</p>
+                    <p>Click on a tile with a block to build your tower. Holding SHIFT will allow you to buy multiple towers.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div data-bind="visible: cursor() !== false && cursor().type === 'spell'">
-                    <p>Hover over the map to see the area of effect of your spell, click to cast. Holding CTRL will allow you to cast the same spell again.</p>
+                    <p>Hover over the map to see the area of effect of your spell, click to cast. Holding SHIFT will allow you to cast the same spell again.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
-                </div>
-                <div data-bind="if: availableSpells().length > 0">
-                    <p><b>Spells:</b></p>
-                    <span data-bind="foreach: availableSpells">
-                        <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() } " class="tooltip" style="margin-bottom: 5px;">
-                            <span data-bind="text: incTower.spellAttributes[$data].fullName"></span> - <span data-bind="text: incTower.spellAttributes[$data].manaCost"></span> Mana
-                        </button><br>
-                    </span>
-
                 </div>
 
                 <div data-bind="if: currentlySelected()">
                     <div>
-
                         <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
                             <p><b>Currently Selected Tower:</b></p>
                             <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
@@ -144,6 +145,8 @@
             <p>The rock/boulder sprites that fall from the sky when the earth tower activates can be found <a href="http://opengameart.org/content/rocks" target="_blank">here</a></p>
             <p>The zombie and skeleton enemy sprites are from <a href="http://opengameart.org/content/zombie-and-skeleton-32x48" target="_blank">here</a>.</p>
             <p>The goblin sprite comes from <a href="http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image" target="_blank">this Open Game Art collection</a>.</p>
+            <p>Eye of the Storm and Frost Shatter spell icons from <a href="http://opengameart.org/content/painterly-spell-icons-part-4">here</a>.</p>
+            <p>Mana Burst and Smolder spell icons from <a href="http://opengameart.org/content/random-rpg-icons-part-1">here</a>.</p>
 
         </div>
         <div id="save" title="Saves">
@@ -179,8 +182,31 @@
             </div>
         </div>
         <div id="changelog" title="Changelog">
+
+            <p>Todo:</p>
+            <ul>
+                <li>Help system/intro tutorial</li>
+                <li>Stream-line tower+block commands.</li>
+                <li>Add mana recovery to mana tooltip.</li>
+                <li>Add some sort of system to increase engagement and encourage active participation.</li>
+                <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc..</li>
+                <li>Multiple areas/map changes.</li>
+                <li>Change path only when necessary (on new wave or if a block is actually placed on path).</li>
+                <li>Add explanation for instability.</li>
+                <li>Fix infinite gold block glitch.</li>
+                <li>Address boss power tooltips persisting on boss death/wave reset.</li>
+                <li>Address possible pathing issues with air towers.</li>
+                <li>Try to replicate issue with selection indicator persisting past death.</li>
+
+            </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-03-14: Fixed mana bugs involving the cursor overlays.</li>
+                <li>2016-03-14: Fixed a bug with certain block placements and spawning.</li>
+                <li>2016-03-14: Added keybinds q,w,e.. for building blocks and towers and keybinds 1,2,3... for spells. Escape now cancels a cursor.</li>
+                <li>2016-03-14: Replaced the previous menu with rows of graphical icons.</li>
+                <li>2016-03-13: Changed the multi-buy key to SHIFT from CTRL to avoid a bizarre issue that stopped further click evens when CTRL clicking sprites.</li>
+                <li>2016-03-12: Reduced the growth of block costs.</li>
                 <li>2015-12-26: Swarm unit increase nerfed, now produces 3-7 units instead of 5-10.</li>
                 <li>2015-12-26: The game now tracks what level of the various boss powers you've seen and tries to limit future boss levels to one increment above what you've already seen. Basically this means if you're at the point where you can receive up to 5 boss powers you shouldn't in one level receive 5x Swarm and then in another receive 5x Regeneration unless you've seen 4x those powers before.</li>
                 <li>2015-12-26: Powers are only shown when an enemy has powers, if there are multiple powers they are now shown in sorted order with the strongest power first.</li>
@@ -280,11 +306,7 @@
                 <li>2015-05-07: Fixed a bug where the game loop was looping through all enemies instead of all alive enemies. Woops.</li>
 
             </ul>
-            <p>Todo:</p>
-            <ul>
-                <li>Add a new skills dialog.</li>
 
-            </ul>
         </div>
         <script type="text/javascript" src="js/phaser.min.js"></script>
         <script type="text/javascript" src="js/lodash.min.js"></script>

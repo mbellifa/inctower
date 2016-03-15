@@ -30,6 +30,8 @@ function Cursor(type, param, action) {
         this.indicator.beginFill(0x760076, 0.5);
         this.indicator.drawCircle(0,0,incTower.spellAttributes[param].diameter);
     }
+    this.indicator.x = game.input.x;
+    this.indicator.y = game.input.y;
     this.action = action;
 }
 
@@ -607,7 +609,7 @@ var incTower = {
             }
             incTower.spellAttributes[spell].perform(pointer, spell);
             incrementObservable(incTower.mana,-manaCost);
-            if (!ctrlKey.isDown) {
+            if (!shiftKey.isDown) {
                 incTower.clearCursor();
             }
 
@@ -1254,43 +1256,62 @@ var incTower = {
     },
 
 
-
-
+    towerIconCSS: function (tower) {
+        return 'url(img/towers/'+tower+'.png)';
+    },
+    spellIconCSS: function (spell) {
+        return 'url(img/spells/'+spell+'.png)';
+    },
     towers: ko.observableArray([]),
     towerAttributes: {
         kinetic: {
             name: 'Kinetic',
             baseCost: 25,
             startingFireRate: 2000,
-            damagePerLevel: 1
+            damagePerLevel: 1,
+            describe: function() {
+                return 'Kinetic towers are cheap to build and reliable. Their simpler parts make them cheaper to upgrade as well.';
+            }
         },
         earth: {
             name: 'Earth',
             baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
-            icon: 'earth-element.png'
+            icon: 'earth-element.png',
+            describe: function() {
+                return 'asdf';
+            }
         },
         air: {
             name: 'Air',
             baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
-            icon: 'air-element.png'
+            icon: 'air-element.png',
+            describe: function() {
+                return 'asdf';
+            }
         },
         fire: {
             name: 'Fire',
             baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
-            icon: 'fire-element.png'
+            icon: 'fire-element.png',
+            describe: function() {
+                return 'asdf';
+            }
         },
         water: {
             name: 'Water',
             baseCost: 100,
             damagePerLevel: 1,
             startingFireRate: 3000,
-            icon: 'water-element.png'
+            icon: 'water-element.png',
+            describe: function() {
+                return 'asdf';
+            }
         }
     },
 
@@ -1538,7 +1559,7 @@ var incTower = {
     blocks: ko.observableArray([{x:13, y:9}]),
     blockCost: function () {
         'use strict';
-        return costCalc(1,incTower.numBlocks(),1.2);
+        return costCalc(1,incTower.numBlocks(),1.1);
     },
     buyBlock: function () {
         'use strict';
@@ -1555,7 +1576,7 @@ var incTower = {
                     map.putTile(game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
                     incTower.blocks.push({x: tileX, y: tileY});
                     recalcPath();
-                    if (!ctrlKey.isDown) {
+                    if (!shiftKey.isDown) {
                         incTower.clearCursor();
                     }
                 }
@@ -1563,14 +1584,35 @@ var incTower = {
 
         }
     },
-    sellBlock: function () {
+    tooltipUpgradeLeast: function () {
+        return 'Upgrade the tower with the lowest upgrade-cast. Currently the cost to do this is ' + humanizeNumber(incTower.cheapestUpgradeCost()) + 'g';
+    },
+    towerKeybindLetter: function (i) {
+        console.log(i);
+        // Towers start at w because blocks are Q
+        return ['W','E','R','T','Y','U','I','O'][i];
+    },
+    spellKeybindLetter: function (i) {
+        // Towers start at w because blocks are Q
+        return ['1','2','3','4','5','6','7','8','9'][i];
+    },
+    sellTool: function () {
         'use strict';
-        incTower.cursor(new Cursor('sell','block', function (pointer) {
+        incTower.cursor(new Cursor('sell','', function (pointer) {
             var tileX = Math.floor(pointer.worldX / tileSquare);
             var tileY = Math.floor(pointer.worldY / tileSquare);
             if (tileX > 24 || tileY > 18) { return; }
             if (tileX === 0 && tileY === 0) { return; }
             var tileIndex = map.layers[0].data[tileY][tileX].index;
+            if (tileIndex > 4 && tileIndex < 9 && tileForbidden[tileX][tileY]) {
+                _.forEach(towers.children, function(tower) {
+                    if (tower.tileX === tileX && tower.tileY === tileY) {
+                        SellTower(tower);
+                        return false;
+                    }
+                });
+                return;
+            }
             if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
                 map.putTile(30,tileX,tileY,"Ground");
                 incrementObservable(incTower.gold,incTower.blockCost());
@@ -1582,7 +1624,7 @@ var incTower = {
                     }
                 }
                 recalcPath();
-                if (!ctrlKey.isDown) { incTower.clearCursor(); }
+                if (!shiftKey.isDown) { incTower.clearCursor(); }
             }
         }));
     },
@@ -1607,7 +1649,7 @@ var incTower = {
                     opt.cost = cost;
                     Tower.prototype.posit(pointer,opt);
                     incrementObservable(incTower.gold,-cost);
-                    if (!ctrlKey.isDown) { incTower.clearCursor(); }
+                    if (!shiftKey.isDown) { incTower.clearCursor(); }
                 }
             }));
         }
@@ -1847,6 +1889,11 @@ incTower.currentlySelected.subscribe(function (value) {
     incTower.currentlySelectedIndicator.y = value.y; //+ (tileSquare / 2);
 
 });
+incTower.cursor.subscribe(function (oldValue) {
+    if (oldValue !== false && oldValue.indicator) {
+        oldValue.indicator.destroy();
+    }
+}, null, 'beforeChange');
 incTower.skillTreeData = function () {
     'use strict';
     var data = [];
@@ -2006,7 +2053,7 @@ function create() {
     layer = map.createLayer('Ground');
     layer.resizeWorld();
 
-    ctrlKey = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
+    shiftKey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
     pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     recalcPath();
     game.input.addMoveCallback(function(pointer, x, y) {
@@ -2020,10 +2067,50 @@ function create() {
         } else {
             cursor.indicator.x = x;
             cursor.indicator.y = y;
-
         }
-
     });
+    // Keybinds
+    qKey = game.input.keyboard.addKey(Phaser.Keyboard.Q);
+    qKey.onDown.add(incTower.buyBlock, this);
+    var towerKeys = [Phaser.Keyboard.W, Phaser.Keyboard.E, Phaser.Keyboard.R, Phaser.Keyboard.T, Phaser.Keyboard.Y, Phaser.Keyboard.U];
+
+    _.forEach(towerKeys, function(towerKey, index) {
+        var tempKey = game.input.keyboard.addKey(towerKey);
+        tempKey.onDown.add(function () {
+                var key = incTower.availableTowers()[index];
+                if (key !== undefined) {
+                    incTower.buyTower(key);
+                }
+            }, this);
+    });
+    var spellKeys = [Phaser.Keyboard.ONE, Phaser.Keyboard.TWO, Phaser.Keyboard.THREE, Phaser.Keyboard.FOUR, Phaser.Keyboard.FIVE, Phaser.Keyboard.SIX, Phaser.Keyboard.SEVEN, Phaser.Keyboard.EIGHT, Phaser.Keyboard.NINE, Phaser.Keyboard.ZERO];
+
+    _.forEach(spellKeys, function(spellKey, index) {
+        var tempKey = game.input.keyboard.addKey(spellKey);
+        tempKey.onDown.add(function () {
+            var key = incTower.availableSpells()[index];
+            if (key !== undefined) {
+                incTower.castSpell(key);
+            }
+        }, this);
+    });
+
+    sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    sKey.onDown.add(incTower.sellTool, this);
+    aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    aKey.onDown.add(incTower.cheapestUpgradeAll, this);
+    lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
+    lKey.onDown.add(incTower.cheapestUpgrade, this);
+
+    escKey = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
+    escKey.onDown.add(incTower.clearCursor, this);
+
+
+    /*    key2 = game.input.keyboard.addKey(Phaser.Keyboard.TWO);
+        key2.onDown.add(addPhaserLogo, this);
+
+        key3 = game.input.keyboard.addKey(Phaser.Keyboard.THREE);
+        key3.onDown.add(addPineapple, this);*/
     game.input.onDown.add(function (pointer) {
         if (!incTower.cursor()) { return; }
         incTower.cursor().action(pointer);
@@ -2523,7 +2610,7 @@ function generateEnemy(difficulty) {
         } else {
             offset -= 48;
         }
-        new Enemy(offset, path[0].y * tileSquare, packEntry);
+        new Enemy(offset, path[0].y * tileSquare + 16, packEntry);
     }
     incTower.generatingEnemies = false;
 

@@ -34,3 +34,4 @@
 * [ ] Sensors  – Increases the range of towers by 5% per level, five levels.
   * [ ] Critical Strikes – Sensor arrays have a chance of revealing a weak spot causing extra damage. 2% per level, five levels.
   * [ ] Sensor Array – Builds a tower that marks targets, marked targets can be hit by any tower regardless of range.
+* [ ] Inteligence - Towers track their kills.
