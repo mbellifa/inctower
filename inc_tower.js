@@ -1280,7 +1280,7 @@ var incTower = {
             startingFireRate: 3000,
             icon: 'earth-element.png',
             describe: function() {
-                return 'asdf';
+                return 'Earth towers deal earth damage and have a chance to attach an earth rune to enemies. When an earth reaction happens a giant boulder falls from the sky on the affected enemy.';
             }
         },
         air: {
@@ -1290,7 +1290,7 @@ var incTower = {
             startingFireRate: 3000,
             icon: 'air-element.png',
             describe: function() {
-                return 'asdf';
+                return 'Air towers deal air damage and have a chance to attach an air rune to enemies. When an air reaction happens a group of enemies will be knocked back..';
             }
         },
         fire: {
@@ -1300,7 +1300,7 @@ var incTower = {
             startingFireRate: 3000,
             icon: 'fire-element.png',
             describe: function() {
-                return 'asdf';
+                return 'Fire towers deal fire damage and have a chance to attach a fire rune to enemies. When a fire reaction happens the affected enemy takes additional damage from all sources and takes burn damage over time.';
             }
         },
         water: {
@@ -1310,7 +1310,7 @@ var incTower = {
             startingFireRate: 3000,
             icon: 'water-element.png',
             describe: function() {
-                return 'asdf';
+                return 'Water towers deal water damage and have a chance to attach a water rune to enemies. When a water reaction occurs the affected enemy becomes either slowed or frozen in place depending on the number of runes.';
             }
         }
     },
