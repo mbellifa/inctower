@@ -48,7 +48,7 @@
                             <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                             <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                         </div>
-                        <div class="progressBar" data-bind="visible: incTower.maxMana().gt(0)">
+                        <div class="progressBar tooltip" data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
                             <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
                             <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
                         </div>
@@ -82,13 +82,13 @@
                 </button>
 
                 <div data-bind="if: availableSpells().length > 0">
-                    <p class="icon-header"><b>Spells:</b></p>
+                    <p class="icon-header"><b>Spells:</b> (Spell Level: <span data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }" class="tooltip"></span>)</p>
                     <span data-bind="foreach: availableSpells">
 
                         <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() }" class="tooltip icon-btn">
                             <div class="keybind" data-bind="text: incTower.spellKeybindLetter($index())"></div>
                             <div style="width: 32px; height: 32px; border: 1px solid black;" data-bind="style: { background: incTower.spellIconCSS($data) }"></div>
-                            <span data-bind="text: incTower.spellAttributes[$data].manaCost"></span> Mana
+                            <span data-bind="text: humanizeNumber(incTower.spellAttributes[$data].trueManaCost())"></span> Mana
                         </button>
                     </span>
                 </div>
@@ -131,7 +131,7 @@
                                     <span data-bind="text: incTower.bossPowers[$data.power].name, attr: {'data-tooltip': incTower.bossPowers[$data.power].describe($data.level)}" style="text-transform: capitalize;" class="tooltip"></span>
                                 </span>
                             </div>
-                            <div>Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())"></span></div>
+                            <div data-bind="if: currentlySelected().elementalInstability().gt(0)">Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())" class="tooltip" data-tooltip="Elemental Instability accrues from a portion of elemental tower hits, when elemental rune reactions occur any damage portion is normally calculated from its instability."></span></div>
                         </div>
                     </div>
                 </div>
@@ -187,21 +187,33 @@
             <ul>
                 <li>Help system/intro tutorial</li>
                 <li>Stream-line tower+block commands.</li>
-                <li>Figure out what to do about the infinite mana problem.</li>
-                <li>Add mana recovery to mana tooltip.</li>
-                <li>Add some sort of system to increase engagement and encourage active participation.</li>
-                <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc..</li>
+                <li>Add some sort of system to increase engagement and encourage active engagement.</li>
+                <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
                 <li>Multiple areas/map changes.</li>
-                <li>Change path only when necessary (on new wave or if a block is actually placed on path).</li>
-                <li>Add explanation for instability.</li>
-                <li>Fix infinite gold block glitch.</li>
-                <li>Address boss power tooltips persisting on boss death/wave reset.</li>
                 <li>Address possible pathing issues with air towers.</li>
-                <li>Try to replicate issue with selection indicator persisting past death.</li>
-
+                <li>Experiment: Instead of using SHIFT have all cursors toggle on/off.</li>
+                <li>Add a pause button.</li>
+                <li>Investigate sequential squares idea.</li>
+                <li>Investigate moving the 'a' keybind to another key so its not accidentally hit.</li>
+                <li>Investigate strange pathing at the end of mazes.</li>
+                <li>Investigate report of an autoclicker on manaburst causing selection issues.</li>
+                <li>Look into traps (don't block pathing)</li>
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-03-17: Fixed bug with prestige resets not clearing the skill display in the skill tree.</li>
+                <li>2016-03-17: Reduced the base cost for magical affinity from 5 minutes to 2 minutes, to hopefully encourage early interaction with spells.</li>
+                <li>2016-03-17: The path (purple line) is only recalculated when a block crosses the current line or when a new wave starts, this is to minimize the unnecessary path jumps.</li>
+                <li>2016-03-16: While writing the instability tooltip I realized that the way instability currently works there were some spells adding runse that would then do no damage on reaction because only elemental towers added instability. Now all elemental damage adds a random portion to instability.</li>
+                <li>2016-03-16: Active tooltips are now hidden when the currently selected enemy disappears, this is to stop popups from persisting when a boss goes off the edge.</li>
+                <li>2016-03-16: Instability now has a tooltip.</li>
+                <li>2016-03-16: Tentatively declaring the selecting-dead-enemy-bug vanquished.</li>
+                <li>2016-03-16: Added Wizardry skill, which increases arcane damage, to lead into things like the mana regen skill below.</li>
+                <li>2016-03-16: Mana regeneration now shows as a tool tip on the mana bar.</li>
+                <li>2016-03-16: Mana regeneration has been changed from a static 0.001% of max mana (which became overpowered at high mana) to start at 1 and be increased by the no-max skill called Mana Regeneration.</li>
+                <li>2016-03-16: Implemented Arcane Sacrifice, a spell which, if it kills an enemy, will increase the damage and mana cost of all other spells.</li>
+                <li>2016-03-15: Fixed a bug where loading a save hash would repeat spell slots.</li>
+                <li>2016-03-15: Fixed the bug where a reload would refresh the center block, technically allowing an infinite amount of gold generation.</li>
                 <li>2016-03-14: Fixed mana bugs involving the cursor overlays.</li>
                 <li>2016-03-14: Fixed a bug with certain block placements and spawning.</li>
                 <li>2016-03-14: Added keybinds q,w,e.. for building blocks and towers and keybinds 1,2,3... for spells. Escape now cancels a cursor.</li>

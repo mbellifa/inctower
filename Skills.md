@@ -10,6 +10,8 @@
     * [ ] Prototyping: Upgrading a high level turret reduces the cost to upgrade all turrets of a lower level by 5%. (5 ranks)
     * [ ] Part Design: Increases damage on tower upgrade by 1 (not retroactive Improves the damage increase that occurs on tower upgrade by 1% per rank (no max).
 * [x] Magical Affinity -- Grants mana bar and the ability to begin casting spells. (1 rank))
+  * [ ] Wizardry -- Increases all arcane damage by 10% per level, 5 levels.
+    * [ ] Mana Regeneration -- Increases mana regen per second by 1 per rank, no max.
   * [x] Fire Affinity -- Allows the creation of fire towers which burn enemies over time and increase the damage enemies take from all sources. (1 rank)
     * [ ] Bombard spell?
     * [x] Fire Rune Application -- Increases the chance that a fire tower applies a rune by 5%/rank (10 ranks)

@@ -35,6 +35,24 @@ function Cursor(type, param, action) {
     this.action = action;
 }
 
+function Spell(opts) {
+    this.fullName = opts.fullName;
+    this.manaCost = opts.manaCost;
+    this.trueManaCost = ko.pureComputed(function () {
+        if (incTower === undefined) { return 0; }
+        var base_mana_cost = new BigNumber(this.manaCost);
+        return base_mana_cost.plus(base_mana_cost.times(0.5 * incTower.spellLevel()));
+    }, this);
+    this.raw_describe = opts.describe;
+
+    this.damageType = opts.damageType;
+    this.diameter = opts.diameter;
+    this.perform = opts.perform;
+    this.describe = ko.pureComputed(function () {
+        return this.fullName + ' (' + _.capitalize(this.damageType) + ')<br><br>' + this.raw_describe();
+    }, this);
+}
+
 function addToObsArray(arr, value) {
     'use strict';
     //Adds a value to an observable array (or regular array) if it doesn't already exist.
@@ -75,8 +93,10 @@ function loadSave(save) {
             if (ko.isObservable(incTower[prop])) {
                 var curVal = incTower[prop]();
                 if (isArray(curVal)) {
+                    incTower[prop]([]);
                     for (i = 0;i < save[prop].length;i++) {
-                        incTower[prop].push(save[prop][i]);
+                        addToObsArray(incTower[prop],save[prop][i])
+                        //incTower[prop].push(save[prop][i]);
                     }
                 } else if (isPrimativeNumber(curVal) || typeof curVal === 'boolean') {
                     incTower[prop](save[prop]);
@@ -92,6 +112,9 @@ function loadSave(save) {
         }
     }
     if ('blocks' in save) {
+        _.forEach(incTower.blocks(), function (block) {
+            map.putTile(30,block.x,block.y,"Ground");
+        });
         incTower.blocks([]);
         _.forEach(save.blocks, function (block) {
             map.putTile(game.rnd.integerInRange(5,8),block.x,block.y,"Ground");
@@ -139,8 +162,8 @@ $(document).ready(function () {
                 show: {
                     event: event.type,
                     ready: true
-                }
-            }, event);
+                },
+             }, event);
         });
     $('#skills').on('click','#skill_queue_button', function (e) {
         incTower.enqueueSkill(incTower.UIselectedSkill());
@@ -177,11 +200,6 @@ $(document).ready(function () {
         //incTower.enqueueSkill();
         e.preventDefault();
     });
-    //$( ".accordion" ).accordion({
-    //    collapsible: true,
-    //    heightStyle: "content"
-    //});
-    $('.menu').menu();
 
     $('#skills_tree').on('select_node.jstree', function (e, data) {
         var selected = data.selected[0];
@@ -282,6 +300,7 @@ function isArray(obj) {
 var incTower = {
     gold: ko.observable(new BigNumber(150)),
     wave: ko.observable(0),
+    pathDirty: false,
     lastUpdate: 0,
     lastUpdateRealTime: Date.now(),
     generatingEnemies: false,
@@ -327,6 +346,7 @@ var incTower = {
         incTower.farmMode(false);
         _.forEach(incTower.skills.keys(), function (skill) {
             incTower.skills.remove(skill);
+            incTower.skillTreeUpdateLabel(skill);
         });
         _.forEach(incTower.startingSkills, function (skill) {
             if (!incTower.haveSkill(skill)) {
@@ -344,10 +364,8 @@ var incTower = {
 
 
         towers.forEach(function(tower) {
-
             if (tower.icon) { tower.icon.destroy(); }
             tower.kill();
-
         });
         towers.removeAll(true);
         tileForbidden = new Array(25);
@@ -458,7 +476,6 @@ var incTower = {
             } else {
                 break;
             }
-
         }
         if (!incTower.activeSkill() || !_.has(incTower.skillAttributes, incTower.activeSkill())) {
             if (incTower.skillQueue().length === 0) {
@@ -597,10 +614,20 @@ var incTower = {
     },
     maxMana: ko.observable(new BigNumber(0)),
     mana: ko.observable(new BigNumber(0)),
+    describeManaRegeneration: ko.pureComputed(function () {
+       return 'Regenerating ' + incTower.manaRegeneration() + ' mana per second.';
+    }),
+    manaRegeneration: ko.pureComputed(function () {
+        return 1 + incTower.getEffectiveSkillLevel('manaRegeneration');
+    }),
+    spellLevel: ko.observable(new BigNumber(0)),
+    spellLevelDamageFactor: ko.pureComputed(function () {
+       return Math.pow(2,incTower.spellLevel());
+    }),
     availableSpells: ko.observableArray([]),
     castSpell: function (spell) {
         'use strict';
-        var manaCost = incTower.spellAttributes[spell].manaCost;
+        var manaCost = incTower.spellAttributes[spell].trueManaCost();
         if (incTower.mana().lt(manaCost)) { return; }
         incTower.cursor(new Cursor('spell',spell, function (pointer) {
             if (incTower.mana().lt(manaCost)) {
@@ -615,23 +642,28 @@ var incTower = {
 
         }));
     },
+    describeSpellLevel: ko.pureComputed(function () {
+        'use strict';
+        return "Increases the damage of all spells by " + incTower.spellLevelDamageFactor() + "X and increases their mana costs by " + (incTower.spellLevel() * 50) + "%.";
+    }),
 
     spellAttributes: {
-        manaBurst: {
+        manaBurst: new Spell({
             fullName: 'Mana Burst',
             damageType: 'arcane',
             manaCost: 100,
             diameter: 200,
             describe: function () {
-                var damage = incTower.totalTowerDamage();
+                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
                 var fullManaDamage = damage.times(10);
-                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by 3%.'
+
+                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by ' + humanizeNumber(0.25 * this.trueManaCost()) + '.'
             },
             perform: function (pointer, spellName) {
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage();
+                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
                 if (incTower.mana().eq(incTower.maxMana())) { damage = damage.times(10); }
 
                 enemys.forEachAlive(function(enemy) {
@@ -641,19 +673,50 @@ var incTower = {
                 });
                 var perMana = incTower.mana().div(incTower.maxMana()).toNumber();
                 if (game.rnd.frac() < 1 - perMana) {
-                    incTower.maxMana(incTower.maxMana().times(1.03));
+                    incrementObservable(incTower.maxMana,0.25 * this.trueManaCost());
+                    //incTower.maxMana(incTower.maxMana().times(1.03));
                 }
 
             }
 
-        },
-        frostShatter: {
+        }),
+        arcaneSacrifice: new Spell({
+            fullName: 'Arcane Sacrifice',
+            damageType: 'arcane',
+            manaCost: 1000,
+            diameter: 64,
+            describe: function () {
+                var damage = incTower.totalTowerDamage().times(100).times(incTower.spellLevelDamageFactor());
+                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in a small area. If an enemy is killed they will be sacrificed, increasing the damage of all spells by 100% and increasing the mana cost of all spells by 50%.'
+            },
+            perform: function (pointer, spellName) {
+                var cursor = incTower.cursor();
+                var diameter = incTower.spellAttributes[spellName].diameter;
+                var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
+                var damage = incTower.totalTowerDamage().times(100).times(incTower.spellLevelDamageFactor());
+                var livingBefore = enemys.countLiving();
+                enemys.forEachAlive(function(enemy) {
+                    if (area.contains(enemy.x, enemy.y)) {
+                        enemy.assignDamage(damage,'arcane');
+                    }
+                });
+                if (enemys.countLiving() < livingBefore) {
+                    //Someone died!
+                    incrementObservable(incTower.spellLevel);
+                }
+
+
+            }
+
+        }),
+
+        frostShatter: new Spell({
             fullName: 'Frost Shatter',
             damageType: 'water',
             manaCost: 200,
             diameter: 150,
             describe: function () {
-                var damage = incTower.totalTowerDamage().div(2);
+                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
                 var frozenDamage = damage.times(5);
                 return 'Deals ' + humanizeNumber(damage) + ' water damage in an area, adding three water runes to each enemy that is not already frozen. If an enemy is frozen it takes ' + humanizeNumber(frozenDamage) + ' damage and gains one water rune instead.<br><br>If all enemies in the area are frozen 50% of the mana cost is refunded.';
             },
@@ -661,7 +724,7 @@ var incTower = {
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().div(2);
+                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
                 var frozenDamage = damage.times(5);
                 var allFrozen = true;
 
@@ -679,10 +742,12 @@ var incTower = {
                         }
                     }
                 });
-                if (allFrozen) { incrementObservable(incTower.mana, 100); }
+                if (allFrozen) {
+                    incrementObservable(incTower.mana, 0.5 * this.trueManaCost());
+                }
             }
-        },
-        smolder: {
+        }),
+        smolder: new Spell({
             fullName: 'Smolder',
             damageType: 'fire',
             manaCost: 200,
@@ -690,12 +755,12 @@ var incTower = {
             describe: function () {
                 var damage = incTower.totalTowerDamage().div(2);
                 var burnDamage = damage.times(4);
-                return 'Deals ' + humanizeNumber(damage) + ' fire damage in an area, adding three fire runes to each enemy that is not already burning. If an enemy is burning its burn amount is increased by ' + humanizeNumber(burnDamage) + ' damage and gains one fire rune instead.<br><br>Each already burning enemy hit will restore 5% of your missing mana.';
+                return 'Deals ' + humanizeNumber(damage) + ' fire damage in an area, adding three fire runes to each enemy that is not already burning. If an enemy is burning its burn amount is increased by ' + humanizeNumber(burnDamage) + ' damage and gains one fire rune instead.<br><br>Each already burning enemy hit will restore ' +  humanizeNumber(0.15 * this.trueManaCost()) + ' mana.';
             },
             perform: function (pointer, spellName) {
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().div(2);
+                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
                 var burnDamage = damage.times(4);
                 var alreadyBurning = 0;
 
@@ -718,14 +783,14 @@ var incTower = {
                     incrementObservable(incTower.mana, incTower.maxMana().minus(incTower.mana()).times(0.05 * alreadyBurning));
                 }
             }
-        },
-        eyeOfTheStorm: {
+        }),
+        eyeOfTheStorm: new Spell({
             fullName: 'Eye of the Storm',
             damageType: 'air',
             manaCost: 200,
             diameter: 50,
             describe: function () {
-                var damage = incTower.totalTowerDamage().div(3);
+                var damage = incTower.totalTowerDamage().div(3).times(incTower.spellLevelDamageFactor());
                 var soloDamage = damage.times(7);
                 return 'Deals ' + humanizeNumber(damage) + ' air damage in a focused area, adding three air runes to each enemy. If only one enemy is is under this spells effect it deals ' + humanizeNumber(soloDamage) + ' damage and gains six air runes instead.<br><br>Gain 20 mana for each air rune that was already attached to affected enemies.';
             },
@@ -765,7 +830,7 @@ var incTower = {
                     incrementObservable(incTower.mana, 20 * airRunes);
                 }
             }
-        }
+        })
     },
 
     skillAttributes: {
@@ -917,7 +982,7 @@ var incTower = {
         },
         magicalAffinity: {
             fullName: 'Magical Affinity',
-            baseCost: 300,
+            baseCost: 120,
             growth: 1.1,
             maxLevel: 1,
             describeRank: function () {
@@ -931,11 +996,35 @@ var incTower = {
                     incTower.mana(incTower.maxMana());
                 }
                 addToObsArray(incTower.availableSpells,'manaBurst');
+                addToObsArray(incTower.availableSpells,'arcaneSacrifice');
+
 
             },
             grants: {
-                1: ['fireAffinity', 'waterAffinity', 'earthAffinity', 'airAffinity']
+                1: ['fireAffinity', 'waterAffinity', 'earthAffinity', 'airAffinity', 'wizardry']
             }
+        },
+        wizardry: {
+            fullName: 'Wizardry',
+            baseCost: 60,
+            growth: 1.2,
+            maxLevel: 5,
+            describeRank: function (rank) {
+                'use strict';
+                return "Increases arcane damage by " + (rank * 10) +'%.';
+            },
+            grants: {
+                1: ['manaRegeneration']
+            }
+        },
+        manaRegeneration: {
+            fullName: 'Mana Regeneration',
+            baseCost: 30,
+            growth: 1.2,
+            describeRank: function (rank) {
+                'use strict';
+                return "Increases mana regeneration by " + rank +' per second.';
+            },
         },
         fireAffinity: {
             fullName: 'Fire Affinity',
@@ -1153,9 +1242,10 @@ var incTower = {
         if (!(name in incTower.skillAttributes)) { console.log(name + " is not in our skills list."); }
         /*if (incTower.getSkillLevel(name) !== -1) { return; } //We already know the skill*/
         //Either gains a new skill at level 1 or loads in a previously saved skill
+        console.log(name);
         var skillLevel = opt.skillLevel || 0;
         var skillPoints = new BigNumber(opt.skillPoints || 0);
-        var skillPointsCap = costCalc(incTower.skillAttributes[name].baseCost,skillLevel,incTower.skillAttributes[name].growth);
+        var skillPointsCap = costCalc(incTower.skillAttributes[name].baseCost, skillLevel, incTower.skillAttributes[name].growth);
         incTower.skills.push(name,ko.observableDictionary({
             skillLevel: skillLevel,
             skillPoints: skillPoints,
@@ -1208,7 +1298,7 @@ var incTower = {
     },
     checkSkill: function (skill) {
         'use strict';
-        console.log("CHECK : " + skill);
+        //console.log("CHECK : " + skill);
         var toAdd = [];
         if (incTower.skillAttributes[skill].maxLevel !== undefined && incTower.getSkillLevel(skill) > incTower.skillAttributes[skill].maxLevel) {
             incTower.skills.get(skill)().get('skillLevel')(incTower.skillAttributes[skill].maxLevel);
@@ -1224,15 +1314,13 @@ var incTower = {
                 }
             });
         }
-        console.log(toAdd);
+        //console.log(toAdd);
         _.map(toAdd, function (skill) {
             if (!incTower.haveSkill(skill)) {
                 incTower.gainSkill(skill);
             }
         });
         incTower.skillTreeUpdateLabel(skill);
-
-
     },
     haveSkill: function (name) {
         'use strict';
@@ -1575,7 +1663,14 @@ var incTower = {
                     incrementObservable(incTower.gold, -cost);
                     map.putTile(game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
                     incTower.blocks.push({x: tileX, y: tileY});
-                    recalcPath();
+                    incTower.pathDirty = true;
+                    _.forEach(path, function (pathUnit) {
+                        if (pathUnit.x === tileX && pathUnit.y === tileY) {
+                            recalcPath();
+                            return false;
+                        }
+                    });
+                    //recalcPath();
                     if (!shiftKey.isDown) {
                         incTower.clearCursor();
                     }
@@ -1876,6 +1971,8 @@ incTower.percentageMaxMana = ko.computed(function () {
 incTower.currentlySelected.subscribe(function (value) {
     'use strict';
     if (value === null) {
+        //Hide all tooltips in case we were looking at a boss power.
+        $('.qtip').remove();
         incTower.currentlySelectedIndicator.destroy();
         incTower.currentlySelectedIndicator = null;
         return;
@@ -1931,8 +2028,10 @@ for (var i = 0;i < 25;++i) {
 
 var path = [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5,"y":0},{"x":6,"y":0},{"x":7,"y":0},{"x":7,"y":1},{"x":8,"y":1},{"x":9,"y":1},{"x":10,"y":1},{"x":11,"y":1},{"x":11,"y":2},{"x":11,"y":3},{"x":11,"y":4},{"x":12,"y":4},{"x":12,"y":5},{"x":12,"y":6},{"x":12,"y":7},{"x":12,"y":8},{"x":13,"y":8},{"x":13,"y":9},{"x":14,"y":9},{"x":15,"y":9},{"x":15,"y":10},{"x":16,"y":10},{"x":16,"y":11},{"x":17,"y":11},{"x":17,"y":12},{"x":17,"y":13},{"x":18,"y":13},{"x":18,"y":14},{"x":19,"y":14},{"x":20,"y":14},{"x":21,"y":14},{"x":21,"y":15},{"x":21,"y":16},{"x":22,"y":16},{"x":22,"y":17},{"x":23,"y":17},{"x":23,"y":18},{"x":24,"y":18},{"x":24,"y":19}];
 
+
 function recalcPath() {
     'use strict';
+    incTower.pathDirty = false;
     var walkables = [30];
     pathfinder.setGrid(map.layers[0].data, walkables);
 
@@ -2014,13 +2113,13 @@ function humanizeBigNumber(number,precision) {
     var thresh = 1000;
     //number = 3;
     if (typeof(number.abs) !== 'function') { number = new BigNumber(number); }
-    if (number.abs() < thresh) { return number.toFixed(precision); }
+    if (number.abs() < thresh) { return number.toFixed(precision).replace('.0',''); }
     var u = -1;
     do {
         number = number.div(thresh);
         ++u;
     } while (number.abs().gte(thresh));
-    return number.toFixed(precision)+incTower.numSuffixes[u];
+    return number.toFixed(precision).replace('.0','')+incTower.numSuffixes[u];
 
 }
 
@@ -2339,7 +2438,7 @@ function createSaveObj(obj) {
 function everySecond() {
     //Training skills
     'use strict';
-    incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.maxMana().times(0.001))));
+    incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.manaRegeneration())));
     incTower.checkQueue();
 
     var skillName = incTower.activeSkill();
@@ -2458,6 +2557,7 @@ function update() {
     incTower.lastUpdate = currentTime;
 
     if ((!incTower.generatingEnemies) && (enemys.countLiving() === 0)) {
+        if (incTower.pathDirty) { recalcPath(); }
         if (incTower.wave() > 0) {
             //Save state
             var saveData = JSON.stringify(createSaveObj(incTower));
@@ -2483,6 +2583,11 @@ function update() {
 
         //generateEnemy(Math.pow(incTower.wave * 5,1.35));
         generateEnemy(costCalc(5,incTower.wave(),1.2));
+    }
+
+    //So lame that I even need this check.
+    if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
+        incTower.currentlySelected(null);
     }
     bullets.forEachAlive(function (bullet) {
         var range = bullet.tower.trueRange();
@@ -2530,7 +2635,6 @@ function collisionHandler(bullet, enemy) {
     }
     enemy.assignDamage(damage,towerType);
     if (towerType === 'fire' || towerType === 'water' || towerType === 'air' || towerType === 'earth') {
-        incrementObservable(enemy.elementalInstability,BigNumber.random().times(damage));
         var chance = 0.10; //10% base chance of applying a rune
         chance += (0.05 * incTower.getEffectiveSkillLevel(towerType + 'RuneApplication')); //increases by 5% per rank in the relevant skill
         chance -= (0.05 * enemy.elementalRuneDiminishing[towerType] || 0);

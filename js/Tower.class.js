@@ -106,7 +106,7 @@ Tower = function(opt) {
         var defaultDamage = 1 * Math.pow(10, incTower.getEffectiveSkillLevel('towerTemplates'));
 
         defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
-        defaultDamage *= 1 + 0.01 * incTower.getEffectiveSkillLevel('refinedBlueprints');
+        defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints');
         this.damage = ko.observable(new BigNumber(opt.damage || defaultDamage));
         this.level = ko.observable(opt.level || 1);
         var defaultFireRate = 2000;

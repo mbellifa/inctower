@@ -32,7 +32,7 @@ var Enemy = function(x, y, opts) {
     this.events.onKilled.add(function () {
 
 
-        if (incTower.currentlySelected() === this) {
+        if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy  && !incTower.currentlySelected().alive) {
             incTower.currentlySelected(null);
         }
 
@@ -125,6 +125,10 @@ Enemy.prototype.assignDamage = function (damage, type) {
     if (type in this.elementalRuneCounts) {
         damage = damage.times(1 + (this.elementalRuneCounts[type] * 0.20));
     }
+    //Add instability if it's an elemental type
+    if (type === 'fire' || type === 'water' || type === 'air' || type === 'earth' || type === 'arcane') {
+        incrementObservable(this.elementalInstability, BigNumber.random().times(damage));
+    }
     if (type === 'water') {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('waterMastery'));
         damage = damage.times(1 - 0.2 * (this['water-resistant'] || 0));
@@ -138,6 +142,7 @@ Enemy.prototype.assignDamage = function (damage, type) {
         damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('earthMastery'));
         damage = damage.times(1 - 0.2 * (this['earth-resistant'] || 0));
     } else if (type === 'arcane') {
+        damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('wizardry'));
         damage = damage.times(1 - 0.2 * (this['arcane-resistant'] || 0));
     }
 
@@ -159,7 +164,7 @@ Enemy.prototype.moveElmt = function() {
     if (this.knockback) { return; }
     this.x += this.speedX * this.realSpeed();
     this.y += this.speedY * this.realSpeed();
-    console.log([this.x, this.y, this.speedX, this.speedY, this.nextX, this.nextY]);
+    //console.log([this.x, this.y, this.speedX, this.speedY, this.nextX, this.nextY]);
     if (this.speedX > 0 && this.x >= this.nextX) {
         this.x = this.nextX;
         this.nextTile();
@@ -250,6 +255,10 @@ Enemy.prototype.nextTile = function () {
     }
 };
 Enemy.prototype.update = function () {
+    if (!this.alive) {
+        return;
+    }
+
     this.moveElmt();
     if (this.shielding > 0) {
         if (this.lastShieldTime === undefined || this.lastShieldTime + (4000 / this.shielding) < game.time.now) {
