@@ -35,10 +35,10 @@
             <div id="right">
                 <div>
                     <div>
-                        <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; Currently in
+                        <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; <span data-bind="if: incTower.wave() > 1"><button data-bind="click: function () { incTower.prevWave(); }">Previous Wave</button></span></div>
+                        <div>Currently in
                             <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
-                            <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
-                        </div>
+                            <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span></div>
                         <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
                         <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }" class="tooltip"></span></div>
                         <div data-bind="if: prestigePointsNext() > 0"><b>Prestige (Next Reset)</b>: <span data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }" class="tooltip"></span><br><button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></div>
@@ -165,13 +165,13 @@
                 <h3>Description</h3>
                 <span id="skills_desc_text" data-bind="html: incTower.describeSkill(incTower.UIselectedSkill())"></span>
                 <span data-bind="if: !incTower.UIselectedSkill()">Click a skill on the left to see its description.</span>
-                <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue</button></span>
+                <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue (Costs <span data-bind="text: incTower.skillDescribeTimeAdded(incTower.UIselectedSkill())"></span>)</button></span>
                 <span data-bind="if: !incTower.directlyQueueable(incTower.UIselectedSkill()) && !incTower.skillMaxedInQueue(incTower.UIselectedSkill()) && !incTower.skillIsMaxed(incTower.UIselectedSkill())"><button id="skill_queue_prereqs">Add Prerequisites to Queue</button></span>
 
             </div>
             <div id="skills_queue">
                 <h3>Training Queue</h3>
-                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted in <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
+                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
                 <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
                 <ul data-bind="foreach: skillQueue" id="sortable_queue">
                     <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>) <span data-bind="visible: incTower.directlyRemovable($data[0], $data[1])" style="float: right;" class="ui-icon ui-icon-closethick remove-queue"></span></li>
@@ -198,9 +198,14 @@
                 <li>Investigate strange pathing at the end of mazes.</li>
                 <li>Investigate report of an autoclicker on manaburst causing selection issues.</li>
                 <li>Look into traps (don't block pathing)</li>
+                <li>Add Mana Regeneration (Advanced) which increases regeneration by a percentage with no max.</li>
+                <li>Look into spells that affect towers.</li>
+                <li>Add help text to explain that skills double in effectiveness every 20 ranks.</li>
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-03-18: Added the ability to go to a previous wave.</li>
+                <li>2016-03-18: Directly queueable skills now show the time they'll add to the queue before you click on it.</li>
                 <li>2016-03-17: Fixed bug with prestige resets not clearing the skill display in the skill tree.</li>
                 <li>2016-03-17: Reduced the base cost for magical affinity from 5 minutes to 2 minutes, to hopefully encourage early interaction with spells.</li>
                 <li>2016-03-17: The path (purple line) is only recalculated when a block crosses the current line or when a new wave starts, this is to minimize the unnecessary path jumps.</li>

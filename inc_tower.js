@@ -388,6 +388,10 @@ var incTower = {
 
 
     },
+    prevWave: function () {
+        incrementObservable(incTower.wave,-1);
+        enemys.removeAll(true);
+    },
     showChangelog: function () {
         'use strict';
         $('#changelog').dialog({
@@ -1343,7 +1347,14 @@ var incTower = {
         return moment().add(pointDiff / incTower.skillRate(),'seconds').fromNow();
     },
 
+    skillDescribeTimeAdded: function(skill) {
+        'use strict';
+        var directlyQueueable = incTower.directlyQueueable(skill);
+        if (directlyQueueable) {
+            return moment().add(costCalc(incTower.skillAttributes[skill].baseCost,directlyQueueable,incTower.skillAttributes[skill].growth) / incTower.skillRate(),'seconds').fromNow(true);
+        }
 
+    },
     towerIconCSS: function (tower) {
         return 'url(img/towers/'+tower+'.png)';
     },
