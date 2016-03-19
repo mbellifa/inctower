@@ -27,10 +27,12 @@ function TowerInputOut(sprite,pointer) {
 function UpgradeTower(tower) {
     tower.upgrade();
 }
-function SellTower(tower) {
-    incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
-    var index = incTower.towers.indexOf(tower);
-    if (index >= 0) { incTower.towers.splice(index, 1); }
+function DestroyTower(tower, updateArray) {
+    if (updateArray === undefined) { updateArray = true; }
+    if (updateArray) {
+        var index = incTower.towers.indexOf(tower);
+        if (index >= 0) { incTower.towers.splice(index, 1); }
+    }
 
     tileForbidden[tower.tileX][tower.tileY] = false;
     if (tower.icon) {
@@ -39,6 +41,11 @@ function SellTower(tower) {
     tower.destroy();
 
     incTower.currentlySelected(null);
+}
+function SellTower(tower) {
+    incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
+    DestroyTower(tower);
+
 }
 function PayToUpgradeTower(tower) {
     if (tower === null) { return; }

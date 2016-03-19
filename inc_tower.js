@@ -130,6 +130,11 @@ function loadSave(save) {
         incTower.checkSkills();
     }
     if ('towers' in save) {
+        _.forEach(incTower.towers(), function (tower) {
+            DestroyTower(tower, false);
+        });
+        incTower.towers([]);
+
         _.forEach(save.towers, function (tower) {
             var tileY = tower.tileY;
             var tileX = tower.tileX;
