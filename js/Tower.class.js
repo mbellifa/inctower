@@ -54,9 +54,7 @@ function PayToUpgradeTower(tower) {
         incrementObservable(tower.goldSpent,cost);
         incrementObservable(incTower.gold, new BigNumber(-1).times(cost));
         tower.upgrade();
-        UpgradeTower(tower);
     }
-
 }
 function TowerInputDown(sprite,pointer) {
     if (incTower.cursor() !== false) {
@@ -127,7 +125,7 @@ Tower = function(opt) {
         this.range = ko.observable(opt.range || defaultRange);
         this.trueRange = ko.pureComputed(function () {
             //var ret = this.range;
-            return diminishingReturns(this.range(), 50);
+            return diminishingReturns(this.range(), 50) * (1 + 0.05 * incTower.getEffectiveSkillLevel('sensors'));
         }, this);
         this.inputEnabled = true;
         this.events.onInputOver.add(TowerInputOver,this);

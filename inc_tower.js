@@ -15,6 +15,15 @@ function okDialog(opts) {
         title: opts.title
     });
 }
+function prettyCommaList(arr) {
+    if (arr.length === 1) {
+        return arr[0];
+    }
+    if (arr.length === 2) {
+        return arr[0] + ' and ' + arr[1];
+    }
+    return (arr.slice(0,arr.length - 1).join(', ')) + ', and ' + arr[arr.length - 1];
+}
 //This is a cursor object used for keeping track of building locations, spells etc.
 function Cursor(type, param, action) {
     'use strict';
@@ -628,7 +637,7 @@ var incTower = {
        return 'Regenerating ' + incTower.manaRegeneration() + ' mana per second.';
     }),
     manaRegeneration: ko.pureComputed(function () {
-        return 1 + incTower.getEffectiveSkillLevel('manaRegeneration');
+        return (1 + incTower.getEffectiveSkillLevel('manaRegeneration')) * (1 + 0.05 * incTower.getEffectiveSkillLevel('manaRegenerationAdvanced'));
     }),
     spellLevel: ko.observable(new BigNumber(0)),
     spellLevelDamageFactor: ko.pureComputed(function () {
@@ -639,6 +648,12 @@ var incTower = {
         'use strict';
         var manaCost = incTower.spellAttributes[spell].trueManaCost();
         if (incTower.mana().lt(manaCost)) { return; }
+        var cur_cursor = incTower.cursor();
+        //If our cursor already holds this spell then cancel it.
+        if (cur_cursor !== false && cur_cursor.type === 'spell' && cur_cursor.param === spell) {
+            incTower.clearCursor();
+            return;
+        }
         incTower.cursor(new Cursor('spell',spell, function (pointer) {
             if (incTower.mana().lt(manaCost)) {
                 incTower.clearCursor();
@@ -646,10 +661,6 @@ var incTower = {
             }
             incTower.spellAttributes[spell].perform(pointer, spell);
             incrementObservable(incTower.mana,-manaCost);
-            if (!shiftKey.isDown) {
-                incTower.clearCursor();
-            }
-
         }));
     },
     describeSpellLevel: ko.pureComputed(function () {
@@ -974,7 +985,7 @@ var incTower = {
                     return 'Bleeding is reduced by ' + (50 - 5 * rank) + '% each tick instead of the base 50%.';
                 }
                 if (rank === 10) {
-                    return 'Bleeding no longer reduced over time.';
+                    return 'Bleeding is no longer reduced over time.';
                 }
                 if (rank > 10) {
                     return 'Instead of bleed damage being reduced it is increased by ' + (rank * 5) + '%.';
@@ -1035,6 +1046,18 @@ var incTower = {
                 'use strict';
                 return "Increases mana regeneration by " + rank +' per second.';
             },
+            grants: {
+                20: ['manaRegenerationAdvanced']
+            }
+        },
+        manaRegenerationAdvanced: {
+            fullName: 'Mana Regeneration (Advanced)',
+            baseCost: 40,
+            growth: 1.3,
+            describeRank: function (rank) {
+                'use strict';
+                return "Increases mana regeneration by " + (rank * 5) +'%.';
+            }
         },
         fireAffinity: {
             fullName: 'Fire Affinity',
@@ -1244,8 +1267,21 @@ var incTower = {
                 return "When an air tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
         },
+        sensors: {
+            fullName: 'Sensors',
+            baseCost: 30,
+            growth: 1.2,
+            describeRank: function (rank) {
+                'use strict';
+                return 'Increases tower range by ' + (rank * 5) + '%.';
+            },
+            maxLevel: 5,
+            grants: {
+                //5: ['modularConstruction', 'initialEngineering']
+            }
+        },
     },
-    startingSkills: ['kineticTowers', 'construction', 'magicalAffinity'],
+    startingSkills: ['kineticTowers', 'construction', 'magicalAffinity', 'sensors'],
     gainSkill: function (name, opt) {
         'use strict';
         if (typeof opt === 'undefined') { opt = {}; }
@@ -1275,6 +1311,16 @@ var incTower = {
         }
         if (!maxed) {
             desc += '<p>Next Rank: ' + incTower.skillAttributes[name].describeRank(incTower.levelToEffective(currentLevel + 1)) + '</p>';
+        }
+        var grants = incTower.skillAttributes[name].grants;
+        if (grants !== undefined) {
+            _.mapValues(grants, function (skills, level) {
+                var fullSkillNames = _.map(skills, function (skill) { return incTower.skillAttributes[skill].fullName; });
+                fullSkillNames = prettyCommaList(fullSkillNames);
+                desc += '<p>Grants ' + fullSkillNames + ' at level ' + level + '.</p>';
+
+            });
+
         }
         return desc;
     },
@@ -1668,6 +1714,12 @@ var incTower = {
     },
     buyBlock: function () {
         'use strict';
+        var curCursor = incTower.cursor();
+        //If our cursor already holds this spell then cancel it.
+        if (curCursor !== false && curCursor.type === 'buy' && curCursor.param === 'block') {
+            incTower.clearCursor();
+            return;
+        }
         var cost = incTower.blockCost();
         if (incTower.gold().gt(cost)) {
             incTower.cursor(new Cursor('buy','block', function(pointer) {
@@ -1680,17 +1732,12 @@ var incTower = {
                     incrementObservable(incTower.gold, -cost);
                     map.putTile(game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
                     incTower.blocks.push({x: tileX, y: tileY});
-                    incTower.pathDirty = true;
                     _.forEach(path, function (pathUnit) {
                         if (pathUnit.x === tileX && pathUnit.y === tileY) {
                             recalcPath();
                             return false;
                         }
                     });
-                    //recalcPath();
-                    if (!shiftKey.isDown) {
-                        incTower.clearCursor();
-                    }
                 }
             }));
 
@@ -1710,6 +1757,12 @@ var incTower = {
     },
     sellTool: function () {
         'use strict';
+        var curCursor = incTower.cursor();
+        //If our cursor already holds this spell then cancel it.
+        if (curCursor !== false && curCursor.type === 'sell' && curCursor.param === '') {
+            incTower.clearCursor();
+            return;
+        }
         incTower.cursor(new Cursor('sell','', function (pointer) {
             var tileX = Math.floor(pointer.worldX / tileSquare);
             var tileY = Math.floor(pointer.worldY / tileSquare);
@@ -1736,7 +1789,6 @@ var incTower = {
                     }
                 }
                 recalcPath();
-                if (!shiftKey.isDown) { incTower.clearCursor(); }
             }
         }));
     },
@@ -1747,6 +1799,12 @@ var incTower = {
         var cost = incTower.towerCost(baseCost);
         if (incTower.gold().gt(cost)) {
             console.log("Setting cursor to " + type);
+            var curCursor = incTower.cursor();
+            //If our cursor already holds this spell then cancel it.
+            if (curCursor !== false && curCursor.type === 'buy' && curCursor.param === type) {
+                incTower.clearCursor();
+                return;
+            }
             incTower.cursor(new Cursor('buy',type, function (pointer) {
                 var tileX = Math.floor(pointer.worldX / tileSquare);
                 var tileY = Math.floor(pointer.worldY / tileSquare);
@@ -1761,7 +1819,6 @@ var incTower = {
                     opt.cost = cost;
                     Tower.prototype.posit(pointer,opt);
                     incrementObservable(incTower.gold,-cost);
-                    if (!shiftKey.isDown) { incTower.clearCursor(); }
                 }
             }));
         }
@@ -1790,15 +1847,13 @@ var incTower = {
         'use strict';
         var cheapest = -1;
         var retTower;
-        var towerLength = incTower.numTowers();
-        for (var i = 0;i < towerLength;++i) {
-            var tower = towers.getAt(i);
+        _.forEach(incTower.towers(), function(tower) {
             var cost = tower.upgradeCost();
-            if (cheapest < 0 || cost.lt(cheapest)) {
+            if (retTower === undefined || cost.lt(cheapest)) {
                 cheapest = cost;
                 retTower = tower;
             }
-        }
+        });
         return retTower;
     }),
     cheapestUpgradeCost: ko.pureComputed(function () {
@@ -1814,16 +1869,8 @@ var incTower = {
     },
     cheapestUpgradeAll: function () {
         'use strict';
-        var cost = 0;
-        do {
-            var cheapestTower = incTower.cheapestUpgradeCostTower();
-            cost = cheapestTower.upgradeCost();
-            if (cost.lt(incTower.gold())) {
-                PayToUpgradeTower(cheapestTower);
-            }
-        } while (cost.lt(incTower.gold()));
+        incTower.autoUpgrade = true;
     },
-
     goldPerWave: function (wave) {
         'use strict';
         return costCalc(30,wave,1.2);
@@ -2048,7 +2095,6 @@ var path = [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0
 
 function recalcPath() {
     'use strict';
-    incTower.pathDirty = false;
     var walkables = [30];
     pathfinder.setGrid(map.layers[0].data, walkables);
 
@@ -2213,8 +2259,7 @@ function create() {
 
     sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
     sKey.onDown.add(incTower.sellTool, this);
-    aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
-    aKey.onDown.add(incTower.cheapestUpgradeAll, this);
+
     lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
     lKey.onDown.add(incTower.cheapestUpgrade, this);
 
@@ -2574,7 +2619,6 @@ function update() {
     incTower.lastUpdate = currentTime;
 
     if ((!incTower.generatingEnemies) && (enemys.countLiving() === 0)) {
-        if (incTower.pathDirty) { recalcPath(); }
         if (incTower.wave() > 0) {
             //Save state
             var saveData = JSON.stringify(createSaveObj(incTower));
@@ -2602,9 +2646,21 @@ function update() {
         generateEnemy(costCalc(5,incTower.wave(),1.2));
     }
 
-    //So lame that I even need this check.
+    //So lame that I even need this check. This is to make sure the indicator is not on a dead enemy.
     if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
         incTower.currentlySelected(null);
+    }
+    //Check to see if we're auto upgrading
+    if (incTower.autoUpgrade === true) {
+        for (var i = 0;i < 20;i++) {
+            if (incTower.autoUpgrade === false) { break; }
+            var cheapestTower = incTower.cheapestUpgradeCostTower();
+            if (cheapestTower !== undefined && cheapestTower.upgradeCost().lte(incTower.gold())) {
+                PayToUpgradeTower(cheapestTower);
+            } else {
+                incTower.autoUpgrade = false;
+            }
+        }
     }
     bullets.forEachAlive(function (bullet) {
         var range = bullet.tower.trueRange();
