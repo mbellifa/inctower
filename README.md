@@ -1,2 +1,2 @@
 # IncTower
-Incremental Tower Defense Game
+<b><i>Incremental Tower Defense Game</b></i>
