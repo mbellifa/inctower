@@ -76,8 +76,7 @@
                     <div class="keybind">L</div>
                     <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
                 </button>
-                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip icon-btn" data-tooltip="Upgrade all towers using ALL gold.">
-                    <div class="keybind">A</div>
+                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip" data-tooltip="Upgrade all towers using ALL gold.">
                     <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
                 </button>
 
@@ -191,21 +190,28 @@
                 <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
                 <li>Multiple areas/map changes.</li>
                 <li>Address possible pathing issues with air towers.</li>
-                <li>Experiment: Instead of using SHIFT have all cursors toggle on/off.</li>
                 <li>Add a pause button.</li>
                 <li>Investigate sequential squares idea.</li>
-                <li>Investigate moving the 'a' keybind to another key so its not accidentally hit.</li>
                 <li>Investigate strange pathing at the end of mazes.</li>
                 <li>Investigate report of an autoclicker on manaburst causing selection issues.</li>
                 <li>Look into traps (don't block pathing)</li>
-                <li>Add Mana Regeneration (Advanced) which increases regeneration by a percentage with no max.</li>
                 <li>Look into spells that affect towers.</li>
                 <li>Add help text to explain that skills double in effectiveness every 20 ranks.</li>
                 <li>Look at upgrade tooltips.</li>
                 <li>Emphasize that skills have child skills either by changing the theme or through text.</li>
+                <li>Look into visual indicators for towers, either showing how out of date they are (due to refined blueprints) or showing relative power.</li>
+                <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
+                <li>Look into indicators for tower level.</li>
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-03-21: Skill descriptions now show the list of skills granted at certain ranks.</li>
+                <li>2016-03-21: Implemented Mana Regeneration (Advanced) which increases mana regeneration as a percentage.</li>
+                <li>2016-03-21: Actions now repeat automatically until canceled instead of requiring a modifier key.</li>
+                <li>2016-03-21: Actions now clear the cursor if they would've created the same type of cursor (this allows keybind double-tap to cancel).</li>
+                <li>2016-03-20: The path no longer recalculates at the start of a wave.</li>
+                <li>2016-03-20: Unbound the 'a' key from upgrade all. It now requires a click.</li>
+                <li>2016-03-19: Upgrade using all gold now performs upgrades in batches (currently 20 a frame) instead of doing all of them at once which was causing freezing.</li>
                 <li>2016-03-18: Fixed an issue where previously existing towers weren't being cleaned up on load.</li>
                 <li>2016-03-18: Spell level now properly resets on prestige.</li>
                 <li>2016-03-18: Added the ability to go to a previous wave.</li>
