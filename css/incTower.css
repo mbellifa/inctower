@@ -183,9 +183,14 @@ body {
     /*width: 250px;*/
 /*}*/
 
+#help {
+    display: none;
+}
+
 #skills {
     display: none;
 }
+
 #skills_tree {
     float: left;
     width: 45%;
@@ -259,4 +264,12 @@ body {
 .icon-header {
     clear: right;
     margin: 0.5em 0 0.25em 0;
+}
+.unread {
+    background-color: rgba(50,50,170,0.6);
+    border: 2px #bbb solid;
+    border-radius: 4px;
+    color: #eee;
+    padding: 0.2em;
+
 }

@@ -317,6 +317,59 @@ var incTower = {
     pathDirty: false,
     lastUpdate: 0,
     lastUpdateRealTime: Date.now(),
+
+    availableHelp: ko.observableArray([]), //Stores help files that are available for viewing
+    readHelp: ko.observableArray([]),  //Stores help files that have been read by
+    selectedHelp: ko.observable(),
+    checkHelp: function (topic) {
+        if (incTower.availableHelp.indexOf(topic) < 0) {
+            addToObsArray(incTower.availableHelp, topic);
+        }
+    },
+    haveReadHelpTopic: function (topic) {
+        if (incTower.readHelp.indexOf(topic) < 0) {
+            return false;
+        }
+        return true;
+    },
+
+    helpTopics: {
+        welcome: {
+            title: "Welcome",
+            body: "Welcome to Incremental Tower Defense. Your goal is to build towers and kill your enemies to progress to further waves. In the beginning you can build the following things: " +
+            "<ul>" +
+            "<li><b>Blocks</b>: Reroutes enemy movement and required for tower placement. The purple line shows the way in which most enemies will move toward the red zone.</li>" +
+            "<li><b>Kinetic Towers</b>: Deals damage to enemies, upgrading these is the main way to progress through the game.</li>" +
+            "</ul>"
+        },
+        regularEdge: {
+            title: "Regular Enemies",
+            body: "Every wave that isn't a multiple of five is filled with regular enemies, meaning they aren't bosses. " +
+            "When regular enemies run off the edge they cycle back through your defenses. " +
+            "Each time this is allowed to happen the monster loses 10% of its gold value."
+
+        },
+        bosses: {
+            title: 'Bosses',
+            body: "Bosses come every five waves. They distinguish themselves from regular enemies in two ways:" +
+            "<ul>" +
+            "<li>Bosses have one or more powers. You can see these powers by selecting the bosses. Hovering over the powers will describe what they do in more detail. Every 25 waves bosses gain more/stronger powers.</li>" +
+            "<li>Unlike regular enemies if a boss reaches the end of your maze without dying you will not be allowed to proceed to the next wave.</li>" +
+            "</ul>"
+        },
+        towerUpgrades: {
+            title: 'Tower Upgrades',
+            body: "Upgrading a tower increases its damage by one point (before skills come into play). Every tenth level the damage is doubled instead."
+        },
+        skills: {
+            title: 'Skills',
+            body: "Skills allow you to increase various aspects of your performance in the game, either increasing damage, allowing new types of buildings, or allowing you to cast magical spells. Some skills have no maximum rank, which means that they can be learned infinitely many times (although each instance will take longer than the last). Skills which have no maximum-rank double in effectiveness every twenty ranks."
+        },
+
+    },
+
+
+
     generatingEnemies: false,
     availableTowers: ko.observableArray(['kinetic']),
     numTowers: ko.pureComputed(function () {
@@ -326,11 +379,7 @@ var incTower = {
     currentlySelectedIndicator: null, //Holds the graphic we'll use to show what we have selected.
     frame: 0,
     farmMode: ko.observable(false),
-    dialogWelcome: false, //Shows a welcome dialog at the beginning of the first game
-    dialogEdgeRegular: false, //Shows a dialog when a regular enemy falls off the edge.
-    dialogEdgeBoss: false,
     dialogTowerUpgradeDouble: false,
-    dialogBossKill: false,
     sellTowerPer: ko.pureComputed(function () {
         'use strict';
         return 0.5 + (0.05 * incTower.getEffectiveSkillLevel('scrapping'));
@@ -410,6 +459,13 @@ var incTower = {
     showChangelog: function () {
         'use strict';
         $('#changelog').dialog({
+            width: 600,
+            height: 500
+        });
+    },
+    showHelp: function () {
+        'use strict';
+        $('#help').dialog({
             width: 600,
             height: 500
         });
@@ -1418,7 +1474,8 @@ var incTower = {
         kinetic: {
             name: 'Kinetic',
             baseCost: 25,
-            startingFireRate: 2000,
+            startingFireRate: 1500,
+            startingRange: 120,
             damagePerLevel: 1,
             describe: function() {
                 return 'Kinetic towers are cheap to build and reliable. Their simpler parts make them cheaper to upgrade as well.';
@@ -1428,7 +1485,8 @@ var incTower = {
             name: 'Earth',
             baseCost: 100,
             damagePerLevel: 1,
-            startingFireRate: 3000,
+            startingRange: 100,
+            startingFireRate: 2500,
             icon: 'earth-element.png',
             describe: function() {
                 return 'Earth towers deal earth damage and have a chance to attach an earth rune to enemies. When an earth reaction happens a giant boulder falls from the sky on the affected enemy.';
@@ -1438,7 +1496,8 @@ var incTower = {
             name: 'Air',
             baseCost: 100,
             damagePerLevel: 1,
-            startingFireRate: 3000,
+            startingFireRate: 2500,
+            startingRange: 100,
             icon: 'air-element.png',
             describe: function() {
                 return 'Air towers deal air damage and have a chance to attach an air rune to enemies. When an air reaction happens a group of enemies will be knocked back..';
@@ -1448,7 +1507,8 @@ var incTower = {
             name: 'Fire',
             baseCost: 100,
             damagePerLevel: 1,
-            startingFireRate: 3000,
+            startingFireRate: 2500,
+            startingRange: 100,
             icon: 'fire-element.png',
             describe: function() {
                 return 'Fire towers deal fire damage and have a chance to attach a fire rune to enemies. When a fire reaction happens the affected enemy takes additional damage from all sources and takes burn damage over time.';
@@ -1458,7 +1518,8 @@ var incTower = {
             name: 'Water',
             baseCost: 100,
             damagePerLevel: 1,
-            startingFireRate: 3000,
+            startingFireRate: 2500,
+            startingRange: 100,
             icon: 'water-element.png',
             describe: function() {
                 return 'Water towers deal water damage and have a chance to attach a water rune to enemies. When a water reaction occurs the affected enemy becomes either slowed or frozen in place depending on the number of runes.';
@@ -1999,6 +2060,20 @@ var incTower = {
 
 
 };
+incTower.unreadHelps = ko.computed(function () {
+    var unread = 0;
+    console.log(this.availableHelp());
+
+    ko.utils.arrayForEach(this.availableHelp(), function(topic) {
+        if (incTower.readHelp.indexOf(topic) < 0) {
+            unread++;
+        }
+    });
+    return unread;
+}, incTower);
+incTower.selectedHelp.subscribe(function (value) {
+   addToObsArray(incTower.readHelp, value);
+});
 incTower.self = incTower;
 incTower.secondsUntilSkillUp = ko.computed(function () {
     'use strict';
@@ -2347,17 +2422,7 @@ function create() {
     }
 
     //We need a load function here for this to really make sense
-    if (!incTower.dialogWelcome) {
-        okDialog({
-            title: "Incremental Tower Defense",
-            message:"In the beginning you can build the following things: " +
-            "<ul>" +
-            "<li><b>Blocks</b>: Reroutes enemy movement and required for tower placement. The purple line shows the way in which most enemies will move toward the red zone.</li>" +
-            "<li><b>Kinetic Towers</b>: Deals damage to enemies, upgrading these is the main way to progress through the game.</li>" +
-            "</ul>"
-        });
-        incTower.dialogWelcome = true;
-    }
+    incTower.checkHelp('welcome');
     game.time.events.loop(Phaser.Timer.SECOND, everySecond, this);
     //game.add.plugin(Phaser.Plugin.Debug);
     var startZone = game.add.graphics(0,0);
@@ -2448,6 +2513,8 @@ function createSaveObj(obj) {
         'rotation',
         'type',
         'physicsType',
+        'autoUpgrade',
+        'pathDirty'
     ];
     if (typeof obj !== 'object') { return obj; }
     for (var prop in obj) {
@@ -2512,7 +2579,7 @@ function everySecond() {
             incrementObservable(skill.get('skillLevel'));
             //console.log(incTower.activeSkill());
             skill.get('skillPointsCap')(costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost, skill.get('skillLevel')(), incTower.skillAttributes[incTower.activeSkill()].growth));
-
+            incTower.checkHelp('skills');
             incTower.skillQueue.shift();
             incTower.checkSkill(skillName);
             incTower.checkQueue();
@@ -2627,16 +2694,7 @@ function update() {
         }
         enemys.removeAll();
         if (incTower.wave() > 0 && incTower.wave() % 5 === 0) {
-            if (!incTower.dialogBossKill) {
-                incTower.dialogBossKill = true;
-                okDialog({
-                    title: "First Boss Kill",
-                    message: "Congratulations! You killed your first boss wave. " +
-                             "Bosses do not cycle back through your defenses if they are not defeated. " +
-                             "If killed it allows you to redeem an upgrade."
-                });
-
-            }
+            incTower.checkHelp('bosses');
         }
         if (!incTower.farmMode()) {
             incrementObservable(incTower.wave);

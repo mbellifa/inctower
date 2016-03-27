@@ -22,6 +22,7 @@
         <div class="topnav">
             <span class="header">Incremental Tower Defense</span>
             <span class="toplinks">
+                <button data-bind="click: function () { incTower.showHelp(); }">Help <span data-bind="if: incTower.unreadHelps() > 0"><span data-bind="text: unreadHelps()" class="unread"></span></span></button>
                 <button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button>
                 <button data-bind="click: function () { incTower.showSkills(); }">Skills</button>
                 <button data-bind="click: function () { incTower.showSaves(); }">Saves</button>
@@ -180,11 +181,20 @@
 
             </div>
         </div>
+        <div id="help" title="Help">
+            <p>Selected Help Topic: <select data-bind="options: availableHelp, optionsText: function (item) { return (incTower.haveReadHelpTopic(item) ? '' : '&#9733;') + incTower.helpTopics[item].title; }, value: selectedHelp"></select><br>(&#9733; marks a topic you have not read.)</p>
+
+            <div data-bind="if: !selectedHelp()">Select a help topic above to view it.</div>
+            <div data-bind="if: selectedHelp()">
+                <p><b data-bind="text: incTower.helpTopics[selectedHelp()].title"></b></p>
+                <div data-bind="html: incTower.helpTopics[selectedHelp()].body"></div>
+
+
+        </div>
         <div id="changelog" title="Changelog">
 
             <p>Todo:</p>
             <ul>
-                <li>Help system/intro tutorial</li>
                 <li>Stream-line tower+block commands.</li>
                 <li>Add some sort of system to increase engagement and encourage active engagement.</li>
                 <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
@@ -196,18 +206,19 @@
                 <li>Investigate report of an autoclicker on manaburst causing selection issues.</li>
                 <li>Look into traps (don't block pathing)</li>
                 <li>Look into spells that affect towers.</li>
-                <li>Add help text to explain that skills double in effectiveness every 20 ranks.</li>
                 <li>Look at upgrade tooltips.</li>
                 <li>Emphasize that skills have child skills either by changing the theme or through text.</li>
                 <li>Look into visual indicators for towers, either showing how out of date they are (due to refined blueprints) or showing relative power.</li>
                 <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
                 <li>Look into indicators for tower level.</li>
-                <li>Nerf range/fire-rate on upgrade</li>
-                <li>Make elemental resistant bosses truly have a lower rune rate.</li>
                 <li>Look into making normal waves have boss powers (but fewer).</li>
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-03-26: The ban hammer has arrived: Upgrading towers no longer reduces fire rate nor does it increase range.</li>
+                <li>2016-03-26: Help system now shows unread messages in the help button instead of popping up a dialog box each time a new topic is discovered.</li>
+                <li>2016-03-23: Wrote a skills help file in the new system that explains the rank up that occurs every 20 ranks of non-maxable skills.</li>
+                <li>2016-03-23: Migrated the help popups to a new help system, the main difference is now you can go back and read popups that had come up in the past by clicking the 'Help' button.</li>
                 <li>2016-03-21: Skill descriptions now show the list of skills granted at certain ranks.</li>
                 <li>2016-03-21: Implemented Mana Regeneration (Advanced) which increases mana regeneration as a percentage.</li>
                 <li>2016-03-21: Actions now repeat automatically until canceled instead of requiring a modifier key.</li>

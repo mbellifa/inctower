@@ -199,14 +199,7 @@ Enemy.prototype.nextTile = function () {
     if (typeof(this.path[this.curTile]) === "undefined") {
         if (incTower.wave() % 5 === 0) {
             //Boss ran off the edge
-            console.log("Boss ran off the edge");
-            if (!incTower.dialogEdgeBoss) {
-                incTower.dialogEdgeBoss = true;
-                okDialog({
-                    title: "Boss Waves",
-                    message: "Every five waves there is a boss wave. When a boss survives your defenses you will be set back to the previous wave. You will not be able to pass the boss wave until you can defeat it."
-                });
-            }
+            incTower.checkHelp('bosses');
             if (incTower.currentlySelected() !== null && incTower.currentlySelected().enemy) {
                 incTower.currentlySelected(null);
             }
@@ -216,12 +209,8 @@ Enemy.prototype.nextTile = function () {
             incrementObservable(incTower.wave, -1); //Go back a wave.
             incTower.farmMode(true); //Turn farm mode on
             return;
-        } else if (!incTower.dialogEdgeRegular) {
-            incTower.dialogEdgeRegular = true;
-            okDialog({
-                title: "Regular Enemies",
-                message:"When non-boss enemies run off the edge they cycle back through your defenses. Each time this is allowed to happen the monster loses 10% of its gold value."
-            });
+        } else {
+            incTower.checkHelp('regularEdge');
         }
         if (incTower.wave() > 1) { this.goldValue(this.goldValue().times(0.9)); } //Lose 10% of our gold value each time we p
         this.curTile = 0;

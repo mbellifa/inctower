@@ -108,7 +108,7 @@ Tower = function(opt) {
 
         this.anchor.setTo(0.5,0.5);
         this.tile = tile;
-        var defaultDamage = 1 * Math.pow(10, incTower.getEffectiveSkillLevel('towerTemplates'));
+        var defaultDamage = 5 * Math.pow(10, incTower.getEffectiveSkillLevel('towerTemplates'));
 
         defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
         defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints');
@@ -118,14 +118,17 @@ Tower = function(opt) {
         if ('startingFireRate' in incTower.towerAttributes[this.towerType]) {
             defaultFireRate = incTower.towerAttributes[this.towerType].startingFireRate;
         }
-        defaultFireRate *= 1 - 0.01 * incTower.getEffectiveSkillLevel('initialEngineering');
+        defaultFireRate *= 1 - 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
         this.fireTime = opt.fireTime || defaultFireRate;
         var defaultRange = 150;
-        defaultRange *= 1 + 0.01 * incTower.getEffectiveSkillLevel('initialEngineering');
+        if ('startingRange' in incTower.towerAttributes[this.towerType]) {
+            defaultRange = incTower.towerAttributes[this.towerType].startingRange;
+        }
+        defaultRange *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
         this.range = ko.observable(opt.range || defaultRange);
         this.trueRange = ko.pureComputed(function () {
             //var ret = this.range;
-            return diminishingReturns(this.range(), 50) * (1 + 0.05 * incTower.getEffectiveSkillLevel('sensors'));
+            return this.range() * (1 + 0.05 * incTower.getEffectiveSkillLevel('sensors'));
         }, this);
         this.inputEnabled = true;
         this.events.onInputOver.add(TowerInputOver,this);
@@ -206,20 +209,14 @@ Tower.prototype.fire = function() {
 };
 Tower.prototype.upgrade = function () {
     incrementObservable(this.level);
+    incTower.checkHelp('towerUpgrades');
     if (this.level() % 10 === 0) {
         incrementObservable(this.damage,this.damage());
-        if (!incTower.dialogTowerUpgradeDouble) {
-            incTower.dialogTowerUpgradeDouble = true;
-            okDialog({
-                title: "Tower Upgrades",
-                message: "Each time you upgrade a tower to a level that's a multiple of ten, its damage doubles."
-            });
-        }
     } else {
         incrementObservable(this.damage,incTower.towerAttributes[this.towerType].damagePerLevel);
     }
-    this.fireTime *= 0.99;
-    incrementObservable(this.range, 2);
+    //this.fireTime *= 0.99;
+    //incrementObservable(this.range, 2);
     this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, this.level()));
     //TowerInputDown(tower);
 }
