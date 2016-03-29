@@ -359,7 +359,8 @@ var incTower = {
         },
         towerUpgrades: {
             title: 'Tower Upgrades',
-            body: "Upgrading a tower increases its damage by one point (before skills come into play). Every tenth level the damage is doubled instead."
+            body: "<p>Upgrading a tower increases its damage by one point (before skills come into play). Every tenth level the damage is doubled instead.</p>" +
+            "<p>Each tower has a red bar to the left of it, this shows the relative power of that tower versus others of its type. A full bar means that this tower has the highest damage of that type or is tied for the highest damage. A low bar may indicate that the tower needs to be upgraded, or that a skill has since increased the damage of other towers.</p>"
         },
         skills: {
             title: 'Skills',
@@ -1469,6 +1470,7 @@ var incTower = {
     spellIconCSS: function (spell) {
         return 'url(img/spells/'+spell+'.png)';
     },
+    towerMaxDamage: {},
     towers: ko.observableArray([]),
     towerAttributes: {
         kinetic: {
@@ -2486,6 +2488,7 @@ function createSaveObj(obj) {
         'UIselectedSkill',
         'pathGraphic',
         'spellAttributes',
+        'towerMaxDamage',
         //The following are extra cruft (for save purposes) caused by subclassing tower to sprite
         '_width',
         '_height',

@@ -52,6 +52,7 @@ var Enemy = function(x, y, opts) {
     this.healthbar = game.add.graphics(0,0);
     this.addChild(this.healthbar);
 
+
     this.curTile = -1;
     for (var opt in opts) {
         if (opts.hasOwnProperty(opt)) {

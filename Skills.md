@@ -5,11 +5,13 @@
 # Skills
 
 * [x] Construction – Reduces initial cost and upgrade cost by 1% per level with a max of 10 levels.
-  * [x] Initial Engineering: Increases the starting damage, speed and range of all towers by 1% per level. Max 25 levels.
+  * [x] Initial Engineering: Increases the starting damage, speed and range of all towers by 5% per level. Max 5 levels.
+    * [ ] (Alternative to Tower Templates):  Allow a templating action which destroys the tower but increases blueprint points for that tower based on its level.
+      * [ ] (Alternative to refined blueprints): Increases the damage bonus from blueprint points by 5% per rank (no max)
     * [x] Tower Templates: Towers start at 10/100/1000/10,0000/100,000 damage.
       * [x] Refined Blueprints: Towers start with 5% increased damage. (No max.)
     * [x] Scrapping: Reduces the gold lost by selling a tower by 5% per rank. (Max 9 ranks = only losing 5% of gold on tower sale).
-  * [x] Modular Construction: Reduces the cost of all tower upgrades by 1%. Max 25 levels.
+  * [x] Modular Construction: Reduces the cost of all tower upgrades by 5%. Max 5 levels.
     * [x] Adaptive Upgrades: Towers can now reduce their upgrade cost by 0.1-1% of the monsters gold value on hit and will automatically upgrade when the cost reaches zero.
     * [ ] Prototyping: Upgrading a high level turret reduces the cost to upgrade all turrets of a lower level by 5%. (5 ranks)
     * [ ] Part Design: Increases damage on tower upgrade by 1 (not retroactive Improves the damage increase that occurs on tower upgrade by 1% per rank (no max).
