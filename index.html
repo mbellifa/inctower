@@ -65,10 +65,10 @@
                     <button data-bind="click: function () { incTower.buyTower($data); }, attr: { 'data-tooltip': incTower.towerAttributes[$data].describe() }" class="tooltip icon-btn">
                         <div class="keybind" data-bind="text: incTower.towerKeybindLetter($index())"></div>
                         <div style="width: 32px; height: 32px;" data-bind="style: { background: incTower.towerIconCSS($data) }"></div>
-                        <span data-bind="text: humanizeNumber(incTower.towerCost(incTower.towerAttributes[$data].baseCost))"></span>g
+                        <span data-bind="text: humanizeNumber(incTower.towerCost($data))"></span>g
                     </button>
                 </span>
-                <div class="icon-header"><b>Sell/Upgrade:</b></div>
+                <div class="icon-header"><b>Actions:</b></div>
                 <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn" data-tooltip="Sell towers and blocks.">
                     <div class="keybind">S</div>
                     <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
@@ -80,6 +80,13 @@
                 <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip" data-tooltip="Upgrade all towers using ALL gold.">
                     <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
                 </button>
+                <span data-bind="foreach: availableActions">
+
+                    <button data-bind="click: function () { incTower.castAction($data); }, attr: { 'data-tooltip': incTower.actionAttributes[$data].describe() }" class="tooltip icon-btn">
+                        <div class="keybind" data-bind="text: incTower.actionAttributes[$data].keybind"></div>
+                        <div style="width: 32px; height: 32px;" data-bind="style: { background: incTower.actionIconCSS($data) }"></div>
+                    </button>
+                </span>
 
                 <div data-bind="if: availableSpells().length > 0">
                     <p class="icon-header"><b>Spells:</b> (Spell Level: <span data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }" class="tooltip"></span>)</p>
@@ -147,6 +154,7 @@
             <p>The goblin sprite comes from <a href="http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image" target="_blank">this Open Game Art collection</a>.</p>
             <p>Eye of the Storm and Frost Shatter spell icons from <a href="http://opengameart.org/content/painterly-spell-icons-part-4">here</a>.</p>
             <p>Mana Burst and Smolder spell icons from <a href="http://opengameart.org/content/random-rpg-icons-part-1">here</a>.</p>
+            <p>Icon for the blueprints/templating action was made by Ofer Lehr (and cropped by me) was found <a href="https://thenounproject.com/term/blueprint/1050/">here</a>.</p>
 
         </div>
         <div id="save" title="Saves">
@@ -158,8 +166,6 @@
         </div>
         <div id="skills" title="Skills">
             <div id="skills_tree">
-
-
             </div>
             <div id="skills_desc">
                 <h3>Description</h3>
@@ -214,6 +220,10 @@
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-04-16: Learning tower templates is now a one rank skill which unlocks the blueprinting/templating action. This action scraps a tower in exchange for blueprint points of that tower type. Each blueprint point increases the starting damage of towers of that type by 1 and gold cost by 5.</li>
+                <li>2016-04-16: There is now a new category of actions called... actions. Currently only tower templates uses this.</li>
+                <li>2016-04-16: Added hover indicators with text for most actions (except spells), these indicators also show where its valid to perform an action.</li>
+                <li>2016-03-31: Added Arcane Knowledge skill which gives another method to increase max mana outside of using mana burst.</li>
                 <li>2016-03-29: The ban hammer had to be made slightly stronger. Saves will no longer respect insane range or attack speed values, it will treat them as if you built a new tower instead.</li>
                 <li>2016-03-27: Added a visual indicator for relative tower power per type.</li>
                 <li>2016-03-26: The ban hammer has arrived: Upgrading towers no longer reduces fire rate nor does it increase range.</li>

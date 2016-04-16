@@ -43,7 +43,7 @@ function DestroyTower(tower, updateArray) {
     incTower.currentlySelected(null);
 }
 function SellTower(tower) {
-    incrementObservable(incTower.gold,tower.goldSpent().times(incTower.sellTowerPer()));
+    incrementObservable(incTower.gold,tower.sellValue());
     DestroyTower(tower);
 
 }
@@ -102,11 +102,14 @@ Tower = function(opt) {
 
         this.anchor.setTo(0.5,0.5);
         this.tile = tile;
-        var defaultDamage = 5 * Math.pow(10, incTower.getEffectiveSkillLevel('towerTemplates'));
+        if (opt.damage) {
+            this.damage = ko.observable(new BigNumber(opt.damage));
+        } else {
+            var defaultDamage = incTower.towerAttributes[this.towerType].blueprintPoints().plus(5);
+            defaultDamage = defaultDamage.times(1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering'));
+            this.damage = ko.observable(defaultDamage);
 
-        defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
-        defaultDamage *= 1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints');
-        this.damage = ko.observable(new BigNumber(opt.damage || defaultDamage));
+        }
         this.totalDamage = ko.pureComputed(function () {
 
             var ret = this.damage();
@@ -177,6 +180,9 @@ Tower = function(opt) {
         } else {
             upgradeCost = new BigNumber(upgradeCost);
         }
+        this.sellValue = function () {
+            return this.goldSpent().times(incTower.sellTowerPer());
+        };
         this.remainingUpgradeCost = ko.observable(upgradeCost);
         this.remainingUpgradeCost.subscribe(function (newVal) {
             if (newVal.lte(0)) {

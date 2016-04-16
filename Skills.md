@@ -45,3 +45,4 @@
   * [ ] Sensor Array – Builds a tower that marks targets, marked targets can be hit by any tower regardless of range.
     * [ ] Critical Strikes – Sensor arrays have a chance of revealing a weak spot causing extra damage. 2% per level, five levels.
   * [ ] Inteligence - Towers track their kills.
+* [ ] Markets - Increases the gold value of monsters by 5% per rank (5 ranks)

@@ -25,12 +25,12 @@ function prettyCommaList(arr) {
     return (arr.slice(0,arr.length - 1).join(', ')) + ', and ' + arr[arr.length - 1];
 }
 //This is a cursor object used for keeping track of building locations, spells etc.
-function Cursor(type, param, action) {
+function Cursor(type, param, action, onMove) {
     'use strict';
     this.type = type;
     this.param = param;
     this.indicator = game.add.graphics(0,0);
-    if (type === 'buy' || type === 'sell') {
+    if (type === 'buy' || type === 'sell' || type === 'action') {
         //incTower.currentlySelectedIndicator.lineStyle(2, 0x66cc00, 3);
         this.indicator.beginFill(0x3333FF, 0.5);
         this.indicator.drawRect(0,0,32,32);
@@ -42,6 +42,7 @@ function Cursor(type, param, action) {
     this.indicator.x = game.input.x;
     this.indicator.y = game.input.y;
     this.action = action;
+    this.onMove = onMove;
 }
 
 function Spell(opts) {
@@ -84,7 +85,9 @@ function diminishingReturns(val, scale) {
 }
 function loadSave(save) {
     'use strict';
-    $('#b64_save').val(btoa(save));
+    var savehex = btoa(save);
+    $('#b64_save').val(savehex);
+    console.log("Loading save: " + savehex);
     var i;
     save = JSON.parse(save);
     for (var prop in save) {
@@ -96,6 +99,9 @@ function loadSave(save) {
                 continue;
             }
             if (prop === 'skills') {
+                continue;
+            }
+            if (prop === 'towerBlueprints') {
                 continue;
             }
             if (ko.isComputed(incTower[prop])) { continue; }
@@ -119,6 +125,14 @@ function loadSave(save) {
             incTower[prop] = save[prop];
 
         }
+    }
+    if ('towerBlueprints' in save) {
+        _.mapValues(save.towerBlueprints, function(blueprintPoints, towerType) {
+            if (!_.has(incTower.towerBlueprints, towerType)) {
+                incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
+            }
+            incTower.towerBlueprints[towerType](new BigNumber(blueprintPoints));
+        });
     }
     if ('blocks' in save) {
         _.forEach(incTower.blocks(), function (block) {
@@ -420,7 +434,7 @@ var incTower = {
         });
         incTower.clearQueue();
         incTower.UIselectedSkill(false);
-        incTower.maxMana(new BigNumber(0));
+        incTower.rawMaxMana(new BigNumber(0));
         incTower.mana(new BigNumber(0));
         incTower.currentlySelected(false);
         emptyObsArray(incTower.availableTowers);
@@ -688,7 +702,111 @@ var incTower = {
         if (incTower.skillIsMaxed(skillName)) { return "Maxed"; }
         return humanizeNumber(skill.get('skillPoints')()) + " / " + humanizeNumber(skill.get('skillPointsCap')());
     },
-    maxMana: ko.observable(new BigNumber(0)),
+    availableActions: ko.observableArray([]),
+    actionAttributes: {
+        template: {
+            describe: function () {
+                return 'Spend gold to scrap a tower to gain blueprint points for towers of that type. Blueprint points increase the starting damage for the given tower type by 1 and increase starting gold cost by 5 per point.';
+            },
+            keybind: 'B',
+            perform: function (pointer, action) {
+                var tileX = Math.floor(pointer.worldX / tileSquare);
+                var tileY = Math.floor(pointer.worldY / tileSquare);
+                if (tileX > 24 || tileY > 18) {
+                    return false;
+                }
+                if (tileX === 0 && tileY === 0) {
+                    return false;
+                }
+                if (!tileForbidden[tileX][tileY]) {
+                    return false;
+                }
+                _.forEach(towers.children, function(tower) {
+                    if (tower.tileX === tileX && tower.tileY === tileY) {
+                        blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
+                        incrementObservable(incTower.towerBlueprints[tower.towerType], blueprints);
+                        DestroyTower(tower);
+                        return false;
+                    }
+                });
+
+            },
+            onMove: function (x, y) {
+                var tileX = Math.floor(x / tileSquare);
+                var tileY = Math.floor(y / tileSquare);
+                //console.log([x,y]);
+                var valid = true;
+                if (valid && (tileX > 24 || tileY > 18)) {
+                    valid = false;
+                }
+                if (tileX === 0 && tileY === 0) {
+                    valid = false;
+                }
+                if (!tileForbidden[tileX][tileY]) {
+                    valid = false;
+                }
+                if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
+                    this.indicator.clear();
+
+                    if (valid) {
+                        //this.indicator.beginFill(0x33FF33, 0.5);
+                        this.indicator.beginFill(0x3333FF, 0.5);
+                        if (!this.textIndicator) {
+                            this.textIndicator = game.add.text(0, 0, "", {
+                                font: "14px Arial",
+                                stroke: 'white',
+                                strokeThickness: 1,
+                                fontWeight: "bold",
+                                fill: '#0000EE',
+                                align: "center"
+                            });
+                        }
+                        this.textIndicator.alpha = 1;
+                        var blueprints = 0;
+                        var totalBlueprints = 0;
+                        _.forEach(towers.children, function(tower) {
+                            if (tower.tileX === tileX && tower.tileY === tileY) {
+                                blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
+                                totalBlueprints = blueprints.plus(incTower.towerAttributes[tower.towerType].blueprintPoints());
+                                return false;
+                            }
+                        });
+
+                        this.textIndicator.text = '+' + humanizeNumber(blueprints) + ' (' + humanizeNumber(totalBlueprints) + ')';
+
+                    } else {
+                        if (this.textIndicator !== undefined) {
+                            this.textIndicator.alpha = 0;
+                        }
+                        this.indicator.beginFill(0x760076, 0.5);
+                    }
+                    this.indicator.drawRect(0, 0, 32, 32);
+                    this.currentIndicatorStatus = valid;
+                    this.lastTileX = tileX;
+                    this.lastTileY = tileY;
+                }
+
+            }
+        }
+    },
+    castAction: function (action) {
+        'use strict';
+        var curCursor = incTower.cursor();
+        //If our cursor already holds this spell then cancel it.
+        if (curCursor !== false && curCursor.type === 'action' && curCursor.param === action) {
+            incTower.clearCursor();
+            return;
+        }
+
+        incTower.cursor(new Cursor('action',action, function (pointer) {
+            incTower.actionAttributes[action].perform(pointer, action);
+
+        },
+            incTower.actionAttributes[action].onMove
+        ));
+    },
+
+    rawMaxMana: ko.observable(new BigNumber(0)),
     mana: ko.observable(new BigNumber(0)),
     describeManaRegeneration: ko.pureComputed(function () {
        return 'Regenerating ' + incTower.manaRegeneration() + ' mana per second.';
@@ -751,8 +869,7 @@ var incTower = {
                 });
                 var perMana = incTower.mana().div(incTower.maxMana()).toNumber();
                 if (game.rnd.frac() < 1 - perMana) {
-                    incrementObservable(incTower.maxMana,0.25 * this.trueManaCost());
-                    //incTower.maxMana(incTower.maxMana().times(1.03));
+                    incrementObservable(incTower.rawMaxMana,0.25 * this.trueManaCost());
                 }
 
             }
@@ -964,17 +1081,20 @@ var incTower = {
         },
         towerTemplates: {
             fullName: 'Tower Templates',
-            baseCost: 120,
+            baseCost: 900,
             growth: 2,
             describeRank: function (rank) {
                 'use strict';
-                return 'Increases the starting damage of towers by a factor of ' + Math.pow(10,rank) + '.';
+                return 'Allows you to create blueprints from existing towers, increasing the base damage of that type of tower.';
             },
-            maxLevel: 5,
+            maxLevel: 1,
             grants: {
-                5: ['refinedBlueprints']
+                1: ['refinedBlueprints']
+            },
+            onMax: function () {
+                'use strict';
+                addToObsArray(incTower.availableActions,'template');
             }
-
         },
         scrapping: {
             fullName: 'Scrapping',
@@ -992,7 +1112,7 @@ var incTower = {
             growth: 1.2,
             describeRank: function (rank) {
                 'use strict';
-                return 'Increases the starting damage of towers by ' + (rank * 5) + '%.';
+                return 'Increases the number of blueprint points generated by creating a template by ' + (rank * 5) + '%.';
             },
         },
         marketConnections: {
@@ -1055,7 +1175,7 @@ var incTower = {
             growth: 1.1,
             describeRank: function (rank) {
                 'use strict';
-                return 'Optimizes the damage caused by kinetic towers, increasing damage by ' + (rank * 5) + '% per level.';
+                return 'Optimizes the damage caused by kinetic towers, increasing damage by ' + (rank * 5) + '%.';
             }
         },
         magicalAffinity: {
@@ -1069,8 +1189,8 @@ var incTower = {
             },
             onMax: function () {
                 'use strict';
-                if (incTower.maxMana().eq(0)) {
-                    incTower.maxMana(new BigNumber(1000));
+                if (incTower.rawMaxMana().eq(0)) {
+                    incTower.rawMaxMana(new BigNumber(1000));
                     incTower.mana(incTower.maxMana());
                 }
                 addToObsArray(incTower.availableSpells,'manaBurst');
@@ -1092,7 +1212,7 @@ var incTower = {
                 return "Increases arcane damage by " + (rank * 10) +'%.';
             },
             grants: {
-                1: ['manaRegeneration']
+                1: ['manaRegeneration', 'arcaneKnowledge']
             }
         },
         manaRegeneration: {
@@ -1114,6 +1234,15 @@ var incTower = {
             describeRank: function (rank) {
                 'use strict';
                 return "Increases mana regeneration by " + (rank * 5) +'%.';
+            }
+        },
+        arcaneKnowledge: {
+            fullName: 'Arcane Knowledge',
+            baseCost: 30,
+            growth: 1.2,
+            describeRank: function (rank) {
+                'use strict';
+                return "Increases max mana by " + (rank * 5) +'%.';
             }
         },
         fireAffinity: {
@@ -1470,8 +1599,12 @@ var incTower = {
     spellIconCSS: function (spell) {
         return 'url(img/spells/'+spell+'.png)';
     },
+    actionIconCSS: function (action) {
+        return 'url(img/actions/'+action+'.png)';
+    },
     towerMaxDamage: {},
     towers: ko.observableArray([]),
+    towerBlueprints: {},
     towerAttributes: {
         kinetic: {
             name: 'Kinetic',
@@ -1743,11 +1876,18 @@ var incTower = {
         return ret;
     },
     selectedBossPack: false, //This holds our next boss, it's randomly generated and then remembered until beaten
-    towerCost: function (base) {
+    towerCost: function (type) {
         'use strict';
-        if (base === undefined) { base = 25; }
+        var base = 25;
+        base = incTower.towerAttributes[type].baseCost;
         var amount = costCalc(base,incTower.numTowers(),1.4);
+        console.log("AM1: " + humanizeNumber(amount));
+        console.log(type);
+        console.log(humanizeNumber(incTower.towerAttributes[type].blueprintPoints()));
+        amount = amount.plus(incTower.towerAttributes[type].blueprintPoints().times(5));
+        console.log("AM2: " + humanizeNumber(amount));
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
+        console.log("AM3: " + humanizeNumber(amount));
         return amount;
     },
     gainGold: function (amount, floatAround) {
@@ -1761,8 +1901,13 @@ var incTower = {
     cursor: ko.observable(false),
     clearCursor: function () {
         'use strict';
-        if (incTower.cursor() !== false && incTower.cursor().indicator) {
-            incTower.cursor().indicator.destroy();
+        if (incTower.cursor() !== false) {
+            if (incTower.cursor().indicator) {
+                incTower.cursor().indicator.destroy();
+            }
+            if (incTower.cursor().textIndicator) {
+                incTower.cursor().textIndicator.destroy();
+            }
         }
         incTower.cursor(false);
     },
@@ -1802,6 +1947,46 @@ var incTower = {
                         }
                     });
                 }
+            },function (x,y) {
+                var tileX = Math.floor(x / tileSquare);
+                var tileY = Math.floor(y / tileSquare);
+                //console.log([x,y]);
+                var valid = true;
+                if (valid && (tileX > 24 || tileY > 18)) { valid = false; }
+                if (tileX === 0 && tileY === 0) { valid = false; }
+                if (valid) {
+                    var tileIndex = map.layers[0].data[tileY][tileX].index;
+                    if (tileIndex > 4 && tileIndex < 9) {
+                        valid = false;
+                    }
+                }
+                if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
+                    this.indicator.clear();
+
+                    if (valid) {
+                        //this.indicator.beginFill(0x33FF33, 0.5);
+                        this.indicator.beginFill(0x3333FF, 0.5);
+                        if (!this.textIndicator) {
+                            this.textIndicator = game.add.text(0,0,"",{ font: "14px Arial", stroke: 'white', strokeThickness: 1, fontWeight: "bold", fill: '#C9960C', align: "center" });
+                        }
+                        this.textIndicator.alpha = 1;
+                        var cost = incTower.blockCost();
+                        this.textIndicator.text = '-' + humanizeNumber(cost)  + 'g';
+                    } else {
+                        if (this.textIndicator !== undefined) {
+                            this.textIndicator.alpha = 0;
+                        }
+                        this.indicator.beginFill(0x760076, 0.5);
+                    }
+                    this.indicator.drawRect(0,0,32,32);
+                    this.currentIndicatorStatus = valid;
+                    this.lastTileX = tileX;
+                    this.lastTileY = tileY;
+                }
+
+
+
+
             }));
 
         }
@@ -1853,13 +2038,64 @@ var incTower = {
                 }
                 recalcPath();
             }
+        },function (x,y) {
+            var tileX = Math.floor(x / tileSquare);
+            var tileY = Math.floor(y / tileSquare);
+            //console.log([x,y]);
+            var valid = true;
+            if (valid && (tileX > 24 || tileY > 18)) { valid = false; }
+            if (tileX === 0 && tileY === 0) { valid = false; }
+            if (valid) {
+                var tileIndex = map.layers[0].data[tileY][tileX].index;
+                if (!(tileIndex > 4 && tileIndex < 9)) {
+                    valid = false;
+                }
+            }
+            if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
+                this.indicator.clear();
+
+                if (valid) {
+                    //this.indicator.beginFill(0x33FF33, 0.5);
+                    this.indicator.beginFill(0x3333FF, 0.5);
+                    if (!this.textIndicator) {
+                        this.textIndicator = game.add.text(0,0,"",{ font: "14px Arial", stroke: 'white', strokeThickness: 1, fontWeight: "bold", fill: '#C9960C', align: "center" });
+                    }
+                    this.textIndicator.alpha = 1;
+                    var cost;
+                    if (tileForbidden[tileX][tileY]) {
+                        _.forEach(towers.children, function(tower) {
+                            if (tower.tileX === tileX && tower.tileY === tileY) {
+                                cost = tower.sellValue();
+                                return false;
+                            }
+                        });
+                    }
+                    if (cost === undefined) {
+                        cost = incTower.blockCost();
+                    }
+                    this.textIndicator.text = '+' + humanizeNumber(cost) + 'g';
+
+                } else {
+                    if (this.textIndicator !== undefined) {
+                        this.textIndicator.alpha = 0;
+                    }
+                    this.indicator.beginFill(0x760076, 0.5);
+                }
+                this.indicator.drawRect(0,0,32,32);
+                this.currentIndicatorStatus = valid;
+                this.lastTileX = tileX;
+                this.lastTileY = tileY;
+            }
+
+
+
+
         }));
     },
     buyTower: function(type) {
         'use strict';
         if (type === undefined) { type = 'kinetic'; }
-        var baseCost = incTower.towerAttributes[type].baseCost;
-        var cost = incTower.towerCost(baseCost);
+        var cost = incTower.towerCost(type);
         if (incTower.gold().gt(cost)) {
             console.log("Setting cursor to " + type);
             var curCursor = incTower.cursor();
@@ -1874,7 +2110,7 @@ var incTower = {
                 console.log(tileX + ', ' + tileY);
                 if (tileX > 24 || tileY > 18) { return; }
                 var towerType = incTower.cursor().param;
-                var cost = incTower.towerCost(incTower.towerAttributes[towerType].baseCost);
+                var cost = incTower.towerCost(towerType);
                 var tileIndex = map.layers[0].data[tileY][tileX].index;
                 if (!tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 5 && tileIndex <= 8) {
                     var opt = {};
@@ -1883,6 +2119,50 @@ var incTower = {
                     Tower.prototype.posit(pointer,opt);
                     incrementObservable(incTower.gold,-cost);
                 }
+            },function (x,y) {
+                var tileX = Math.floor(x / tileSquare);
+                var tileY = Math.floor(y / tileSquare);
+                //console.log([x,y]);
+                var valid = true;
+                if (valid && (tileX > 24 || tileY > 18)) { valid = false; }
+                if (tileX === 0 && tileY === 0) { valid = false; }
+                if (valid) {
+                    var tileIndex = map.layers[0].data[tileY][tileX].index;
+                    if (!(tileIndex > 4 && tileIndex < 9)) {
+                        valid = false;
+                    }
+                }
+                if (tileForbidden[tileX][tileY]) {
+                    valid = false;
+                }
+                if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
+                    this.indicator.clear();
+                    var towerType = incTower.cursor().param;
+                    var cost = incTower.towerCost(towerType);
+
+                    if (valid) {
+                        //this.indicator.beginFill(0x33FF33, 0.5);
+                        this.indicator.beginFill(0x3333FF, 0.5);
+                        if (!this.textIndicator) {
+                            this.textIndicator = game.add.text(0,0,"",{ font: "14px Arial", stroke: 'white', strokeThickness: 1, fontWeight: "bold", fill: '#C9960C', align: "center" });
+                        }
+                        this.textIndicator.alpha = 1;
+                        this.textIndicator.text = '-' + humanizeNumber(cost) + 'g';
+                    } else {
+                        if (this.textIndicator !== undefined) {
+                            this.textIndicator.alpha = 0;
+                        }
+                        this.indicator.beginFill(0x760076, 0.5);
+                    }
+                    this.indicator.drawRect(0,0,32,32);
+                    this.currentIndicatorStatus = valid;
+                    this.lastTileX = tileX;
+                    this.lastTileY = tileY;
+                }
+
+
+
+
             }));
         }
     },
@@ -2062,6 +2342,17 @@ var incTower = {
 
 
 };
+_.forEach(_.keys(incTower.towerAttributes), function (towerType) {
+    incTower.towerAttributes[towerType].blueprintPoints = ko.computed(function () {
+        if (!_.has(incTower.towerBlueprints, towerType)) {
+            incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
+        }
+        return incTower.towerBlueprints[towerType]();
+    });
+});
+incTower.maxMana = ko.pureComputed(function () {
+    return this.rawMaxMana().times(1 + 0.05 * incTower.getEffectiveSkillLevel('arcaneKnowledge'));
+}, incTower);
 incTower.unreadHelps = ko.computed(function () {
     var unread = 0;
     console.log(this.availableHelp());
@@ -2131,6 +2422,10 @@ incTower.cursor.subscribe(function (oldValue) {
     if (oldValue !== false && oldValue.indicator) {
         oldValue.indicator.destroy();
     }
+    if (oldValue !== false && oldValue.textIndicator) {
+        oldValue.textIndicator.destroy();
+    }
+
 }, null, 'beforeChange');
 incTower.skillTreeData = function () {
     'use strict';
@@ -2300,12 +2595,19 @@ function create() {
         if (!incTower.cursor()) { return; }
         //console.log(x + ", "+ y);
         var cursor = incTower.cursor();
-        if (cursor.type === 'buy' || cursor.type === 'sell') {
+        if (cursor.type === 'buy' || cursor.type === 'sell' || cursor.type === 'action') {
             cursor.indicator.x = Math.floor(x / 32) * 32;
             cursor.indicator.y = Math.floor(y / 32) * 32;
         } else {
             cursor.indicator.x = x;
             cursor.indicator.y = y;
+        }
+        if (cursor.onMove !== undefined) {
+            cursor.onMove.call(cursor,x,y);
+        }
+        if (cursor.textIndicator !== undefined) {
+            cursor.textIndicator.x = cursor.indicator.x;
+            cursor.textIndicator.y = Math.max(0, cursor.indicator.y - 16);
         }
     });
     // Keybinds
@@ -2337,6 +2639,13 @@ function create() {
     sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
     sKey.onDown.add(incTower.sellTool, this);
 
+    bKey = game.input.keyboard.addKey(Phaser.Keyboard.B);
+    bKey.onDown.add(function () {
+        if (incTower.availableActions.indexOf('template') >= 0) {
+            incTower.castAction('template');
+        }
+    }, this);
+
     lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
     lKey.onDown.add(incTower.cheapestUpgrade, this);
 
@@ -2356,10 +2665,17 @@ function create() {
     game.input.mouse.mouseOutCallback = function() {
         if (!incTower.cursor()) { return; }
         incTower.cursor().indicator.alpha = 0;
+        if (incTower.cursor().textIndicator !== undefined) {
+            incTower.cursor().textIndicator.alpha = 0;
+        }
+
     };
     game.input.mouse.mouseOverCallback = function() {
         if (!incTower.cursor()) { return; }
         incTower.cursor().indicator.alpha = 1;
+        if (incTower.cursor().textIndicator !== undefined) {
+            incTower.cursor().textIndicator.alpha = 1;
+        }
     };
 
     /*
@@ -2420,6 +2736,7 @@ function create() {
     }
     var save = localStorage.getItem("save");
     if (save !== null) {
+
         loadSave(save);
     }
 
@@ -2557,6 +2874,9 @@ function createSaveObj(obj) {
             }
             if (prop === 'seenPowers') {
                 save[prop] = obj[prop];
+            }
+            if (prop === 'towerBlueprints') {
+                save[prop] = createSaveObj(obj[prop]);
             }
             if (typeof(obj[prop]) === 'object' && !isArray(obj[prop])) { continue; }
             if (typeof(obj[prop]) === 'function') { continue; }
