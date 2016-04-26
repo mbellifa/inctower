@@ -463,6 +463,10 @@ var incTower = {
         towers.removeAll(true);
         incTower.towers([]);
         incTower.selectedBossPack = false;
+        _.mapValues(incTower.towerBlueprints, function (val) {
+           val(new BigNumber(0));
+        });
+        //incTower.towerBlueprints = {};
         recalcPath();
 
 
@@ -1920,6 +1924,11 @@ var incTower = {
         'use strict';
         return costCalc(1,incTower.numBlocks(),1.1);
     },
+    //Used to get the cost of the last block we purchased
+    prevBlockCost: function () {
+        'use strict';
+        return costCalc(1,Math.max(0, incTower.numBlocks() - 1),1.1);
+    },
     buyBlock: function () {
         'use strict';
         var curCursor = incTower.cursor();
@@ -2028,7 +2037,7 @@ var incTower = {
             }
             if (tileIndex > 4 && tileIndex < 9 && !tileForbidden[tileX][tileY]) {
                 map.putTile(30,tileX,tileY,"Ground");
-                incrementObservable(incTower.gold,incTower.blockCost());
+                incrementObservable(incTower.gold,incTower.prevBlockCost());
                 for (var i = 0; i < incTower.blocks().length; i++) {
                     var curBlock = incTower.blocks()[i];
                     if (curBlock.x === tileX && curBlock.y === tileY) {
@@ -2071,7 +2080,7 @@ var incTower = {
                         });
                     }
                     if (cost === undefined) {
-                        cost = incTower.blockCost();
+                        cost = incTower.prevBlockCost();
                     }
                     this.textIndicator.text = '+' + humanizeNumber(cost) + 'g';
 
