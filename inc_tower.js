@@ -439,6 +439,7 @@ var incTower = {
         incTower.currentlySelected(false);
         emptyObsArray(incTower.availableTowers);
         emptyObsArray(incTower.availableSpells);
+        emptyObsArray(incTower.availableActions);
         incTower.availableTowers.push('kinetic');
 
 
@@ -725,6 +726,9 @@ var incTower = {
                 if (!tileForbidden[tileX][tileY]) {
                     return false;
                 }
+                //Don't allow templating at one tower
+                if (incTower.numTowers() === 1) { return false; }
+
                 _.forEach(towers.children, function(tower) {
                     if (tower.tileX === tileX && tower.tileY === tileY) {
                         blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
@@ -857,14 +861,14 @@ var incTower = {
                 var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
                 var fullManaDamage = damage.times(10);
 
-                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at full mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead. When cast at low mana there is a chance that you will increase your maximum mana pool by ' + humanizeNumber(0.25 * this.trueManaCost()) + '.'
+                return 'Deals ' + humanizeNumber(damage) + ' arcane damage in an area. When cast at over 90% of max mana, it will deal ' + humanizeNumber(fullManaDamage) + ' instead.<br><br>When cast at less than one-third mana there is a chance that you will increase your maximum mana pool by ' + humanizeNumber(0.25 * this.trueManaCost()) + '. This chance starts at 5% and increases to 100% depending on how low your mana pool is.'
             },
             perform: function (pointer, spellName) {
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area =  new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
                 var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
-                if (incTower.mana().eq(incTower.maxMana())) { damage = damage.times(10); }
+                if (incTower.mana().div(incTower.maxMana()).gte(0.9)) { damage = damage.times(10); }
 
                 enemys.forEachAlive(function(enemy) {
                     if (area.contains(enemy.x, enemy.y)) {
@@ -872,7 +876,8 @@ var incTower = {
                     }
                 });
                 var perMana = incTower.mana().div(incTower.maxMana()).toNumber();
-                if (game.rnd.frac() < 1 - perMana) {
+
+                if (perMana < 0.3334 && game.rnd.frac() < 1.05 - (perMana / 0.3334)) {
                     incrementObservable(incTower.rawMaxMana,0.25 * this.trueManaCost());
                 }
 
@@ -2027,6 +2032,8 @@ var incTower = {
             if (tileX === 0 && tileY === 0) { return; }
             var tileIndex = map.layers[0].data[tileY][tileX].index;
             if (tileIndex > 4 && tileIndex < 9 && tileForbidden[tileX][tileY]) {
+                //Don't allow selling at one tower
+                if (incTower.numTowers() === 1) { return false; }
                 _.forEach(towers.children, function(tower) {
                     if (tower.tileX === tileX && tower.tileY === tileY) {
                         SellTower(tower);
@@ -2659,7 +2666,13 @@ function create() {
     lKey.onDown.add(incTower.cheapestUpgrade, this);
 
     escKey = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
-    escKey.onDown.add(incTower.clearCursor, this);
+    escKey.onDown.add(function () {
+        if (incTower.cursor()) {
+            incTower.clearCursor();
+        } else {
+            incTower.currentlySelected(null);
+        }
+    }, this);
 
 
     /*    key2 = game.input.keyboard.addKey(Phaser.Keyboard.TWO);

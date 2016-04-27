@@ -158,13 +158,14 @@ Tower = function(opt) {
             defaultFireRate = incTower.towerAttributes[this.towerType].startingFireRate;
         }
         defaultFireRate *= 1 - 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
-        this.fireTime = defaultFireRate; //opt.fireTime ||
+        this.fireTime = Math.min(opt.fireTime || defaultFireRate, defaultFireRate); //opt.fireTime ||
         var defaultRange = 150;
         if ('startingRange' in incTower.towerAttributes[this.towerType]) {
             defaultRange = incTower.towerAttributes[this.towerType].startingRange;
         }
         defaultRange *= 1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
-        this.range = ko.observable(defaultRange); // opt.range ||
+
+        this.range = ko.observable(Math.min(opt.range || defaultRange, defaultRange)); // opt.range ||
         this.trueRange = ko.pureComputed(function () {
             //var ret = this.range;
             return this.range() * (1 + 0.05 * incTower.getEffectiveSkillLevel('sensors'));

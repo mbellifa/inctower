@@ -101,19 +101,19 @@
                 </div>
 
                 <div id="buyBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
-                    <p>Click on the map to place your block. Holding SHIFT will allow you to place multiple blocks.</p>
+                    <p>Click on the map to place your block.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div id="sellToolActive" data-bind="visible: cursor() !== false && cursor().type === 'sell'">
-                    <p>Click on a tower or block to sell it. Holding SHIFT will allow you to sell multiple towers/blocks.</p>
+                    <p>Click on a tower or block to sell it.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div id="buyTowerActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param !== 'block'">
-                    <p>Click on a tile with a block to build your tower. Holding SHIFT will allow you to buy multiple towers.</p>
+                    <p>Click on a tile with a block to build your tower.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
                 <div data-bind="visible: cursor() !== false && cursor().type === 'spell'">
-                    <p>Hover over the map to see the area of effect of your spell, click to cast. Holding SHIFT will allow you to cast the same spell again.</p>
+                    <p>Hover over the map to see the area of effect of your spell, click to cast.</p>
                     <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
                 </div>
 
@@ -201,6 +201,10 @@
 
             <p>Todo:</p>
             <ul>
+                <li>Look into the name of fire rate ("attack delay"?), also look into its actual effect.</li>
+                <li>Look into fire rate differences working properly</li>
+                <li>Button to return to the highest level you've reached.</li>
+                <li>Show what path changes will look like when placing a block.</li>
                 <li>Stream-line tower+block commands.</li>
                 <li>Add some sort of system to increase engagement and encourage active engagement.</li>
                 <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
@@ -209,7 +213,6 @@
                 <li>Add a pause button.</li>
                 <li>Investigate sequential squares idea.</li>
                 <li>Investigate strange pathing at the end of mazes.</li>
-                <li>Investigate report of an autoclicker on manaburst causing selection issues.</li>
                 <li>Look into traps (don't block pathing)</li>
                 <li>Look into spells that affect towers.</li>
                 <li>Look at upgrade tooltips.</li>
@@ -217,11 +220,26 @@
                 <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
                 <li>Look into indicators for tower level.</li>
                 <li>Look into making normal waves have boss powers (but fewer).</li>
-                <li>Show what path changes will look like when placing a block.</li>
                 <li>Look into music and sound effects (particularly for finishing a skill).</li>
+                <li>Revisit blueprint formula.</li>
+                <li>Look at making a flat version of the upgrade menu to more easily compare skills that have not been maxed. <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hoq1s">From this reddit comment.</a></li>
+                <li>Re-examine upgrade all for speed.</li>
+                <li>Speed settings, maybe just after prestige?</li>
+                <li>Architect and engineering towers. See <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2io9b9">this comment.</a></li>
+                <li>Look into bug where upgrade all stops towers from firing see <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hlu04">here</a></li>
+                <li>Add +10, +100, etc. to tower level.</li>
+                <li>Look into help system.</li>
+                <li>Write help article for prestige.</li>
+
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-04-26: Mana Burst was erroneously granting a chance to increase mana pool at high levels of mana. Now you must cast it at 1/3rd mana for this to occur, the chance scales from 5% at 1/3rd mana to 100% at close to 0 mana. To compensate for this I have changed mana burst to grant its additional damage when your mana pool is over 90% full instead of having to be at full mana. The description has been updated to describe all of these changes.</li>
+                <li>2016-04-26: You can no longer sell your last tower or template scrap your last tower.</li>
+                <li>2016-04-26: Refreshing will no longer grant old towers the benefits of Initial Engineering.</li>
+                <li>2016-04-26: Escape key will first cancel an action, but if there is no action selected it will de-select any selected tower/enemy.</li>
+                <li>2016-04-26: Removed text that tells the player to press shift to continue the same action, since actions now repeat by default.</li>
+                <li>2016-04-26: Fixed an issue where the blueprint action was allowed after prestige without the appropriate skill.</li>
                 <li>2016-04-25: Fixed issue where selling blocks returned more gold than they cost to buy.</li>
                 <li>2016-04-25: Fixed issue with prestige not reseting blueprint counts, causing towers to be unaffordable.</li>
                 <li>2016-04-16: Learning tower templates is now a one rank skill which unlocks the blueprinting/templating action. This action scraps a tower in exchange for blueprint points of that tower type. Each blueprint point increases the starting damage of towers of that type by 1 and gold cost by 5.</li>
