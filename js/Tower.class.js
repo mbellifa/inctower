@@ -47,13 +47,19 @@ function SellTower(tower) {
     DestroyTower(tower);
 
 }
-function PayToUpgradeTower(tower) {
+function PayToUpgradeTower(tower, byLevel, cost) {
     if (tower === null) { return; }
-    var cost = tower.upgradeCost();
+    if (byLevel === undefined) {
+        byLevel = 1;
+    }
+    if (cost === undefined) {
+        cost = tower.upgradeCost(byLevel);
+    }
+    //console.log("Cost to upgrade " + byLevel + " is " + humanizeNumber(cost));
     if (incTower.gold().gte(cost)) {
-        incrementObservable(tower.goldSpent,cost);
-        incrementObservable(incTower.gold, new BigNumber(-1).times(cost));
-        tower.upgrade();
+        incrementObservable(tower.goldSpent, cost);
+        incrementObservable(incTower.gold, cost.neg());
+        tower.upgrade(byLevel);
     }
 }
 function TowerInputDown(sprite,pointer) {
@@ -113,13 +119,10 @@ Tower = function(opt) {
         this.totalDamage = ko.pureComputed(function () {
 
             var ret = this.damage();
-            console.log(ret);
             if (this.towerType === 'kinetic') {
                 ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticTowers'));
                 ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticAmmo'));
             }
-            //ret = ret.times(1 + 0.1 * incTower.prestigePoints());
-            //console.log(this.towerType);
             return ret;
         },this);
         var totalDamageSubscription = function (newDamage) {
@@ -200,10 +203,23 @@ Tower.prototype.constructor = Tower;
 Tower.prototype.add = function(pointer) {
     game.input.onDown.add(Tower.prototype.posit, this);
 };
-Tower.prototype.upgradeCost = function () {
+Tower.prototype.upgradeCost = function (byLevel) {
     'use strict';
     if (this.remainingUpgradeCost === undefined) { return new BigNumber(0); }
-    return this.remainingUpgradeCost();
+    if (byLevel === undefined) {
+        byLevel = 1;
+    }
+    var cost = this.remainingUpgradeCost();
+    byLevel--;
+    var prosLevel = this.level() + 1;
+    while (byLevel > 0) {
+        prosLevel++;
+        byLevel--;
+        cost = cost.plus(calculateTowerUpgradeCost(this.towerType, prosLevel));
+    }
+    return cost;
+
+
 };
 
 Tower.prototype.posit = function(pointer,opt) {
@@ -251,16 +267,33 @@ Tower.prototype.fire = function() {
         }
     }
 };
-Tower.prototype.upgrade = function () {
-    incrementObservable(this.level);
-    incTower.checkHelp('towerUpgrades');
-    if (this.level() % 10 === 0) {
-        incrementObservable(this.damage,this.damage());
-    } else {
-        incrementObservable(this.damage,incTower.towerAttributes[this.towerType].damagePerLevel);
+Tower.prototype.upgrade = function (byLevel) {
+    if (byLevel === undefined) {
+        byLevel = 1;
     }
+    var curLevel = this.level();
+    var goalLevel = curLevel + byLevel;
+    var damage = this.damage();
+    var damagePerLevel = incTower.towerAttributes[this.towerType].damagePerLevel;
+    while (curLevel < goalLevel) {
+        curLevel++;
+        if (curLevel % 10 === 0) {
+            damage = damage.times(2);
+        } else {
+            damage = damage.plus(damagePerLevel);
+        }
+    }
+    this.level(curLevel);
+    this.damage(damage);
+    // incrementObservable(this.level);
+    incTower.checkHelp('towerUpgrades');
+    // if (this.level() % 10 === 0) {
+    //     incrementObservable(this.damage,this.damage());
+    // } else {
+    //     incrementObservable(this.damage,incTower.towerAttributes[this.towerType].damagePerLevel);
+    // }
     //this.fireTime *= 0.99;
     //incrementObservable(this.range, 2);
-    this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, this.level()));
+    this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, curLevel));
     //TowerInputDown(tower);
 }

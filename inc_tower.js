@@ -1890,13 +1890,8 @@ var incTower = {
         var base = 25;
         base = incTower.towerAttributes[type].baseCost;
         var amount = costCalc(base,incTower.numTowers(),1.4);
-        console.log("AM1: " + humanizeNumber(amount));
-        console.log(type);
-        console.log(humanizeNumber(incTower.towerAttributes[type].blueprintPoints()));
         amount = amount.plus(incTower.towerAttributes[type].blueprintPoints().times(5));
-        console.log("AM2: " + humanizeNumber(amount));
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
-        console.log("AM3: " + humanizeNumber(amount));
         return amount;
     },
     gainGold: function (amount, floatAround) {
@@ -2228,7 +2223,49 @@ var incTower = {
     },
     cheapestUpgradeAll: function () {
         'use strict';
+        var start = performance.now();
+
+        var gold = incTower.gold();
+        var gold_share = gold.div(incTower.numTowers());
+        console.log("GOld share: " + humanizeNumber(gold_share));
+        var memoize = {};
+        var memoizedUpgradeCost = function (type, level) {
+            var key = type + ":" + level;
+            if (memoize[key] === undefined) {
+                memoize[key] = calculateTowerUpgradeCost(type, level);
+            }
+            return memoize[key];
+        };
+        var towerUpgradeCache = {};
+        towers.forEach(function (tower) {
+            if (towerUpgradeCache[tower.towerType] === undefined) {
+                towerUpgradeCache[tower.towerType] = {}
+            }
+            var byLevel = 1;
+            var cost = tower.remainingUpgradeCost();
+            var prosLevel = tower.level() + 1;
+            if (towerUpgradeCache[tower.towerType][prosLevel] !== undefined) {
+                byLevel = towerUpgradeCache[tower.towerType][prosLevel].byLevel;
+                cost = cost.plus(towerUpgradeCache[tower.towerType][prosLevel].cost);
+            }
+            while (cost.lte(gold_share)) {
+                byLevel++;
+                cost = cost.plus(memoizedUpgradeCost(tower.towerType, prosLevel + byLevel - 1));
+            }
+            while (cost.gt(gold_share)) {
+                cost = cost.minus(memoizedUpgradeCost(tower.towerType, prosLevel + byLevel - 1));
+                byLevel--;
+                if (byLevel < 1) { return; }
+            }
+            console.log("Upgrading tower by " + byLevel + " for cost " + humanizeNumber(cost));
+
+            towerUpgradeCache[tower.towerType][prosLevel] = {'byLevel': byLevel, 'cost': cost};
+
+            PayToUpgradeTower(tower, byLevel, cost);
+        });
         incTower.autoUpgrade = true;
+        var end = performance.now();
+        console.log("Upgrade took " + (end- start) + "ms");
     },
     goldPerWave: function (wave) {
         'use strict';
@@ -2558,7 +2595,7 @@ incTower.numSuffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 
     'St', 'USt', 'DSt', 'TSt', 'QaSt', 'QiSt', 'SxSt', 'SpSt', 'OSt', 'NSt',
     'Og', 'UOg', 'DOg', 'TOg', 'QaOg', 'QiOg', 'SxOg', 'SpOg', 'OOg', 'NOg'
 ];
-function humanizeBigNumber(number,precision) {
+function humanizeBigNumber(number, precision) {
     'use strict';
     if (precision === undefined) { precision = 1;}
     var thresh = 1000;
@@ -2571,10 +2608,9 @@ function humanizeBigNumber(number,precision) {
         ++u;
     } while (number.abs().gte(thresh));
     return number.toFixed(precision).replace('.0','')+incTower.numSuffixes[u];
-
 }
 
-function humanizeNumber(number,precision) {
+function humanizeNumber(number, precision) {
     'use strict';
     if (precision === undefined) { precision = 1;}
     if (!isPrimativeNumber(number)) { return humanizeBigNumber(number,precision); }
@@ -2587,7 +2623,6 @@ function humanizeNumber(number,precision) {
         ++u;
     } while(Math.abs(number) >= thresh);
     return parseFloat(number.toFixed(precision))+incTower.numSuffixes[u];
-
 }
 incTower.humanizeNumber = humanizeNumber;
 
