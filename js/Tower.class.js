@@ -238,6 +238,7 @@ Tower.prototype.update = function () {
 Tower.prototype.fire = function() {
     'use strict';
     if (game.time.now >= this.fireLastTime) {
+        //console.log("Now: " + game.time.now + " Last Fired:" + this.fireLastTime);
         var enemiesInRange = [];
         for (var i = 0;i < enemys.children.length;i++) {
             if (!enemys.children[i].alive) { continue; }
@@ -268,6 +269,7 @@ Tower.prototype.fire = function() {
     }
 };
 Tower.prototype.upgrade = function (byLevel) {
+    'use strict';
     if (byLevel === undefined) {
         byLevel = 1;
     }
@@ -285,15 +287,6 @@ Tower.prototype.upgrade = function (byLevel) {
     }
     this.level(curLevel);
     this.damage(damage);
-    // incrementObservable(this.level);
     incTower.checkHelp('towerUpgrades');
-    // if (this.level() % 10 === 0) {
-    //     incrementObservable(this.damage,this.damage());
-    // } else {
-    //     incrementObservable(this.damage,incTower.towerAttributes[this.towerType].damagePerLevel);
-    // }
-    //this.fireTime *= 0.99;
-    //incrementObservable(this.range, 2);
     this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, curLevel));
-    //TowerInputDown(tower);
-}
+};

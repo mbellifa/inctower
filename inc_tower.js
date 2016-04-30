@@ -2826,7 +2826,7 @@ function convergeUpdate() {
     var ticks = (Date.now() - incTower.lastUpdateRealTime) / 16;
     var lastRealUpdate = incTower.lastUpdateRealTime;
     for (var i = 0;i < ticks;i++) {
-        game.update(lastRealUpdate + 16 * i);
+        game.update(game.time.now + 16 * i);
     }
 }
 
