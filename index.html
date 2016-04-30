@@ -124,7 +124,7 @@
                             <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
                             <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
                             <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
-                            <div>Fire Rate: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
+                            <div>Attack Delay: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
                             <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
                             <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
                         </div>
@@ -201,8 +201,6 @@
 
             <p>Todo:</p>
             <ul>
-                <li>Look into the name of fire rate ("attack delay"?), also look into its actual effect.</li>
-                <li>Look into fire rate differences working properly</li>
                 <li>Button to return to the highest level you've reached.</li>
                 <li>Show what path changes will look like when placing a block.</li>
                 <li>Stream-line tower+block commands.</li>
@@ -242,6 +240,9 @@
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-04-29: Upgraded Phaser to 2.4.7.</li>
+                <li>2016-04-29: Found another issue with timing which should be fixed now. Now uses performance.now() if the browser supports it but falls back to Date.now() otherwise.</li>
+                <li>2016-04-29: Renamed Fire Rate to Attack Delay.</li>
                 <li>2016-04-29: Hopefully also fixed a subtle timing issue that may have caused towers to fire at the same time despite having different rates and may have also been involved with the bug some were experiencing where upgrade all would stop towers from firing.</li>
                 <li>2016-04-28: Hopefully addressed issue with upgrade all being slow. In my tests the new upgrade all will upgrade 60 level 1 kinetic towers to level 1095 in 200ms, as opposed to the ~50-100s it would've taken before.</li>
                 <li>2016-04-26: Mana Burst was erroneously granting a chance to increase mana pool at high levels of mana. Now you must cast it at 1/3rd mana for this to occur, the chance scales from 5% at 1/3rd mana to 100% at close to 0 mana. To compensate for this I have changed mana burst to grant its additional damage when your mana pool is over 90% full instead of having to be at full mana. The description has been updated to describe all of these changes.</li>

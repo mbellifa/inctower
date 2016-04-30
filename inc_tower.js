@@ -330,7 +330,7 @@ var incTower = {
     wave: ko.observable(0),
     pathDirty: false,
     lastUpdate: 0,
-    lastUpdateRealTime: Date.now(),
+    lastUpdateRealTime: 0,
 
     availableHelp: ko.observableArray([]), //Stores help files that are available for viewing
     readHelp: ko.observableArray([]),  //Stores help files that have been read by
@@ -2629,6 +2629,7 @@ incTower.humanizeNumber = humanizeNumber;
 
 function create() {
     //This function CANNOT be made strict as it sets globals.
+    updateRealTime();
     ko.applyBindings(incTower);
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.stage.disableVisibilityChange = true;
@@ -2820,13 +2821,23 @@ function create() {
     endZone.endFill();
     game.world.bringToTop(endZone);
 }
+function updateRealTime() {
+    if (performance !== undefined) {
+        incTower.lastUpdateRealTime = performance.now();
+    } else {
+        incTower.lastUpdateRealTime = Date.now();
+    }
+}
 
 function convergeUpdate() {
     'use strict';
-    var ticks = (Date.now() - incTower.lastUpdateRealTime) / 16;
-    var lastRealUpdate = incTower.lastUpdateRealTime;
+
+    var lastRealTime = incTower.lastUpdateRealTime;
+    updateRealTime();
+    var ticks = ((incTower.lastUpdateRealTime - lastRealTime) / 16) | 0;
+    var base_time = game.time.now;
     for (var i = 0;i < ticks;i++) {
-        game.update(game.time.now + 16 * i);
+        game.update(base_time + 16 * i);
     }
 }
 
@@ -3062,7 +3073,7 @@ function update() {
     var currentTime = game.time.now;
     incTower.frame++;
     if (incTower.lastUpdate === 0) { incTower.lastUpdate = currentTime; }
-    incTower.lastUpdateRealTime = Date.now();
+    updateRealTime();
     incTower.lastUpdate = currentTime;
 
     if ((!incTower.generatingEnemies) && (enemys.countLiving() === 0)) {
