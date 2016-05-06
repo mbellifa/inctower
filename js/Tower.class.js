@@ -250,13 +250,15 @@ Tower.prototype.fire = function() {
         if (enemiesInRange.length > 0) {
             var chosenEnemy = enemiesInRange[(Math.random()*enemiesInRange.length) | 0];
             var sprite = 'bullet.png';
-            if (!(sprite in incTower.deadBullets)) { incTower.deadBullets[sprite] = []; }
+            if (!(sprite in incTower.deadBullets)) {
+                incTower.deadBullets[sprite] = [];
+            }
             var bullet = incTower.deadBullets[sprite].shift();
             if (bullet !== undefined) {
                 bullet.revive();
                 bullet.reset(this.x,this.y);
             } else {
-                bullet = bullets.create(this.x,this.y, 'incTower', sprite, true);
+                bullet = bullets.create(this.x, this.y, 'incTower', sprite, true);
                 game.physics.enable(bullet, Phaser.Physics.ARCADE);
             }
             bullet.damage = this.totalDamage();

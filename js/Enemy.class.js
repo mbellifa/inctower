@@ -30,20 +30,34 @@ var Enemy = function(x, y, opts) {
         bleeding: ko.observable(new BigNumber(0))
     };
     this.events.onKilled.add(function () {
-
-
+        'use strict';
         if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy  && !incTower.currentlySelected().alive) {
             incTower.currentlySelected(null);
         }
-
+        this.removeChildren();
         this.healthbar.destroy();
-    },this);
+        this.healthbar = undefined;
+        //This appears to have been causing a memory leak.
+        this.animations.destroy();
+        this.events.onKilled.dispose();
+        this.healthSubscription.dispose();
+        this.chillSubscription.dispose();
+        if (this.burningSprite) {
+            this.burningSprite.animations.destroy();
+            this.burningSprite.destroy();
+        }
+
+        this.burningSprite = undefined;
+        this.floatText = undefined;
+        this.statusEffects = undefined;
+        this.realSpeed = undefined;
+    }, this);
     this.realSpeed = ko.computed(function () {
         var speed = this.speed;
         speed -= speed * (this.statusEffects.chilled() * 0.01);
         return Math.max(0,speed);
     }, this);
-    this.statusEffects.chilled.subscribe(chilledUpdate,this);
+    this.chillSubscription = this.statusEffects.chilled.subscribe(chilledUpdate,this);
     this.speedX = 0;
     this.speedY = 0;
 
@@ -91,7 +105,7 @@ var Enemy = function(x, y, opts) {
     this.moveElmt();
     this.health = ko.observable();
 
-    this.health.subscribe(function (newHealth) {
+    this.healthSubscription = this.health.subscribe(function (newHealth) {
         this.healthbar.clear();
         var per = newHealth.div(this.maxHealth);
         var x = (per) * 100;
@@ -290,6 +304,7 @@ Enemy.prototype.repositionRunes = function () {
 };
 Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
     if (opts === undefined) { opts = {}; }
+    if (!this.alive) { return; }
     for (var key in reactionCounts) {
         this.elementalRuneDiminishing[key] = (this.elementalRuneDiminishing[key] || 0) + reactionCounts[key];
     }
@@ -446,6 +461,4 @@ Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
         }
 
     }
-//    console.log(reactionCounts);
-
 };

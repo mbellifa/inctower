@@ -116,7 +116,7 @@ function loadSave(save) {
                 } else if (isPrimativeNumber(curVal) || typeof curVal === 'boolean') {
                     incTower[prop](save[prop]);
                 } else {
-                    console.log(prop);
+                    //console.log(prop);
                     //should be a big number if we're getting here.
                     incTower[prop](new BigNumber(save[prop]));
                 }
@@ -224,8 +224,6 @@ $(document).ready(function () {
                 incTower.enqueueSkill(prereq[0]);
             }
         });
-        console.log(prereqs);
-        //incTower.enqueueSkill();
         e.preventDefault();
     });
 
@@ -460,7 +458,8 @@ var incTower = {
         });
         incTower.blocks([{x:13, y:9}]);
         map.putTile(game.rnd.integerInRange(5,8),13,9,"Ground");
-        enemys.removeAll(true);
+        incTower.nukeEnemies();
+
         towers.removeAll(true);
         incTower.towers([]);
         incTower.selectedBossPack = false;
@@ -472,9 +471,14 @@ var incTower = {
 
 
     },
+    nukeEnemies: function () {
+        'use strict';
+        game.tweens.removeFrom(enemys);
+        enemys.removeAll(true);
+    },
     prevWave: function () {
         incrementObservable(incTower.wave,-1);
-        enemys.removeAll(true);
+        incTower.nukeEnemies();
     },
     showChangelog: function () {
         'use strict';
@@ -2382,18 +2386,19 @@ var incTower = {
             color = opt.color;
         }
         var duration = 1000;
+
         if ('duration' in opt) {
             duration = opt.duration;
         }
         floatText.fill = color;
         floatText.alpha = 1;
         floatText.text = text;
-        game.add.tween(floatText).to( { alpha: 0, y: floatText.y - 30 }, duration, "Linear", true);
-
-
+        game.tweens.removeFrom(floatText);
+        var floatTween = game.add.tween(floatText).to( { alpha: 0, y: floatText.y - 30 }, duration, "Linear", true);
+        floatTween.onComplete.add(function () {
+            this.amount = undefined;
+        }, floatText);
     }
-
-
 };
 _.forEach(_.keys(incTower.towerAttributes), function (towerType) {
     incTower.towerAttributes[towerType].blueprintPoints = ko.computed(function () {
@@ -3083,7 +3088,7 @@ function update() {
             $('#b64_save').val(btoa(saveData));
             localStorage.setItem("save",saveData);
         }
-        enemys.removeAll();
+        incTower.nukeEnemies();
         if (incTower.wave() > 0 && incTower.wave() % 5 === 0) {
             incTower.checkHelp('bosses');
         }
@@ -3116,6 +3121,8 @@ function update() {
         var timeSinceFired = game.time.now - bullet.fired;
         //The default speed is hardcoded at 300px/s, or 300px/1000ms we can use this ratio to see if we've gone past our range.
         if (timeSinceFired > ((range + 25) * 3.333)) { // Equivalent to (range / 300) * 1000
+            bullet.target = undefined;
+            bullet.tower = undefined;
             bullet.kill();
             var frame = bullet._frame.name;
             if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
@@ -3139,16 +3146,19 @@ function update() {
 
 function collisionHandler(bullet, enemy) {
     'use strict';
+    bullet.target = undefined;
     if (!bullet.alive) { return; }
+    var firingTower = bullet.tower;
+    bullet.tower = undefined;
     bullet.kill();
     var frame = bullet._frame.name;
     if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
     incTower.deadBullets[frame].push(bullet);
     var damage = bullet.damage;
-    var towerType = bullet.tower.towerType;
+    var towerType = firingTower.towerType;
     var adaptiveSkill = incTower.getEffectiveSkillLevel('adaptiveUpgrades');
     if (adaptiveSkill > 0) {
-        incrementObservable(bullet.tower.remainingUpgradeCost, enemy.goldValue().times(0.001 * adaptiveSkill).neg());
+        incrementObservable(firingTower.remainingUpgradeCost, enemy.goldValue().times(0.001 * adaptiveSkill).neg());
     }
     if (towerType === 'kinetic') {
         if (game.rnd.frac() < (0.05 * incTower.getEffectiveSkillLevel('shrapnelAmmo'))) {
@@ -3162,9 +3172,9 @@ function collisionHandler(bullet, enemy) {
         chance -= (0.05 * enemy.elementalRuneDiminishing[towerType] || 0);
         chance -= (0.2 * (enemy[towerType + '-resistant'] || 0));
         if (game.rnd.frac() < chance) {
-            enemy.addElementalRune(bullet.tower.towerType);
+            enemy.addElementalRune(firingTower.towerType);
             if (game.rnd.frac() < (0.05 * incTower.getEffectiveSkillLevel(towerType + 'AdvancedRuneApplication'))) {
-                enemy.addElementalRune(bullet.tower.towerType);
+                enemy.addElementalRune(firingTower.towerType);
             }
         }
     }
@@ -3274,4 +3284,89 @@ function calcSkillGrowth(skill,toLevel,targetTime) {
             incTower.skillAttributes[skill].growth = negGrowth;
         }
     }
+}
+
+// function memoryReport(obj, visited, verbose) {
+//     if (verbose === undefined) { verbose = true; }
+//     if (visited === undefined) { visited = {}; }
+//     if (!_.has(visited, obj)) {
+//         visited[obj] = true;
+//     }
+//     var count = 1;
+//     _.forEach(_.keys(obj), function (key) {
+//         var val = obj[key];
+//         count += 1;
+//         var rescount = 0;
+//         if (_.isObject(val)) {
+//             if (_.has(visited, val)) {
+//                 console.log("Key Visited: " + key );
+//                 return;
+//             }
+//
+//             try {
+//                 if (_.isArray(val)) {
+//                     rescount = val.length;
+//                 } else {
+//                     rescount = memoryReport(val, visited, false);
+//                 }
+//
+//             }
+//             catch (err) {
+//                 rescount = 0;
+//                 console.log("Error on key" + key);
+//             }
+//
+//             //console.log(verbose);
+//             if (verbose) {
+//                 console.log("Key: " + key + " " + rescount);
+//             }
+//             count += rescount;
+//         }
+//     });
+//     return count;
+// }
+
+function memoryReport(obj, verbose, objName, visited, arrays) {
+    if (verbose === undefined) { verbose = true; }
+    if (visited === undefined) { visited = []; }
+    if (arrays === undefined) { arrays = {}; }
+    if (objName === undefined) { objName = 'root';  }
+
+    if (!_.has(visited, obj)) {
+        visited.push(obj);
+    }
+    var count = 1;
+    _.forEach(_.keys(obj), function (key) {
+        var val = obj[key];
+        count += 1;
+        var rescount = 0;
+        // if (visited.indexOf(val) >= 0) {
+        //     console.log("Visited Key: " + key);
+        //     console.log(visited);
+        //     console.log(val);
+        // }
+        if (_.isObject(val) && visited.indexOf(val) < 0) {
+            try {
+                if (_.isArray(val)) {
+                    arrays[objName + '.' + key] = val.length;
+                    rescount = val.length;
+                } else {
+                    rescount = memoryReport(val, false, objName + '.' + key, visited, arrays);
+                }
+
+            }
+            catch (err) {
+                rescount = 0;
+                console.log("Error on key" + key);
+            }
+
+            //console.log(verbose);
+            if (verbose) {
+                console.log("Key: " + key + " " + rescount);
+            }
+            count += rescount;
+        }
+    });
+    console.log(arrays);
+    return count;
 }

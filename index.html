@@ -194,6 +194,7 @@
             <div data-bind="if: selectedHelp()">
                 <p><b data-bind="text: incTower.helpTopics[selectedHelp()].title"></b></p>
                 <div data-bind="html: incTower.helpTopics[selectedHelp()].body"></div>
+            </div>
 
 
         </div>
@@ -221,7 +222,6 @@
                 <li>Look into music and sound effects (particularly for finishing a skill).</li>
                 <li>Revisit blueprint formula.</li>
                 <li>Look at making a flat version of the upgrade menu to more easily compare skills that have not been maxed. <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hoq1s">From this reddit comment.</a></li>
-                <li>Re-examine upgrade all for speed.</li>
                 <li>Speed settings, maybe just after prestige?</li>
                 <li>Architect and engineering towers. See <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2io9b9">this comment.</a></li>
                 <li>Look into bug where upgrade all stops towers from firing see <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hlu04">here</a></li>
@@ -235,11 +235,15 @@
                 <li>Fix issue where AoE elemental reactions get to avoid run diminishing returns.</li>
                 <li>Look into air tower + air spell interaction.</li>
                 <li>Look into fire tower + fire spell interaction.</li>
-                <li>Investigate memory leak in IE 11.</li>
-
+                <li>Make an earth spell.</li>
             </ul>
             <p>Changelog:</p>
             <ul>
+                <li>2016-05-05: Added RequireJS.</li>
+                <li>2016-05-05: I'm declaring the IE11 Memory Leak solved, although there appears to be a bug with IE development tools that will cause a memory leak if you use the memory profiler.</li>
+                <li>2016-05-04: Upgraded jstree to 3.3.0.</li>
+                <li>2016-05-04: Upgraded jQuery to 1.12.3.</li>
+                <li>2016-05-03: Upgraded KnockoutJS to 3.4.0.</li>
                 <li>2016-04-29: Upgraded Phaser to 2.4.7.</li>
                 <li>2016-04-29: Found another issue with timing which should be fixed now. Now uses performance.now() if the browser supports it but falls back to Date.now() otherwise.</li>
                 <li>2016-04-29: Renamed Fire Rate to Attack Delay.</li>
@@ -392,13 +396,12 @@
                 <li>2015-05-07: Fixed a bug where the game loop was looping through all enemies instead of all alive enemies. Woops.</li>
 
             </ul>
-
         </div>
         <script type="text/javascript" src="js/phaser.min.js"></script>
         <script type="text/javascript" src="js/lodash.min.js"></script>
-        <script type="text/javascript" src="js/knockout-3.3.0.js"></script>
+        <script type="text/javascript" src="js/knockout-3.4.0.min.js"></script>
         <script type="text/javascript" src="js/ko.observableDictionary.js"></script>
-        <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-1.12.3.min.js"></script>
         <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
         <script type="text/javascript" src="js/bignumber.min.js"></script>
         <script type="text/javascript" src="js/moment.js"></script>
