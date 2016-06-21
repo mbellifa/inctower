@@ -1,9 +1,281 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/img/actions/template.png" />
+    <list default="true" id="40471402-95d4-4eb2-b39c-c42cd219ebb1" name="Default" comment="Upgraded phaser to 2.4.7, timing issues pt. 2">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/air-element.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/blackbeetle-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/blackbeetle-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/blackbeetle-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/blackbeetle-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/blackbeetle-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/chicken-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/chicken-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/chicken-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/chicken-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/cow-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/cow-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/cow-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/cow-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/dog06.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck06.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck07.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/duck08.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/earth-element.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/fire-element.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/firebeetle-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/firebeetle-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/firebeetle-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/firebeetle-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/firebeetle-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/goblin01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/goblin02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/goblin03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenbeetle-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenbeetle-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenbeetle-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenbeetle-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenbeetle-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/greenfairy-06.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/icebeetle-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/icebeetle-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/icebeetle-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/icebeetle-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/icebeetle-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_attack.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_attackL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_attackR.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_die.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_dieL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_dieR_.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_idle.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_idleL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_idleR.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_jump.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_jumpL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_jumpR.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_move.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_moveL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_moveR_.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_ouch.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_ouchL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_ouchR.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_swipeL.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/knight_swipeR_.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/llama-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/llama-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/llama-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/llama-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/panda01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/panda02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/panda03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/penguin01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/penguin02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/penguin03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/penguin04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/pig-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/pig-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/pig-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/pig-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/radar-sweep.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-05.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/redfairy-06.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/rock1.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/rock2.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/rock3.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/sheep-01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/sheep-02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/sheep-03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/sheep-04.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/skeleton01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/skeleton02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/skeleton03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/water-element.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/zombie01.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/zombie02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/raw/zombie03.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/img/spells/seismicRupture.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/actions.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/basic-actions.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/blocks.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/core.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/cursor.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/enemies.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/everysecond.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/help.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/keybinds-cursors.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/path.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/phaser-game.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/prestige.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/save.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/skills.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/spells.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/tooltips.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/towers.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/ui.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/util.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/incTower/wave.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/lib/EasyStar.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/lib/ko.observableDictionary.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/loader.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/require.min.js" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/Tower-32.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/air-element.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/blue-bullet.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/bubble.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/bullet.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog04.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog05.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/dog06.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck04.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck05.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck06.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck07.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/duck08.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/earth-element.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/fire-element.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/flask.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/goblin01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/goblin02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/goblin03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_attack.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_attackL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_attackR.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_die.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_dieL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_dieR_.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_idle.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_idleL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_idleR.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_jump.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_jumpL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_jumpR.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_move.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_moveL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_moveR_.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_ouch.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_ouchL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_ouchR.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_swipeL.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/knight_swipeR_.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/panda01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/panda02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/panda03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/penguin01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/penguin02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/penguin03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/penguin04.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/dog.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/duck.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/goblin.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/minidaemon.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/panda.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/penguin.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0001.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0002.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0003.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0004.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0005.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0006.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0007.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0008.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0009.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0010.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0011.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0012.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0013.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0014.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0015.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0016.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0017.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0018.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0019.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/raw/smoke-fire/0020.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/rock1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/rock2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/rock3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/skeleton01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/skeleton02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/skeleton03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0001.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0002.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0003.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0004.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0005.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0006.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0007.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0008.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0009.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0010.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0011.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0012.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0013.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0014.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0015.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0016.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0017.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0018.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0019.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/smokefire-0020.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/stuff/DungeonCrawl_ProjectUtumnoTileset.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/stuff/incTower.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/water-element.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/zombie01.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/zombie02.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/sprites/zombie03.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/img/towers/water-element.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/js/PathFinderPlugin.js" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/js/easystar-0.2.1.min.js" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/js/ko.observableDictionary.js" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/phaser.min.js" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/inc_tower.js" afterPath="$PROJECT_DIR$/js/inc_tower.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/bignumber.js.map" afterPath="$PROJECT_DIR$/js/lib/bignumber.js.map" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/bignumber.min.js" afterPath="$PROJECT_DIR$/js/lib/bignumber.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/jquery-1.12.3.min.js" afterPath="$PROJECT_DIR$/js/lib/jquery.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/jquery-1.12.3.min.map" afterPath="$PROJECT_DIR$/js/lib/jquery-1.12.3.min.map" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/jquery-ui.min.js" afterPath="$PROJECT_DIR$/js/lib/jquery-ui.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/jquery.qtip.min.js" afterPath="$PROJECT_DIR$/js/lib/jquery.qtip.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/jstree.min.js" afterPath="$PROJECT_DIR$/js/lib/jstree.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/knockout-3.4.0.min.js" afterPath="$PROJECT_DIR$/js/lib/knockout.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/lodash.min.js" afterPath="$PROJECT_DIR$/js/lib/lodash.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/moment.js" afterPath="$PROJECT_DIR$/js/lib/moment.js" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/phaser.map" afterPath="$PROJECT_DIR$/js/lib/phaser.map" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/js/phaser.min.js" afterPath="$PROJECT_DIR$/js/lib/phaser.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/assets/sprites/main.png" afterPath="$PROJECT_DIR$/assets/sprites/main.png" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/Phaser_Arcade.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Phaser_Arcade.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/ko_observableDictionary_js.xml" afterPath="$PROJECT_DIR$/.idea/libraries/ko_observableDictionary_js.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Skills.md" afterPath="$PROJECT_DIR$/Skills.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/assets/sprites/main.json" afterPath="$PROJECT_DIR$/assets/sprites/main.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/css/incTower.css" afterPath="$PROJECT_DIR$/css/incTower.css" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/incTower-Worker.js" afterPath="$PROJECT_DIR$/incTower-Worker.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Enemy.class.js" afterPath="$PROJECT_DIR$/js/Enemy.class.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Tower.class.js" afterPath="$PROJECT_DIR$/js/Tower.class.js" />
     </list>
     <ignored path="Incremental Tower Defense.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -24,35 +296,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="127">
-              <caret line="57" column="55" selection-start-line="57" selection-start-column="55" selection-end-line="57" selection-end-column="55" />
-              <folding>
-                <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="-1888">
+              <caret line="313" column="0" selection-start-line="313" selection-start-column="0" selection-end-line="313" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Skills.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Skills.md">
+      <file leaf-file-name="keybinds-cursors.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/keybinds-cursors.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="17">
+              <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ui.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/ui.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="175">
+              <caret line="25" column="31" selection-start-line="25" selection-start-column="31" selection-end-line="25" selection-end-column="31" />
               <folding />
             </state>
           </provider>
@@ -61,70 +329,68 @@
       <file leaf-file-name="incTower.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/css/incTower.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4641">
-              <caret line="273" column="0" selection-start-line="273" selection-start-column="0" selection-end-line="273" selection-end-column="0" />
+            <state relative-caret-position="526">
+              <caret line="101" column="19" selection-start-line="101" selection-start-column="19" selection-end-line="101" selection-end-column="19" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="inc_tower.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/inc_tower.js">
+      <file leaf-file-name="phaser.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/lib/phaser.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1972">
-              <caret line="116" column="47" selection-start-line="116" selection-start-column="47" selection-end-line="116" selection-end-column="47" />
-              <folding>
-                <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name=".gitattributes" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitattributes">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="289">
+              <caret line="17" column="24772" selection-start-line="17" selection-start-column="24772" selection-end-line="17" selection-end-column="24772" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="phaser.min.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/phaser.min.js">
+      <file leaf-file-name="everysecond.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/everysecond.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+            <state relative-caret-position="232">
+              <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Enemy.class.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
+      <file leaf-file-name="phaser-game.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/phaser-game.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5134">
-              <caret line="302" column="55" selection-start-line="302" selection-start-column="54" selection-end-line="302" selection-end-column="55" />
+            <state relative-caret-position="130">
+              <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Tower.class.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
+      <file leaf-file-name="enemies.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/enemies.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="109" column="31" selection-start-line="109" selection-start-column="30" selection-end-line="109" selection-end-column="31" />
+            <state relative-caret-position="348">
+              <caret line="1084" column="22" selection-start-line="1084" selection-start-column="22" selection-end-line="1084" selection-end-column="22" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package.json" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package.json">
+      <file leaf-file-name="path.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/path.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+            <state relative-caret-position="1207">
+              <caret line="71" column="37" selection-start-line="71" selection-start-column="37" selection-end-line="71" selection-end-column="37" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="spells.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/incTower/spells.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="184">
+              <caret line="221" column="33" selection-start-line="221" selection-start-column="33" selection-end-line="221" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -161,46 +427,71 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/incremental_tower.js" />
-        <option value="$PROJECT_DIR$/phaser-tower-defense-master/js/Tower.class.js" />
-        <option value="$PROJECT_DIR$/phaser-tower-defense-master/js/Enemy.class.js" />
-        <option value="$PROJECT_DIR$/incTower-Worker.js" />
-        <option value="$PROJECT_DIR$/phaser-debug.js" />
-        <option value="$PROJECT_DIR$/css/vex-theme-wireframe.css" />
-        <option value="$PROJECT_DIR$/js/easystar.min.js" />
-        <option value="$PROJECT_DIR$/js/easystar-0.2.0.min.js" />
-        <option value="$PROJECT_DIR$/js/PathFinderPlugin.js" />
-        <option value="$PROJECT_DIR$/js/easystar-0.2.1.min.js" />
-        <option value="$PROJECT_DIR$/js/ko.observableDictionary.js" />
-        <option value="$PROJECT_DIR$/js/moment.js" />
-        <option value="$PROJECT_DIR$/css/vex-theme-bottom-right-corner.css" />
-        <option value="$PROJECT_DIR$/css/jquery.qtip.css" />
-        <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/js/phaser.min.js" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/build/js/incTower.min.js" />
         <option value="$PROJECT_DIR$/build/css/incTower.min.css" />
         <option value="$PROJECT_DIR$/gulpfile.js" />
         <option value="$PROJECT_DIR$/js/lodash.min.js" />
-        <option value="$PROJECT_DIR$/css/incTower.css" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/js/Enemy.class.js" />
-        <option value="$PROJECT_DIR$/Skills.md" />
-        <option value="$PROJECT_DIR$/js/Tower.class.js" />
-        <option value="$PROJECT_DIR$/index.html" />
+        <option value="$PROJECT_DIR$/phaser.min.js" />
+        <option value="$PROJECT_DIR$/js/knockout-3.4.0.min.js" />
+        <option value="$PROJECT_DIR$/indexie.html" />
         <option value="$PROJECT_DIR$/inc_tower.js" />
+        <option value="$PROJECT_DIR$/js/require.min.js" />
+        <option value="$PROJECT_DIR$/js/EastyStar.js" />
+        <option value="$PROJECT_DIR$/js/EasyStar.js" />
+        <option value="$PROJECT_DIR$/js/ko.observableDictionary.js" />
+        <option value="$PROJECT_DIR$/js/PathFinderPlugin.js" />
+        <option value="$PROJECT_DIR$/js/lib.js" />
+        <option value="$PROJECT_DIR$/js/incTower.js" />
+        <option value="$PROJECT_DIR$/js/incTower/keybinds.js" />
+        <option value="$PROJECT_DIR$/js/incTower/rest.js" />
+        <option value="$PROJECT_DIR$/js/lib/EasyStar.js" />
+        <option value="$PROJECT_DIR$/js/lib/ko.observableDictionary.js" />
+        <option value="$PROJECT_DIR$/js/Tower.class.js" />
+        <option value="$PROJECT_DIR$/js/Enemy.class.js" />
+        <option value="$PROJECT_DIR$/js/inc_tower.js" />
+        <option value="$PROJECT_DIR$/js/lib/PathFinderPlugin.js" />
+        <option value="$PROJECT_DIR$/js/incTower-Worker.js" />
+        <option value="$PROJECT_DIR$/js/incTower/core.js" />
+        <option value="$PROJECT_DIR$/js/incTower/blocks.js" />
+        <option value="$PROJECT_DIR$/js/incTower/basic-actions.js" />
+        <option value="$PROJECT_DIR$/js/incTower/actions.js" />
+        <option value="$PROJECT_DIR$/js/incTower/cursor.js" />
+        <option value="$PROJECT_DIR$/js/incTower/keybinds-cursors.js" />
+        <option value="$PROJECT_DIR$/incTower-Worker.js" />
+        <option value="$PROJECT_DIR$/js/incTower/help.js" />
+        <option value="$PROJECT_DIR$/js/incTower/wave.js" />
+        <option value="$PROJECT_DIR$/js/incTower/tooltips.js" />
+        <option value="$PROJECT_DIR$/js/incTower/util.js" />
+        <option value="$PROJECT_DIR$/js/incTower/save.js" />
+        <option value="$PROJECT_DIR$/js/incTower/towers.js" />
+        <option value="$PROJECT_DIR$/Skills.md" />
+        <option value="$PROJECT_DIR$/js/lib/lodash.js" />
+        <option value="$PROJECT_DIR$/js/incTower/prestige.js" />
+        <option value="$PROJECT_DIR$/js/incTower/skills.js" />
+        <option value="$PROJECT_DIR$/js/incTower/spells.js" />
+        <option value="$PROJECT_DIR$/js/incTower/phaser-game.js" />
+        <option value="$PROJECT_DIR$/js/loader.js" />
+        <option value="$PROJECT_DIR$/js/incTower/path.js" />
+        <option value="$PROJECT_DIR$/js/incTower/enemies.js" />
+        <option value="$PROJECT_DIR$/css/incTower.css" />
+        <option value="$PROJECT_DIR$/js/incTower/ui.js" />
+        <option value="$PROJECT_DIR$/js/incTower/everysecond.js" />
+        <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
   </component>
-  <component name="JsBuildToolGruntFileManager" detection-done="true" />
-  <component name="JsBuildToolPackageJson" detection-done="true" />
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
   <component name="JsGulpfileManager">
     <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="7" />
-    <option name="width" value="1440" />
-    <option name="height" value="860" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1456" />
+    <option name="height" value="876" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -227,6 +518,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -269,7 +561,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="img" />
+              <option name="myItemId" value="js" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="incTower" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -284,10 +580,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="img" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="towers" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -319,46 +611,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="img" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="actions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Incremental Tower Defense" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="inctower" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Incremental Tower Defense" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="inctower" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assets" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -371,7 +630,7 @@
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/Alexanders_Pet_Grooming" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/js/incTower" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="178" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
@@ -395,10 +654,15 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Mo\Documents\inctower\js" />
+      <recent name="C:\Users\Mo\Documents\inctower\js\incTower" />
+      <recent name="C:\Users\Mo\Documents\inctower" />
       <recent name="C:\Users\Mo\Documents\inctower\css" />
       <recent name="C:\Users\Mo\Dropbox\Incremental Tower Defense\js" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Mo\Documents\inctower" />
+      <recent name="C:\Users\Mo\Documents\inctower\js\incTower" />
+      <recent name="C:\Users\Mo\Documents\inctower\js\lib" />
       <recent name="C:\Users\Mo\Documents\inctower\js" />
       <recent name="C:\Users\Mo\Documents\Incremental Tower Defense" />
     </key>
@@ -498,49 +762,14 @@
       <option name="presentableId" value="Default" />
       <updated>1424544448189</updated>
       <workItem from="1459909333204" duration="19419000" />
-      <workItem from="1460608908095" duration="5386000" />
-    </task>
-    <task id="LOCAL-00001" summary="Updated changelog">
-      <created>1446961821432</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1446961821432</updated>
-    </task>
-    <task id="LOCAL-00002" summary="Added the ability to sell a block, fixed a tower selling bug.">
-      <created>1446966034722</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1446966034722</updated>
-    </task>
-    <task id="LOCAL-00003" summary="Added elemental upgrades and towers. Refactored some of the skill logic">
-      <created>1447004771978</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1447004771978</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Added elemental upgrades and towers. Refactored some of the skill logic">
-      <created>1447004816391</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1447004816391</updated>
-    </task>
-    <task id="LOCAL-00005" summary="Added elemental upgrades and towers. Refactored some of the skill logic">
-      <created>1447004822359</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1447004822359</updated>
-    </task>
-    <task id="LOCAL-00006" summary="Reduced tower costs.">
-      <created>1447033089505</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1447033089505</updated>
+      <workItem from="1460608908095" duration="6008000" />
+      <workItem from="1461125265826" duration="14754000" />
+      <workItem from="1461728864646" duration="95641000" />
+      <workItem from="1463101457778" duration="34000" />
+      <workItem from="1463101556153" duration="49953000" />
+      <workItem from="1463624732896" duration="29632000" />
+      <workItem from="1464498743461" duration="85905000" />
+      <workItem from="1466483520060" duration="3190000" />
     </task>
     <task id="LOCAL-00007" summary="UI Update">
       <created>1447051359072</created>
@@ -836,11 +1065,60 @@
       <option name="project" value="LOCAL" />
       <updated>1460846364696</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="Added blueprint/template icon.">
+      <created>1460846450603</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1460846450603</updated>
+    </task>
+    <task id="LOCAL-00050" summary="Fixed critical bugs with prestige not reseting tower blueprints and block gold generation.">
+      <created>1461643540665</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1461643540666</updated>
+    </task>
+    <task id="LOCAL-00051" summary="* Mana Burst has been changed to only have the possiblity of mana pool increase at 33% or lower mana but now causes extra damage when above 90% mana.&#10;* You can no longer sell or scrap towers if you're down to your last tower.&#10;* Escape now allows you to deselect units.&#10;* No longer instructs the player to press shift erroneously.&#10;* Template scrapping is no longer allowed after prestige without the appropriate skill.&#10;* When loading saves towers will now respect the save unless the save would cause the tower to have greater range or fire rate than a new tower would be able to have.">
+      <created>1461732985310</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1461732985311</updated>
+    </task>
+    <task id="LOCAL-00052" summary="Hopefully fixed the upgrade all lag issue.">
+      <created>1461903322965</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1461903322965</updated>
+    </task>
+    <task id="LOCAL-00053" summary="Fixed subtle timing issue that may have caused several bugs including towers firing at the same time despite different fire rates.">
+      <created>1461982006842</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1461982006842</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Upgraded phaser to 2.4.7, timing issues part 2, added support for performance.now().">
+      <created>1461997172164</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1461997172164</updated>
+    </task>
+    <task id="LOCAL-00055" summary="Updated many libraries, hopefully fixed the IE11 memory leak.">
+      <created>1462505719833</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1462505719833</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24805000" />
+    <option name="totallyTimeSpent" value="304536000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -852,13 +1130,13 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="7" y="0" width="1440" height="860" extended-state="0" />
-    <editor active="false" />
+    <frame x="-8" y="-8" width="1456" height="876" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18045649" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18053597" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3287483" sideWeight="0.49153736" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35900962" sideWeight="0.51426536" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35900962" sideWeight="0.48573467" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36424732" sideWeight="0.53102964" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38844085" sideWeight="0.4689704" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31086656" sideWeight="0.48858774" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2496474" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -871,32 +1149,32 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39919356" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="CSS Styles" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.49717912" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.49153736" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3287483" sideWeight="0.49153736" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32974428" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32974428" sideWeight="0.5084626" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36424732" sideWeight="0.53102964" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31090176" sideWeight="0.49153736" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31086656" sideWeight="0.48858774" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33333334" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33241758" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="CSS Styles" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.49717912" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1784203" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3526245" sideWeight="0.49717912" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36424732" sideWeight="0.4689704" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2496474" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.38627186" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38627186" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -912,13 +1190,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Experimental switch from accordions to jQuery UI menu.&#10;&#10;" />
-    <MESSAGE value="Reduced extraneous whitespace.&#10;&#10;" />
-    <MESSAGE value="Added a full data table for skills.&#10;&#10;" />
-    <MESSAGE value="Added skill queuing and reworked skills UI.&#10;&#10;" />
-    <MESSAGE value="Added spells, refactored cursor logic, and made path recovery on recalculation better." />
-    <MESSAGE value="Fixed some cursor issues and added the ability to cancel." />
-    <MESSAGE value="Added frost spell." />
     <MESSAGE value="Lots of skill improvements, added a couple of skills and the bleeding status effect." />
     <MESSAGE value="Added prestige system and several skills." />
     <MESSAGE value="Reworked prestige to only impact learn rate and added a clear queue button." />
@@ -937,19 +1208,91 @@
     <MESSAGE value="Merge branch 'gh-pages' of https://github.com/mbellifa/inctower into gh-pages&#10;&#10;# Conflicts:&#10;#&#9;README.md&#10;" />
     <MESSAGE value="Visual indicators for tower power, tower range and fire rate nerf is now enforced even from old saves." />
     <MESSAGE value="Reworked tower templates, added ability for cursor updates to all actions, added a new category of user action." />
-    <option name="LAST_COMMIT_MESSAGE" value="Reworked tower templates, added ability for cursor updates to all actions, added a new category of user action." />
+    <MESSAGE value="Added blueprint/template icon." />
+    <MESSAGE value="Fixed critical bugs with prestige not reseting tower blueprints and block gold generation." />
+    <MESSAGE value="* Mana Burst has been changed to only have the possiblity of mana pool increase at 33% or lower mana but now causes extra damage when above 90% mana.&#10;* You can no longer sell or scrap towers if you're down to your last tower.&#10;* Escape now allows you to deselect units.&#10;* No longer instructs the player to press shift erroneously.&#10;* Template scrapping is no longer allowed after prestige without the appropriate skill.&#10;* When loading saves towers will now respect the save unless the save would cause the tower to have greater range or fire rate than a new tower would be able to have." />
+    <MESSAGE value="Hopefully fixed the upgrade all lag issue." />
+    <MESSAGE value="Fixed subtle timing issue that may have caused several bugs including towers firing at the same time despite different fire rates." />
+    <MESSAGE value="Upgraded phaser to 2.4.7, timing issues part 2, added support for performance.now()." />
+    <MESSAGE value="Updated many libraries, hopefully fixed the IE11 memory leak." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated many libraries, hopefully fixed the IE11 memory leak." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="6" />
+      <option name="time" value="8" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
+    <entry file="file://$PROJECT_DIR$/js/jstree.min.js" />
+    <entry file="file://$PROJECT_DIR$/indexie.html" />
+    <entry file="file://$PROJECT_DIR$/js/lib/jquery.qtip.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="201" column="41" selection-start-line="201" selection-start-column="41" selection-end-line="201" selection-end-column="41" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/bignumber.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/EastyStar.js" />
+    <entry file="file://$PROJECT_DIR$/js/easystar-0.2.1.min.js" />
+    <entry file="file://$PROJECT_DIR$/js/require.min.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib.js" />
+    <entry file="file://$PROJECT_DIR$/js/incTower.js" />
+    <entry file="file://$PROJECT_DIR$/js/lib/knockout.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1724">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/rest.js" />
+    <entry file="file://$PROJECT_DIR$/js/lib/jquery-ui.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/jquery.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/EasyStar.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/ko.observableDictionary.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="3" column="8" selection-start-line="3" selection-start-column="7" selection-end-line="3" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/jstree.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -958,6 +1301,72 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/inc_tower.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="56" column="0" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower-Worker.js" />
+    <entry file="file://$PROJECT_DIR$/js/incTower/actions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/basic-actions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/blocks.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/core.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/cursor.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-391">
+          <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/incTower-Worker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="44" selection-start-line="7" selection-start-column="44" selection-end-line="7" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/help.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1105">
+          <caret line="65" column="0" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -965,431 +1374,186 @@
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/tooltips.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/wave.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/save.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="379">
+          <caret line="120" column="29" selection-start-line="120" selection-start-column="29" selection-end-line="120" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
+    <entry file="file://$PROJECT_DIR$/assets/sprites/main.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="2071">
+          <caret line="291" column="21" selection-start-line="291" selection-start-column="21" selection-end-line="291" selection-end-column="21" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
+    <entry file="file://$PROJECT_DIR$/js/incTower/towers.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="157" column="0" selection-start-line="157" selection-start-column="0" selection-end-line="157" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="28" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="157" column="0" selection-start-line="157" selection-start-column="0" selection-end-line="157" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="6" column="40" selection-start-line="6" selection-start-column="40" selection-end-line="6" selection-end-column="40" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="9" column="7" selection-start-line="9" selection-start-column="7" selection-end-line="9" selection-end-column="7" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavaScriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/EcmaScript5.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="52" column="0" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/PathFinderPlugin.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="71" selection-start-line="0" selection-start-column="63" selection-end-line="0" selection-end-column="71" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/easystar-0.2.1.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="5884" selection-start-line="0" selection-start-column="5884" selection-end-line="0" selection-end-column="5884" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/bignumber.js.map">
-      <provider editor-type-id="sourcemapFileViewerProvider">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/ko.observableDictionary.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="134" column="0" selection-start-line="134" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/moment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="3110" column="4" selection-start-line="3110" selection-start-column="4" selection-end-line="3110" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/incTower-Worker.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="13" column="47" selection-start-line="13" selection-start-column="47" selection-end-line="13" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/lib/webstorm.jar!/resources/html5-schema/html5/block.rnc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="12" column="16" selection-start-line="12" selection-start-column="16" selection-end-line="12" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/jquery-ui-1.11.4.custom/jquery-ui.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/css/jquery.qtip.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="22" column="22" selection-start-line="22" selection-start-column="22" selection-end-line="22" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gulpfile.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="26" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/jquery.qtip.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="2" column="11495" selection-start-line="2" selection-start-column="11495" selection-end-line="2" selection-end-column="11495" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/lodash.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/jstree.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="43" column="7" selection-start-line="43" selection-start-column="2" selection-end-line="43" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/phaser.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="345">
+          <caret line="546" column="23" selection-start-line="546" selection-start-column="23" selection-end-line="546" selection-end-column="23" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Skills.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="816">
+            <caret line="48" column="4" selection-start-line="48" selection-start-column="4" selection-end-line="48" selection-end-column="4" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/lodash.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" column="69" selection-start-line="18" selection-start-column="69" selection-end-line="18" selection-end-column="69" />
+          <folding>
+            <element signature="n#!!doc" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/prestige.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="0" column="99" selection-start-line="0" selection-start-column="99" selection-end-line="0" selection-end-column="99" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/skills.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="362">
+          <caret line="818" column="98" selection-start-line="818" selection-start-column="98" selection-end-line="818" selection-end-column="98" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/util.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="195" column="0" selection-start-line="195" selection-start-column="0" selection-end-line="199" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/PathFinderPlugin.js" />
+    <entry file="file://$PROJECT_DIR$/js/loader.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="646">
+          <caret line="38" column="32" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gulpfile.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/lib/phaser.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" column="24772" selection-start-line="17" selection-start-column="24772" selection-end-line="17" selection-end-column="24772" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/path.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1207">
+          <caret line="71" column="37" selection-start-line="71" selection-start-column="37" selection-end-line="71" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/spells.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="221" column="33" selection-start-line="221" selection-start-column="33" selection-end-line="221" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/enemies.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="348">
+          <caret line="1084" column="22" selection-start-line="1084" selection-start-column="22" selection-end-line="1084" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/css/incTower.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4641">
-          <caret line="273" column="0" selection-start-line="273" selection-start-column="0" selection-end-line="273" selection-end-column="0" />
+        <state relative-caret-position="526">
+          <caret line="101" column="19" selection-start-line="101" selection-start-column="19" selection-end-line="101" selection-end-column="19" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitattributes">
+    <entry file="file://$PROJECT_DIR$/js/incTower/ui.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="175">
+          <caret line="25" column="31" selection-start-line="25" selection-start-column="31" selection-end-line="25" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/phaser.min.js">
+    <entry file="file://$PROJECT_DIR$/js/incTower/phaser-game.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="130">
+          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/everysecond.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="232">
+          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/incTower/keybinds-cursors.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Enemy.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5134">
-          <caret line="302" column="55" selection-start-line="302" selection-start-column="54" selection-end-line="302" selection-end-column="55" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Tower.class.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="109" column="31" selection-start-line="109" selection-start-column="30" selection-end-line="109" selection-end-column="31" />
+          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="127">
-          <caret line="57" column="55" selection-start-line="57" selection-start-column="55" selection-end-line="57" selection-end-column="55" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#button#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#button#0;n#span#0;n#div#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#3;n#li#0;n#ul#0;n#div#2;n#div#3;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/inc_tower.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1972">
-          <caret line="116" column="47" selection-start-line="116" selection-start-column="47" selection-end-line="116" selection-end-column="47" />
-          <folding>
-            <marker date="1460846179133" expanded="true" signature="111582:111597" placeholder="{...}" />
-          </folding>
+        <state relative-caret-position="-1888">
+          <caret line="313" column="0" selection-start-line="313" selection-start-column="0" selection-end-line="313" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

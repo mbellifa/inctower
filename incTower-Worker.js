@@ -5,6 +5,7 @@ self.addEventListener('message', function(e) {
     var data = e.data;
     switch (data.cmd) {
         case 'start':
+            console.log("attempting start");
             setInterval(function () {
                 self.postMessage('update');
             },1000);

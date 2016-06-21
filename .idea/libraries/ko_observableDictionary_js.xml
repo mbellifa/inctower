@@ -6,7 +6,7 @@
       </sourceFilesUrls>
     </properties>
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/js/ko.observableDictionary.js" />
+      <root url="file://$PROJECT_DIR$/js/lib/ko.observableDictionary.js" />
     </CLASSES>
     <SOURCES />
   </library>

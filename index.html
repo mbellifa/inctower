@@ -1,420 +1,897 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" href="css/incTower.css" type="text/css">
-        <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
-        <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
-        <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" type="text/css" href="css/jstree-themes/default/style.min.css">
-        <title>Incremental Tower Defense</title>
-        <script type="text/html" id="skillTemplate">
-            <li>
-                <span data-bind="text: incTower.skillAttributes[skill].fullName"></span>
-                <span data-bind="if: incTower.skillAttributes[skill].grants">
-                    <ul data-bind="template: { name: 'skillTemplate', foreach: incTower.possibleGrants(skill) , as: 'skill' }">
+<head>
+    <link rel="stylesheet" href="css/incTower.css" type="text/css">
+    <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
+    <link rel="stylesheet" href="css/jquery.qtip.css" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css/jstree-themes/default/style.min.css">
+    <title>Incremental Tower Defense</title>
+    <script type="text/html" id="skillTemplate">
+        <li>
+            <span data-bind="text: $root.skillAttributes[skill].fullName"></span>
+                <span data-bind="if: $root.skillAttributes[skill].grants">
+                    <ul data-bind="template: { name: 'skillTemplate', foreach: $root.possibleGrants(skill) , as: 'skill' }">
 
                     </ul>
                 </span>
-            </li>
-        </script>
-    </head>
-    <body>
-        <div class="topnav">
-            <span class="header">Incremental Tower Defense</span>
+        </li>
+    </script>
+</head>
+<body>
+<div class="topnav">
+    <span class="header"><a href="http://inctower.reddit.com" target="_blank">Incremental Tower Defense<span
+            class="version">0.2</span></a></span>
             <span class="toplinks">
-                <button data-bind="click: function () { incTower.showHelp(); }">Help <span data-bind="if: incTower.unreadHelps() > 0"><span data-bind="text: unreadHelps()" class="unread"></span></span></button>
-                <button data-bind="click: function () { incTower.showChangelog(); }">Changelog</button>
-                <button data-bind="click: function () { incTower.showSkills(); }">Skills</button>
-                <button data-bind="click: function () { incTower.showSaves(); }">Saves</button>
-                <button data-bind="click: function () { incTower.showCredits(); }">Credits</button>
+                <button data-bind="click: function () { $root.showHelp(); }">Help <span
+                        data-bind="if: $root.unreadHelps() > 0"><span data-bind="text: $root.unreadHelps()"
+                                                                      class="unread"></span></span></button>
+                <button data-bind="click: function () { $root.showReddit(); }">Reddit</button>
+                <button data-bind="click: function () { $root.showChangelog(); }">Changelog</button>
+                <button data-bind="click: function () { $root.showSkills(); }">Skills</button>
+                <button data-bind="click: function () { $root.showSaves(); }">Saves</button>
+                <button data-bind="click: function () { $root.showCredits(); }">Credits</button>
             </span>
-        </div>
-        <div id="center">
-            <div id="gameContainer"></div>
-        </div>
-        <div id="right_container">
-            <div id="right">
+</div>
+<div id="center">
+    <div id="gameContainer"></div>
+</div>
+<div id="right_container">
+    <div id="right">
+        <div>
+            <div>
+                <div><b>Wave:</b> <span data-bind="text: wave"></span></div>
                 <div>
-                    <div>
-                        <div><b>Wave:</b> <span data-bind="text: wave"></span> &mdash; <span data-bind="if: incTower.wave() > 1"><button data-bind="click: function () { incTower.prevWave(); }">Previous Wave</button></span></div>
-                        <div>Currently in
-                            <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
-                            <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span></div>
-                        <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
-                        <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }" class="tooltip"></span></div>
-                        <div data-bind="if: prestigePointsNext() > 0"><b>Prestige (Next Reset)</b>: <span data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }" class="tooltip"></span><br><button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></div>
-
-                        <b>Currently Training:</b> <span data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }" class="tooltip"></span>.
-                        <div class="progressBar">
-                            <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
-                            <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span class="text">Skill up <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
-                        </div>
-                        <div class="progressBar tooltip" data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
-                            <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-                            <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-                        </div>
-                    </div>
+                    <span data-bind="if: incTower.wave() > 1"><button
+                            data-bind="click: function () { incTower.prevWave(); }">Prev.</button></span>
+                    <span data-bind="if: incTower.paused()"><button
+                            data-bind="click: function () { incTower.resumeGame(); }">Resume</button></span>
+                    <span data-bind="if: !incTower.paused()"><button
+                            data-bind="click: function () { incTower.pauseGame(); }">Pause</button></span>
                 </div>
-                <div class="icon-header"><b>Build:</b></div>
-                <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn" data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
-                    <div class="keybind">Q</div>
-                    <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
-                    <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
-                </button>
+
+                <div>Currently in
+                    <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button
+                            data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
+                    <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button
+                            data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
+                </div>
+                <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
+                <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span
+                        data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }"
+                        class="tooltip"></span></div>
+                <div data-bind="if: prestigePointsNext() > 0"><b>Prestige (Next Reset)</b>: <span
+                        data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }"
+                        class="tooltip"></span><br>
+                    <button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button>
+                </div>
+
+                <b>Currently Training:</b> <span
+                    data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }"
+                    class="tooltip"></span>.
+                <div class="progressBar">
+                    <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span
+                            class="text">Skill up <span
+                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                    <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span
+                            class="text">Skill up <span
+                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                </div>
+                <div class="progressBar tooltip"
+                     data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
+                    <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span
+                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                    <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span
+                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="icon-header"><b>Build:</b></div>
+        <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn"
+                data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
+            <div class="keybind">Q</div>
+            <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
+            <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
+        </button>
                 <span data-bind="foreach: availableTowers">
-                    <button data-bind="click: function () { incTower.buyTower($data); }, attr: { 'data-tooltip': incTower.towerAttributes[$data].describe() }" class="tooltip icon-btn">
-                        <div class="keybind" data-bind="text: incTower.towerKeybindLetter($index())"></div>
-                        <div style="width: 32px; height: 32px;" data-bind="style: { background: incTower.towerIconCSS($data) }"></div>
-                        <span data-bind="text: humanizeNumber(incTower.towerCost($data))"></span>g
+                    <button data-bind="click: function () { $root.buyTower($data); }, attr: { 'data-tooltip': $root.towerAttributes[$data].describe() }"
+                            class="tooltip icon-btn">
+                        <div class="keybind" data-bind="text: $root.towerKeybindLetter($index())"></div>
+                        <div style="width: 32px; height: 32px;"
+                             data-bind="style: { background: $root.towerIconCSS($data) }"></div>
+                        <span data-bind="text: $root.humanizeNumber($root.towerCost($data))"></span>g
                     </button>
                 </span>
-                <div class="icon-header"><b>Actions:</b></div>
-                <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn" data-tooltip="Sell towers and blocks.">
-                    <div class="keybind">S</div>
-                    <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
-                </button>
-                <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }" class="tooltip icon-btn">
-                    <div class="keybind">L</div>
-                    <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
-                </button>
-                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip" data-tooltip="Upgrade all towers using ALL gold.">
-                    <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
-                </button>
+        <div class="icon-header"><b>Actions:</b></div>
+        <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn"
+                data-tooltip="Sell towers and blocks.">
+            <div class="keybind">S</div>
+            <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
+        </button>
+        <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }"
+                class="tooltip icon-btn">
+            <div class="keybind">L</div>
+            <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
+        </button>
+        <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip"
+                data-tooltip="Upgrade all towers using ALL gold.">
+            <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
+        </button>
                 <span data-bind="foreach: availableActions">
 
-                    <button data-bind="click: function () { incTower.castAction($data); }, attr: { 'data-tooltip': incTower.actionAttributes[$data].describe() }" class="tooltip icon-btn">
-                        <div class="keybind" data-bind="text: incTower.actionAttributes[$data].keybind"></div>
-                        <div style="width: 32px; height: 32px;" data-bind="style: { background: incTower.actionIconCSS($data) }"></div>
+                    <button data-bind="click: function () { $root.castAction($data); }, attr: { 'data-tooltip': $root.actionAttributes[$data].describe() }"
+                            class="tooltip icon-btn">
+                        <div class="keybind" data-bind="text: $root.actionAttributes[$data].keybind"></div>
+                        <div style="width: 32px; height: 32px;"
+                             data-bind="style: { background: $root.actionIconCSS($data) }"></div>
                     </button>
                 </span>
 
-                <div data-bind="if: availableSpells().length > 0">
-                    <p class="icon-header"><b>Spells:</b> (Spell Level: <span data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }" class="tooltip"></span>)</p>
+        <div data-bind="if: availableSpells().length > 0">
+            <p class="icon-header"><b>Spells:</b> (Spell Level: <span
+                    data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }"
+                    class="tooltip"></span>)</p>
                     <span data-bind="foreach: availableSpells">
 
-                        <button data-bind="click: function () { incTower.castSpell($data); }, attr: { 'data-tooltip': incTower.spellAttributes[$data].describe() }" class="tooltip icon-btn">
-                            <div class="keybind" data-bind="text: incTower.spellKeybindLetter($index())"></div>
-                            <div style="width: 32px; height: 32px; border: 1px solid black;" data-bind="style: { background: incTower.spellIconCSS($data) }"></div>
-                            <span data-bind="text: humanizeNumber(incTower.spellAttributes[$data].trueManaCost())"></span> Mana
+                        <button data-bind="click: function () { $root.castSpell($data); }, attr: { 'data-tooltip': $root.spellAttributes[$data].describe() }"
+                                class="tooltip icon-btn">
+                            <div class="keybind" data-bind="text: $root.spellKeybindLetter($index())"></div>
+                            <div style="width: 32px; height: 32px; border: 1px solid black;"
+                                 data-bind="style: { background: $root.spellIconCSS($data) }"></div>
+                            <span data-bind="text: $root.humanizeNumber($root.spellAttributes[$data].trueManaCost())"></span> Mana
                         </button>
                     </span>
-                </div>
+        </div>
 
-                <div id="buyBlockActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
-                    <p>Click on the map to place your block.</p>
-                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
-                </div>
-                <div id="sellToolActive" data-bind="visible: cursor() !== false && cursor().type === 'sell'">
-                    <p>Click on a tower or block to sell it.</p>
-                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
-                </div>
-                <div id="buyTowerActive" data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param !== 'block'">
-                    <p>Click on a tile with a block to build your tower.</p>
-                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
-                </div>
-                <div data-bind="visible: cursor() !== false && cursor().type === 'spell'">
-                    <p>Hover over the map to see the area of effect of your spell, click to cast.</p>
-                    <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
-                </div>
+        <div id="buyBlockActive"
+             data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
+            <p>Click on the map to place your block.</p>
+            <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+        </div>
+        <div id="sellToolActive" data-bind="visible: cursor() !== false && cursor().type === 'sell'">
+            <p>Click on a tower or block to sell it.</p>
+            <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+        </div>
+        <div id="buyTowerActive"
+             data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param !== 'block'">
+            <p>Click on a tile with a block to build your tower.</p>
+            <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+        </div>
+        <div data-bind="visible: cursor() !== false && cursor().type === 'spell'">
+            <p>Hover over the map to see the area of effect of your spell, click to cast.</p>
+            <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
+        </div>
 
-                <div data-bind="if: currentlySelected()">
-                    <div>
-                        <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
-                            <p><b>Currently Selected Tower:</b></p>
-                            <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
-                            <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
-                            <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
-                            <div>Attack Delay: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span></div>
-                            <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)</button>
-                            <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)</button>
-                        </div>
-                        <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
-                            <p><b>Currently Selected Enemy:</b></p>
-                            <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
-                            <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span></div>
-                            <div data-bind="if: currentlySelected().sortedPowers && currentlySelected().sortedPowers.length > 0">
-                                Powers:
-                                <span data-bind="foreach: currentlySelected().sortedPowers">
-                                    <span data-bind="text: incTower.bossPowers[$data.power].name, attr: {'data-tooltip': incTower.bossPowers[$data.power].describe($data.level)}" style="text-transform: capitalize;" class="tooltip"></span>
+        <div data-bind="if: currentlySelected()">
+            <div>
+                <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
+                    <p><b>Currently Selected Tower:</b> <span data-bind="if: currentlySelected().support">
+                                <span data-bind="attr: { 'data-tooltip': $root.towerAttributes[currentlySelected().towerType].describeSupport($root.currentlySelected()) }"
+                                      class="tooltip">
+                                    Support Tower
                                 </span>
-                            </div>
-                            <div data-bind="if: currentlySelected().elementalInstability().gt(0)">Instability: <span data-bind="text: humanizeNumber(currentlySelected().elementalInstability())" class="tooltip" data-tooltip="Elemental Instability accrues from a portion of elemental tower hits, when elemental rune reactions occur any damage portion is normally calculated from its instability."></span></div>
-                        </div>
+                            </span></p>
+                    <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
+                    <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
+                    <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
+                    <div>Attack Delay: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span>
+                    </div>
+                    <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span
+                            data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)
+                    </button>
+                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span
+                            data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)
+                    </button>
+                    <div data-bind="if: currentlySelected().buffs().length > 0">
+                        <b>Buffs:</b><br>
+                                <span data-bind="foreach: currentlySelected().buffCounts()">
+                                    <b><span data-bind="text: $data.type"></span>: </b> <span
+                                        data-bind="text: $data.amount"></span><br>
+                                </span>
+
                     </div>
                 </div>
-            </span>
+                <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
+                    <p><b>Currently Selected Enemy:</b></p>
+                    <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span
+                            data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
+                    <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span>
+                    </div>
+                    <div data-bind="if: currentlySelected().sortedPowers && currentlySelected().sortedPowers.length > 0">
+                        Powers:
+                                <span data-bind="foreach: currentlySelected().sortedPowers">
+                                    <span data-bind="text: $root.bossPowers[$data.power].name, attr: {'data-tooltip': $root.bossPowers[$data.power].describe($data.level)}"
+                                          style="text-transform: capitalize;" class="tooltip"></span>
+                                </span>
+                    </div>
+                    <div data-bind="if: currentlySelected().elementalInstability().gt(0)">Instability: <span
+                            data-bind="text: humanizeNumber(currentlySelected().elementalInstability())" class="tooltip"
+                            data-tooltip="Elemental Instability accrues from a portion of elemental tower hits, when elemental rune reactions occur any damage portion is normally calculated from its instability."></span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="credits" title="Credits">
-            <p>The basis for this whole project started as clone of <a href="https://github.com/theodufay/phaser-tower-defense" target="_blank">this GitHub repo</a>. I used this initial code to teach myself about Phaser.io and many of the enemy sprites and the terrain tiles are from this original project.</p>
-            <p>The number suffixes for large numbers were directly stolen from <a href="https://swarmsim.github.io/" target="_blank">Swarm Simulator (a fantastic game).</a></p>
-            <p>The elemental icons used for the elemental towers comes from <a href="http://pixabay.com/en/air-earth-elements-fire-symbol-147719/" target="_blank">this collection on pixabay</a>.</p>
-            <p>The images used for the blocks came from <a href="http://opengameart.org/content/dungeon-crawl-32x32-tiles" target="_blank">yet another Open Game Art collection</a>.</p>
-            <p>The rock/boulder sprites that fall from the sky when the earth tower activates can be found <a href="http://opengameart.org/content/rocks" target="_blank">here</a></p>
-            <p>The zombie and skeleton enemy sprites are from <a href="http://opengameart.org/content/zombie-and-skeleton-32x48" target="_blank">here</a>.</p>
-            <p>The goblin sprite comes from <a href="http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image" target="_blank">this Open Game Art collection</a>.</p>
-            <p>Eye of the Storm and Frost Shatter spell icons from <a href="http://opengameart.org/content/painterly-spell-icons-part-4">here</a>.</p>
-            <p>Mana Burst and Smolder spell icons from <a href="http://opengameart.org/content/random-rpg-icons-part-1">here</a>.</p>
-            <p>Icon for the blueprints/templating action was made by Ofer Lehr (and cropped by me) was found <a href="https://thenounproject.com/term/blueprint/1050/">here</a>.</p>
+        </span>
+    </div>
+    <div id="credits" title="Credits">
+        <p>The basis for this whole project started as clone of <a
+                href="https://github.com/theodufay/phaser-tower-defense" target="_blank">this GitHub repo</a>. I used
+            this initial code to teach myself about Phaser.io and many of the enemy sprites and the terrain tiles are
+            from this original project.</p>
+        <p>The number suffixes for large numbers were directly stolen from <a href="https://swarmsim.github.io/"
+                                                                              target="_blank">Swarm Simulator (a
+            fantastic game).</a></p>
+        <p>The elemental icons used for the elemental towers comes from <a
+                href="http://pixabay.com/en/air-earth-elements-fire-symbol-147719/" target="_blank">this collection on
+            pixabay</a>.</p>
+        <p>The images used for the blocks came from <a href="http://opengameart.org/content/dungeon-crawl-32x32-tiles"
+                                                       target="_blank">yet another Open Game Art collection</a>.</p>
+        <p>The rock/boulder sprites that fall from the sky when the earth tower activates can be found <a
+                href="http://opengameart.org/content/rocks" target="_blank">here</a></p>
+        <p>The zombie and skeleton enemy sprites are from <a
+                href="http://opengameart.org/content/zombie-and-skeleton-32x48" target="_blank">here</a>.</p>
+        <p>The goblin sprite comes from <a
+                href="http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image"
+                target="_blank">this Open Game Art collection</a>.</p>
+        <p>Eye of the Storm and Frost Shatter spell icons from <a
+                href="http://opengameart.org/content/painterly-spell-icons-part-4">here</a>.</p>
+        <p>Mana Burst, Smolder, and Seismic Rupture spell icons were made by HorrorPen and can be found <a
+                href="http://opengameart.org/content/random-rpg-icons-part-1">here</a>.</p>
+        <p>Icon for the blueprints/templating action was made by Ofer Lehr (and cropped by me) was found <a
+                href="https://thenounproject.com/term/blueprint/1050/">here</a>.</p>
+        <p>Radar sweep icon which is used by the sensor array tower made by <a
+                href="http://lorcblog.blogspot.com/">Lorc</a> and hosted on <a
+                href="http://game-icons.net/lorc/originals/radar-sweep.html">game-icons.net</a>. It has been shrunk down
+            and colorized for my purposes.</p>
+        <p>Beetle sprite (with recolors) by Stephen "Redshrike" Challener hosted <a
+                href="http://opengameart.org/content/lpc-beetle"> on OpenGameArt.org</a>.</p>
+        <p>Farm animals (cow, chicken, sheep, llama, pig) done by Daniel Eddeland, some of these sprites were resized by
+            me but otherwise unaltered. The original submission is available at <a
+                    href="http://opengameart.org/content/lpc-style-farm-animals">OpenGameArt</a>.</p>
+        <p>Red and green fairy sprites by Lunovox can be found <a
+                href="http://opengameart.org/content/sprite-de-fada-fairy">here</a>.</p>
 
-        </div>
-        <div id="save" title="Saves">
-            <p>Copy and paste the text below to backup your save game.<br>
+    </div>
+    <div id="save" title="Saves">
+        <p>Copy and paste the text below to backup your save game.<br>
             <textarea id="b64_save" readonly></textarea></p>
-            <p>If you have a save game you wish to load paste it here:<br>
-                <textarea id="b64_load"></textarea></p>
-            </p>
+        <p>If you have a save game you wish to load paste it here:<br>
+            <textarea id="b64_load"></textarea></p>
+        </p>
+    </div>
+    <div id="skills" title="Skills">
+        <div id="skills_tree">
         </div>
-        <div id="skills" title="Skills">
-            <div id="skills_tree">
-            </div>
-            <div id="skills_desc">
-                <h3>Description</h3>
-                <span id="skills_desc_text" data-bind="html: incTower.describeSkill(incTower.UIselectedSkill())"></span>
-                <span data-bind="if: !incTower.UIselectedSkill()">Click a skill on the left to see its description.</span>
-                <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button id="skill_queue_button">Add to Queue (Costs <span data-bind="text: incTower.skillDescribeTimeAdded(incTower.UIselectedSkill())"></span>)</button></span>
-                <span data-bind="if: !incTower.directlyQueueable(incTower.UIselectedSkill()) && !incTower.skillMaxedInQueue(incTower.UIselectedSkill()) && !incTower.skillIsMaxed(incTower.UIselectedSkill())"><button id="skill_queue_prereqs">Add Prerequisites to Queue</button></span>
+        <div id="skills_desc">
+            <h3>Description</h3>
+            <span id="skills_desc_text" data-bind="html: incTower.describeSkill(incTower.UIselectedSkill())"></span>
+            <span data-bind="if: !incTower.UIselectedSkill()">Click a skill on the left to see its description.</span>
+            <span data-bind="if: incTower.directlyQueueable(incTower.UIselectedSkill())"><button
+                    id="skill_queue_button">Add to Queue (Costs <span
+                    data-bind="text: incTower.skillDescribeTimeAdded(incTower.UIselectedSkill())"></span>)</button></span>
+            <span data-bind="if: !incTower.directlyQueueable(incTower.UIselectedSkill()) && !incTower.skillMaxedInQueue(incTower.UIselectedSkill()) && !incTower.skillIsMaxed(incTower.UIselectedSkill())"><button
+                    id="skill_queue_prereqs">Add Prerequisites to Queue</button></span>
 
-            </div>
-            <div id="skills_queue">
-                <h3>Training Queue</h3>
-                <p data-bind="if: skillQueue().length > 0">Queue will be exhausted <span data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
-                <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
-                <ul data-bind="foreach: skillQueue" id="sortable_queue">
-                    <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><span data-bind="text: incTower.skillAttributes[$data[0]].fullName"></span> (Rank <span data-bind="text: $data[1]"></span>) <span data-bind="visible: incTower.directlyRemovable($data[0], $data[1])" style="float: right;" class="ui-icon ui-icon-closethick remove-queue"></span></li>
+        </div>
+        <div id="skills_queue">
+            <h3>Training Queue</h3>
+            <p data-bind="if: skillQueue().length > 0">Queue will be exhausted <span
+                    data-bind="text: timeUntilSkillUp(incTower.secondsUntilQueueExhausted())"></span>.</p>
+            <span data-bind="if: skillQueue().length == 0">No items in queue!</span>
+            <ul data-bind="foreach: skillQueue" id="sortable_queue">
+                <li class="ui-state-default" data-bind="attr: {'data-skill': $data[0], 'data-rank': $data[1]}"><span
+                        class="ui-icon ui-icon-arrowthick-2-n-s"></span><span
+                        data-bind="text: $root.skillAttributes[$data[0]].fullName"></span> (Rank <span
+                        data-bind="text: $data[1]"></span>) <span
+                        data-bind="visible: $root.directlyRemovable($data[0], $data[1])" style="float: right;"
+                        class="ui-icon ui-icon-closethick remove-queue"></span></li>
+            </ul>
+            <br>
+            <button data-bind="click: function () { incTower.clearQueue(); }">Clear Queue</button>
+
+        </div>
+    </div>
+    <div id="help" title="Help">
+        <p>Selected Help Topic: <select
+                data-bind="options: availableHelp, optionsText: function (item) { return (incTower.haveReadHelpTopic(item) ? '' : '&#9733;') + incTower.helpTopics[item].title; }, value: selectedHelp"></select><br>(&#9733;
+            marks a topic you have not read.)</p>
+
+        <div data-bind="if: !selectedHelp()">Select a help topic above to view it.</div>
+        <div data-bind="if: selectedHelp()">
+            <p><b data-bind="text: incTower.helpTopics[selectedHelp()].title"></b></p>
+            <div data-bind="html: incTower.helpTopics[selectedHelp()].body"></div>
+        </div>
+
+
+    </div>
+    <div id="changelog" title="Changelog">
+        <p>Changelog:</p>
+        <ul>
+            <li>Version 0.2:
+                <ul>
+                    <li>2016-06-20: Added versions. I've declared all changes that have been live for the past month and a half version 0.1, and I dub this version 0.2. The version number now shows next to the title of the game.</li>
+                    <li>2016-06-20: Linked the header and a new button to Reddit. I'm hoping to build up a community there. Maybe potentially replacing the woefully inadequate help feature with a reddit wiki.</li>
+
+                    <li>2016-06-20: Added code to stop mixtures of certain boss powers from occuring. For example Fast
+                        and Heavy don't make sense together, neither do Heavy and Flying.
+                    </li>
+
+                    <li>2016-06-20: Updated the teleport tooltip to explain the nerf that had already been made to it
+                        (won't teleport past the furthest enemy).
+                    </li>
+
+                    <li>2016-06-20: Enemies with the flight power are now more susceptable to the knock back caused by
+                        wind towers (they stay in the air longer). They also have 40% reduced max health. Updated the
+                        tool tip to reflect this.
+                    </li>
+                    <li>2016-06-16: Reworked movement code to be much simpler and allow for diagnal movements for the
+                        newly
+                        implemented flight power. Flight allows enemies to move diagnally and over all blocks and
+                        towers.
+                    </li>
+                    <li>2016-06-16: Removed the path finder plugin. I needed to use a feature of easystar that was not
+                        exposed by it
+                        and it wasn't much code to replace it.
+                    </li>
+                    <li>2016-06-12: Seismic Rupture spell has been added, now each element has at least one spell.
+                        Hooray!
+                    </li>
+                    <li>2016-06-11: Preferred powers can be equal to other powers (it's just guaranteed that if they are
+                        not maxed
+                        out that no other power is greater than them), now they are displayed first in the listing
+                        regardless of
+                        strength so you can see at a glance what the preferred power of a sprite is.
+                    </li>
+                    <li>2016-06-11: Added cow enemy and a new boss power called 'heavy' which slows base movement speed
+                        but makes
+                        the enemy immune to knockbacks and slows (except for total frozen).
+                    </li>
+                    <li>2016-06-10: All rune-addition now runes through the same set of diminishing returns. The chance
+                        of applying
+                        the rune is reduced by the number of runes of that type already on the target, whether that
+                        target recently
+                        experienced an elemental reaction of that type, and whether the target is resistant to that type
+                        (which is
+                        the same as before). This change includes spells.
+                    </li>
+                    <li>2016-06-09: "Normal" (non boss) waves now have boss powers starting at level 25, they will have
+                        half the
+                        number of boss power slots as the boss levels do.
+                    </li>
+                    <li>2016-06-09: Added the armored power which reduces kinetic (normal tower etc.) damage.</li>
+                    <li>2016-06-08: Fixed an issue where elemental resistance skills (fire/water/air/earth/arcane) were
+                        errantly
+                        allowed to roll on bosses without the relevant skills learned, making the boss fights much
+                        easier.
+                    </li>
+                    <li>2016-06-08: When sprites are randomly selected they will be rerolled if their preferred power
+                        shouldn't be
+                        selected (fire-resistant shouldn't roll if the player doesn't have fire affinity for example).
+                    </li>
+                    <li>2016-06-08: Added two new beetle sprites with water-resistant and fire-resistant preferred
+                        powers.
+                    </li>
+                    <li>2016-06-08: A new boss power has been added. Nullzone stops towers within a certain number of
+                        spaces from
+                        firing. The newly added sensor array is meant to be the counter to this power.
+                    </li>
+                    <li>2016-06-01: Selecting a support tower (currently just sensor arrays) will present a blue tooltip
+                        that
+                        explains what exactly it does.
+                    </li>
+                    <li>2016-06-01: Selecting a tower that is under a buff from the sensor array will now show the types
+                        and degree
+                        or buffs it is currently under.
+                    </li>
+                    <li>2016-06-01: Added sensor arrays, currently they buff adjacent (including diagnal) non-support
+                        towers by
+                        granting them a bonus 15% range for 2 seconds when they "fire".
+                    </li>
+                    <li>2016-05-28: All elemental effects should now properly trigger diminishing returns on all enemies
+                        hit, not
+                        just the one that started the reaction.
+                    </li>
+                    <li>2016-05-23: Boss generation is now more likely to favor fewer, stronger powers (although the
+                        'preferred'
+                        power tied to that enemy type is always guaranteed to be the strongest or tied for strongest).
+                    </li>
+                    <li>2016-05-22: The teleport boss power now causes the enemy pack to be at least two units.</li>
+                    <li>2016-05-22: Each type of enemy now has a boss power associated with it.</li>
+                    <li>2016-05-21: There is now a help file available for prestige upon reaching level 100.</li>
+                    <li>2016-05-21: Tooltips now fully destroy themselves upon being hidden.</li>
+                    <li>2016-05-21: Upgrade tooltips will now dynamically update if the skill has upgraded while the
+                        tooltip was
+                        opened.
+                    </li>
+                    <li>2016-05-19: Abandoned web worker implementation of inactive timer, using setInterval instead.
+                    </li>
+                    <li>2016-05-19: Implemented pause/resume buttons, moved it to its own row next to the previous wave
+                        button.
+                    </li>
+                    <li>2016-05-19: The nerf hammer has visited teleport, now teleport can only go as far as one tile
+                        further than
+                        the farthest enemy. If there is only one enemy then it will only be able to teleport one space
+                        at a time
+                        regardless of how strong its teleport power is.
+                    </li>
+                    <li>2016-05-19: Super huge refactoring, broke down a large monolithic chunk of code into 18
+                        modules.
+                    </li>
                 </ul>
-                <br>
-                <button data-bind="click: function () { incTower.clearQueue(); }">Clear Queue</button>
+            </li>
+            <li>Version 0.1:
+                <ul>
+                    <li>2016-05-05: Added RequireJS.</li>
+                    <li>2016-05-05: I'm declaring the IE11 Memory Leak solved, although there appears to be a bug with
+                        IE
+                        development tools that will cause a memory leak if you use the memory profiler.
+                    </li>
+                    <li>2016-05-04: Upgraded jstree to 3.3.0.</li>
+                    <li>2016-05-04: Upgraded jQuery to 1.12.3.</li>
+                    <li>2016-05-03: Upgraded KnockoutJS to 3.4.0.</li>
+                    <li>2016-04-29: Upgraded Phaser to 2.4.7.</li>
+                    <li>2016-04-29: Found another issue with timing which should be fixed now. Now uses
+                        performance.now() if
+                        the browser supports it but falls back to Date.now() otherwise.
+                    </li>
+                    <li>2016-04-29: Renamed Fire Rate to Attack Delay.</li>
+                    <li>2016-04-29: Hopefully also fixed a subtle timing issue that may have caused towers to fire at
+                        the
+                        same time despite having different rates and may have also been involved with the bug some were
+                        experiencing where upgrade all would stop towers from firing.
+                    </li>
+                    <li>2016-04-28: Hopefully addressed issue with upgrade all being slow. In my tests the new upgrade
+                        all
+                        will upgrade 60 level 1 kinetic towers to level 1095 in 200ms, as opposed to the ~50-100s it
+                        would've taken before.
+                    </li>
+                    <li>2016-04-26: Mana Burst was erroneously granting a chance to increase mana pool at high levels of
+                        mana. Now you must cast it at 1/3rd mana for this to occur, the chance scales from 5% at 1/3rd
+                        mana to 100% at close to 0 mana. To compensate for this I have changed mana burst to grant its
+                        additional damage when your mana pool is over 90% full instead of having to be at full mana. The
+                        description has been updated to describe all of these changes.
+                    </li>
+                    <li>2016-04-26: You can no longer sell your last tower or template scrap your last tower.</li>
+                    <li>2016-04-26: Refreshing will no longer grant old towers the benefits of Initial Engineering.</li>
+                    <li>2016-04-26: Escape key will first cancel an action, but if there is no action selected it will
+                        de-select any selected tower/enemy.
+                    </li>
+                    <li>2016-04-26: Removed text that tells the player to press shift to continue the same action, since
+                        actions now repeat by default.
+                    </li>
+                    <li>2016-04-26: Fixed an issue where the blueprint action was allowed after prestige without the
+                        appropriate skill.
+                    </li>
+                    <li>2016-04-25: Fixed issue where selling blocks returned more gold than they cost to buy.</li>
+                    <li>2016-04-25: Fixed issue with prestige not reseting blueprint counts, causing towers to be
+                        unaffordable.
+                    </li>
+                    <li>2016-04-16: Learning tower templates is now a one rank skill which unlocks the
+                        blueprinting/templating action. This action scraps a tower in exchange for blueprint points of
+                        that
+                        tower type. Each blueprint point increases the starting damage of towers of that type by 1 and
+                        gold
+                        cost by 5.
+                    </li>
+                    <li>2016-04-16: There is now a new category of actions called... actions. Currently only tower
+                        templates
+                        uses this.
+                    </li>
+                    <li>2016-04-16: Added hover indicators with text for most actions (except spells), these indicators
+                        also
+                        show where its valid to perform an action.
+                    </li>
+                    <li>2016-03-31: Added Arcane Knowledge skill which gives another method to increase max mana outside
+                        of
+                        using mana burst.
+                    </li>
+                    <li>2016-03-29: The ban hammer had to be made slightly stronger. Saves will no longer respect insane
+                        range or attack speed values, it will treat them as if you built a new tower instead.
+                    </li>
+                    <li>2016-03-27: Added a visual indicator for relative tower power per type.</li>
+                    <li>2016-03-26: The ban hammer has arrived: Upgrading towers no longer reduces fire rate nor does it
+                        increase range.
+                    </li>
+                    <li>2016-03-26: Help system now shows unread messages in the help button instead of popping up a
+                        dialog
+                        box each time a new topic is discovered.
+                    </li>
+                    <li>2016-03-23: Wrote a skills help file in the new system that explains the rank up that occurs
+                        every
+                        20 ranks of non-maxable skills.
+                    </li>
+                    <li>2016-03-23: Migrated the help popups to a new help system, the main difference is now you can go
+                        back and read popups that had come up in the past by clicking the 'Help' button.
+                    </li>
+                    <li>2016-03-21: Skill descriptions now show the list of skills granted at certain ranks.</li>
+                    <li>2016-03-21: Implemented Mana Regeneration (Advanced) which increases mana regeneration as a
+                        percentage.
+                    </li>
+                    <li>2016-03-21: Actions now repeat automatically until canceled instead of requiring a modifier key.
+                    </li>
+                    <li>2016-03-21: Actions now clear the cursor if they would've created the same type of cursor (this
+                        allows keybind double-tap to cancel).
+                    </li>
+                    <li>2016-03-20: The path no longer recalculates at the start of a wave.</li>
+                    <li>2016-03-20: Unbound the 'a' key from upgrade all. It now requires a click.</li>
+                    <li>2016-03-19: Upgrade using all gold now performs upgrades in batches (currently 20 a frame)
+                        instead
+                        of doing all of them at once which was causing freezing.
+                    </li>
+                    <li>2016-03-18: Fixed an issue where previously existing towers weren't being cleaned up on load.
+                    </li>
+                    <li>2016-03-18: Spell level now properly resets on prestige.</li>
+                    <li>2016-03-18: Added the ability to go to a previous wave.</li>
+                    <li>2016-03-18: Directly queueable skills now show the time they'll add to the queue before you
+                        click on
+                        it.
+                    </li>
+                    <li>2016-03-17: Fixed bug with prestige resets not clearing the skill display in the skill tree.
+                    </li>
+                    <li>2016-03-17: Reduced the base cost for magical affinity from 5 minutes to 2 minutes, to hopefully
+                        encourage early interaction with spells.
+                    </li>
+                    <li>2016-03-17: The path (purple line) is only recalculated when a block crosses the current line or
+                        when a new wave starts, this is to minimize the unnecessary path jumps.
+                    </li>
+                    <li>2016-03-16: While writing the instability tooltip I realized that the way instability currently
+                        works there were some spells adding runse that would then do no damage on reaction because only
+                        elemental towers added instability. Now all elemental damage adds a random portion to
+                        instability.
+                    </li>
+                    <li>2016-03-16: Active tooltips are now hidden when the currently selected enemy disappears, this is
+                        to
+                        stop popups from persisting when a boss goes off the edge.
+                    </li>
+                    <li>2016-03-16: Instability now has a tooltip.</li>
+                    <li>2016-03-16: Tentatively declaring the selecting-dead-enemy-bug vanquished.</li>
+                    <li>2016-03-16: Added Wizardry skill, which increases arcane damage, to lead into things like the
+                        mana
+                        regen skill below.
+                    </li>
+                    <li>2016-03-16: Mana regeneration now shows as a tool tip on the mana bar.</li>
+                    <li>2016-03-16: Mana regeneration has been changed from a static 0.001% of max mana (which became
+                        overpowered at high mana) to start at 1 and be increased by the no-max skill called Mana
+                        Regeneration.
+                    </li>
+                    <li>2016-03-16: Implemented Arcane Sacrifice, a spell which, if it kills an enemy, will increase the
+                        damage and mana cost of all other spells.
+                    </li>
+                    <li>2016-03-15: Fixed a bug where loading a save hash would repeat spell slots.</li>
+                    <li>2016-03-15: Fixed the bug where a reload would refresh the center block, technically allowing an
+                        infinite amount of gold generation.
+                    </li>
+                    <li>2016-03-14: Fixed mana bugs involving the cursor overlays.</li>
+                    <li>2016-03-14: Fixed a bug with certain block placements and spawning.</li>
+                    <li>2016-03-14: Added keybinds q,w,e.. for building blocks and towers and keybinds 1,2,3... for
+                        spells.
+                        Escape now cancels a cursor.
+                    </li>
+                    <li>2016-03-14: Replaced the previous menu with rows of graphical icons.</li>
+                    <li>2016-03-13: Changed the multi-buy key to SHIFT from CTRL to avoid a bizarre issue that stopped
+                        further click evens when CTRL clicking sprites.
+                    </li>
+                    <li>2016-03-12: Reduced the growth of block costs.</li>
+                    <li>2015-12-26: Swarm unit increase nerfed, now produces 3-7 units instead of 5-10.</li>
+                    <li>2015-12-26: The game now tracks what level of the various boss powers you've seen and tries to
+                        limit
+                        future boss levels to one increment above what you've already seen. Basically this means if
+                        you're
+                        at the point where you can receive up to 5 boss powers you shouldn't in one level receive 5x
+                        Swarm
+                        and then in another receive 5x Regeneration unless you've seen 4x those powers before.
+                    </li>
+                    <li>2015-12-26: Powers are only shown when an enemy has powers, if there are multiple powers they
+                        are
+                        now shown in sorted order with the strongest power first.
+                    </li>
+                    <li>2015-12-26: Nerfed the max duration on air towers, now the time that enemies are locked in a
+                        wind
+                        storm range from 0.5s to 1.5s. I wanted the air towers to be strong but it looked too goofy to
+                        have
+                        the animation slowly whisk enemies across the map.
+                    </li>
+                    <li>2015-12-26: Earth towers now also cause bleed on impact equal to the boulder damage.</li>
+                    <li>2015-12-26: Cleaned up some code that should make the save hash slightly smaller.</li>
+                    <li>2015-12-23: Nerfed the reduction rate of bleeding damage but also added a skill called
+                        anti-coagulants that reduces this nerf, after 10 ranks it causes bleeding to be increased on
+                        tick
+                        instead of reduced.
+                    </li>
+                    <li>2015-12-20: Added a button to remove individual queue items (if nothing else in the queue
+                        depended
+                        on them)
+                    </li>
+                    <li>2015-12-19: Added a button to clear the queue and a massive nerf to the prestige system, it now
+                        only
+                        impacts learning rate.
+                    </li>
+                    <li>2015-12-18: Prestige system added. Make sure to save your game first.</li>
+                    <li>2015-12-18: Added several new infinitely expanding skills, there is now at least one in each
+                        major
+                        skill branch.
+                    </li>
+                    <li>2015-12-18: Experimental Change: Skills become twice as effective when you reach rank 20 in
+                        them,
+                        this repeats for every 20 ranks.
+                    </li>
+                    <li>2015-12-16: Added the ability to queue up all of the prerequisites for a given skill.</li>
+                    <li>2015-12-16: Added some additional checks to the skill queue.</li>
+                    <li>2015-12-16: Buffed the kinetic tower skill from 1% increase per rank to 5%.</li>
+                    <li>2015-12-15: Tower range indicators no longer fire when your cursor is loaded.</li>
+                    <li>2015-12-15: The nerf hammer has been dropped on range. It now suffers diminishing returns.</li>
+                    <li>2015-12-14: Added the Smolder spell on learning fire affinity.</li>
+                    <li>2015-12-14: Added the Frost Shatter spell on learning water affinity.</li>
+                    <li>2015-12-13: Now allows you to cancel spell casting and the various cursors will disappear if you
+                        move them off of the screen.
+                    </li>
+                    <li>2015-12-13: Added the first spell, mana burst upon learning magical affinity. Spell damage
+                        currently
+                        scales on the total damage of all your towers.
+                    </li>
+                    <li>2015-12-13: Greatly improved how enemies respond to path recalculation.</li>
+                    <li>2015-12-13: There is now a visual indicator for building towers and blocks.</li>
+                    <li>2015-12-13: Refactored how cursors work for buying, this is to make way for spells.</li>
+                    <li>2015-12-13: Holding CTRL now allows you to buy/sell multiple times in a row for towers and
+                        blocks.
+                    </li>
+                    <li>2015-12-11: Skill labels now update in the tree based on their level.</li>
+                    <li>2015-12-11: Added skill queueing! Hopefully I resolved all the bugs I introduced by doing this,
+                        but
+                        probably not.
+                    </li>
+                    <li>2015-12-11: Reworked skills UI into a separate dialog box instead of the table.</li>
+                    <li>2015-12-05: Hopefully the windstorm proc (the somewhat rare chance that an air reaction gets a
+                        bonus) should look less nutty now.
+                    </li>
+                    <li>2015-12-05: Now hides the menu when your cursor is active (when you're buying a block or
+                        tower)
+                    </li>
+                    <li>2015-12-05: Implemented yet another experimental UI change, skills are now stored in a
+                        filterable
+                        paginated table so they don't take a crazy amount of space.
+                    </li>
+                    <li>2015-12-04: Implemented an experimental menu UI change.</li>
+                    <li>2015-12-03: Instead of trying to knockback all enemies as a separate air event which caused
+                        weird
+                        looking stuff air rune activations now have a chance to produce a storm that captures all
+                        enemies.
+                    </li>
+                    <li>2015-12-03: All of the elemental towers now do 20% more damage for each rune after the first,
+                        e.g.
+                        an enemy with 3 water runes that freezes takes instability + 72% additional damage.
+                    </li>
+                    <li>2015-12-03: Teleport now selects randomly between tiles that it could jump to instead of picking
+                        the
+                        one with the best distance.
+                    </li>
+                    <li>2015-12-03: Implemented the mana bar, (gained on learning Magical Affinity). Currently you gain
+                        0.1%
+                        of your max mana a second.
+                    </li>
+                    <li>2015-12-02: Massively buffed Refined Blueprints skill (from 1%/rank to 5%/rank).</li>
+                    <li>2015-12-02: Fixed an issue where the tooltips weren't updating on skill level increase.</li>
+                    <li>2015-12-01: Fixed the bug where farm/progress mode wasn't being loaded properly.</li>
+                    <li>2015-11-29: Changed skill descriptions to calculate the current benefit you're getting and the
+                        next
+                        ranks benefit instead of a static string.
+                    </li>
+                    <li>2015-11-29: Changed the skill system from the notion of a skill granting a new skill to the
+                        notion
+                        of a skill requiring a set of skills. This will allow me to make skills that require multiple
+                        prerequisites.
+                    </li>
+                    <li>2015-11-29: Added a visual effect to burns caused by the fire runes.</li>
+                    <li>2015-11-28: Reworked elemental system (yet again), towers now have a chance to attach elemental
+                        runes to monsters. Each second each rune has a chance to activate consuming all the runes of the
+                        same type and creating an effect of that type. Damage of a given type is increased by 20% for
+                        each
+                        rune of that type on the target.
+                    </li>
+                    <li>2015-11-21: Implemented scrapping skill.</li>
+                    <li>2015-11-21: Moving back to importing a million javascript files since gulp slows down
+                        prototyping so
+                        much.
+                    </li>
+                    <li>2015-11-20: Added a gulp file for concatenating all the javascript and css files into minified
+                        versions. Changed sprite map to JSON which seems to result in fewer errors loading.
+                    </li>
+                    <li>2015-11-17: Added a load/save feature.</li>
+                    <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who jave
+                        released
+                        free game art that is being used in this project.
+                    </li>
+                    <li>2015-11-15: Reworked movement hopefully avoiding the recurrant recovering-from-freezing bugs.
+                    </li>
+                    <li>2015-11-14: Removed vex in favor of jQuery UI.</li>
+                    <li>2015-11-13: Combined the text and the progress bar to save space.</li>
+                    <li>2015-11-13: Teleport no longer functions when frozen or knocked up (by the air tower).</li>
+                    <li>2015-11-13: Adjusted nearly all of the skill up times, they were previously set to beta values
+                        now
+                        it actually takes a few minutes.
+                    </li>
+                    <li>2015-11-12: Added farm/progress mode.</li>
+                    <li>2015-11-12: Changed tooltips to actually work properly.</li>
+                    <li>2015-11-12: Air tower rework, it now scoops up enemies in a whirlwind and knocks them back far
+                        fewer
+                        spaces.
+                    </li>
+                    <li>2015-11-12: Fixed a bug where the save file would record towers you had already sold, this is
+                        probably the cause of folks reporting that their tower damage was much lower after a refersh.
+                    </li>
+                    <li>2015-11-08: UI update, made top level buttons for changelog and skills.</li>
+                    <li>2015-11-08: Reduced the scaling on tower cost increase, reduced the difference in cost from
+                        elemental towers to kinetic towers.
+                    </li>
+                    <li>2015-11-08: Removed current health percentage damage from elemental damage.</li>
+                    <li>2015-11-08: Added the upgrades for elemental towers.</li>
+                    <li>2015-11-07: Added the ability to sell blocks without towers currently on them.</li>
+                    <li>2015-11-07: Added trace line for the path of the mobs.</li>
+                    <li>2015-11-04: Added shield power and sprite.</li>
+                    <li>2015-07-26: Implemented a couple more skills under initial engineering and fixed a layout issue
+                        that
+                        would prevent clicks on the right side of the game (whoops).
+                    </li>
+                    <li>2015-07-24: Made the timing system for background timers more robust.</li>
+                    <li>2015-07-03: Removed upgrade system and science system and replaced it with time based
+                        training.
+                    </li>
+                    <li>2015-06-29: BigNumber.js errors mostly abated.</li>
+                    <li>2015-06-13: Added bignumber.js to allow the total health and gold value of a wave exceed the max
+                        javascript value.
+                    </li>
+                    <li>2015-06-07: Fire and earth towers are implented. Fire towers cause a slight burn and increase
+                        damage
+                        from all towers, earth towers drop boulders from the sky and deal AoE damage.
+                    </li>
+                    <li>2015-06-07: Air tower is implemented. It knocks back single enemies, when those enemies hit
+                        other
+                        enemies they take damage.
+                    </li>
+                    <li>2015-06-06: Can no longer put a block at 0,0 for obvious reasons.</li>
+                    <li>2015-06-05: Removed the regular map with the fixed path, added blocks and A* pathing. Towers
+                        must
+                        now be built on blocks.
+                    </li>
+                    <li>2015-06-04: Elemental towers are in, however only the water tower has its effects currently.
+                    </li>
+                    <li>2015-06-03: Tower damage is now shown humanized.</li>
+                    <li>2015-06-03: Boss powers now show on click and have tool tips explaining what they do and how
+                        powerful they are.
+                    </li>
+                    <li>2015-06-01: Fixed a bug where multi-spawn boss fights weren't clearing after one reached the
+                        edge.
+                    </li>
+                    <li>2015-06-01: Fixed a bug where one bullet could hit two enemies when spaced close together.</li>
+                    <li>2015-06-01: Added an event timer that fires every second and refactored regenerating to use
+                        it.
+                    </li>
+                    <li>2015-05-30: Updated the boss generation to use an an algorithm based on the idea of 'powers'
+                        instead
+                        of using pre generated boss fights.
+                    </li>
+                    <li>2015-05-30: Changed upgrade UI to show random left and right choices instead of a big select
+                        box.
+                    </li>
+                    <li>2015-05-25: Added floating damage text.</li>
+                    <li>2015-05-12: Added an upgrade system. For every 5 science levels you can choose to either
+                        increase
+                        the science bonus of science towers or regular towers. More to come.
+                    </li>
+                    <li>2015-05-09: Implented <b>beta</b> saving feature. It saves the game after the conclusion of each
+                        wave.
+                    </li>
+                    <li>2015-05-07: Science levels now increase the effectiveness of towers by a percentage (e.g. 44
+                        science
+                        levels = +44% damage).
+                    </li>
+                    <li>2015-05-07: Finally fixed range indicators on towers.</li>
+                    <li>2015-05-07: Nerfed the amount of range gained on tower upgrade.</li>
+                    <li>2015-05-07: Added an indicator for the current unit selected (tower or enemy).</li>
+                    <li>2015-05-07: Added a button to spend all of your gold on upgrades (it does this in the most
+                        efficient
+                        way possible)..
+                    </li>
+                    <li>2015-05-07: Added a dialog box explaining the current functionality of science.</li>
+                    <li>2015-05-07: Bosses now drop an amount of science equivalent to their wave number.</li>
+                    <li>2015-05-07: Every 10 levels a towers damage doubles. Made a dialog to explain this.</li>
+                    <li>2015-05-07: Added an "Upgrade Least Upgraded" button.</li>
+                    <li>2015-05-07: Made a slight gold penalty (10%) when a regular enemy is allowed to go through the
+                        entire path.
+                    </li>
+                    <li>2015-05-07: Nerfed the fast dog boss (1.5x speed to 1.3x speed).</li>
+                    <li>2015-05-07: Boosted gold from killing enemies. Massively nerfed gold from reaching new science
+                        levels.
+                    </li>
+                    <li>2015-05-07: Fixed a bug where the game loop was looping through all enemies instead of all alive
+                        enemies. Woops.
+                    </li>
 
-            </div>
-        </div>
-        <div id="help" title="Help">
-            <p>Selected Help Topic: <select data-bind="options: availableHelp, optionsText: function (item) { return (incTower.haveReadHelpTopic(item) ? '' : '&#9733;') + incTower.helpTopics[item].title; }, value: selectedHelp"></select><br>(&#9733; marks a topic you have not read.)</p>
-
-            <div data-bind="if: !selectedHelp()">Select a help topic above to view it.</div>
-            <div data-bind="if: selectedHelp()">
-                <p><b data-bind="text: incTower.helpTopics[selectedHelp()].title"></b></p>
-                <div data-bind="html: incTower.helpTopics[selectedHelp()].body"></div>
-            </div>
-
-
-        </div>
-        <div id="changelog" title="Changelog">
-
-            <p>Todo:</p>
-            <ul>
-                <li>Button to return to the highest level you've reached.</li>
-                <li>Show what path changes will look like when placing a block.</li>
-                <li>Stream-line tower+block commands.</li>
-                <li>Add some sort of system to increase engagement and encourage active engagement.</li>
-                <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
-                <li>Multiple areas/map changes.</li>
-                <li>Address possible pathing issues with air towers.</li>
-                <li>Add a pause button.</li>
-                <li>Investigate sequential squares idea.</li>
-                <li>Investigate strange pathing at the end of mazes.</li>
-                <li>Look into traps (don't block pathing)</li>
-                <li>Look into spells that affect towers.</li>
-                <li>Look at upgrade tooltips.</li>
-                <li>Emphasize that skills have child skills either by changing the theme or through text.</li>
-                <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
-                <li>Look into indicators for tower level.</li>
-                <li>Look into making normal waves have boss powers (but fewer).</li>
-                <li>Look into music and sound effects (particularly for finishing a skill).</li>
-                <li>Revisit blueprint formula.</li>
-                <li>Look at making a flat version of the upgrade menu to more easily compare skills that have not been maxed. <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hoq1s">From this reddit comment.</a></li>
-                <li>Speed settings, maybe just after prestige?</li>
-                <li>Architect and engineering towers. See <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2io9b9">this comment.</a></li>
-                <li>Look into bug where upgrade all stops towers from firing see <a href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hlu04">here</a></li>
-                <li>Add +10, +100, etc. to tower level.</li>
-                <li>Look into help system.</li>
-                <li>Write help article for prestige.</li>
-                <li>Rework teleport.</li>
-                <li>Tie powers to certain sprites?</li>
-                <li>Implment rebuild</li>
-                <li>Allow multiple tower selection or rebuild by type</li>
-                <li>Fix issue where AoE elemental reactions get to avoid run diminishing returns.</li>
-                <li>Look into air tower + air spell interaction.</li>
-                <li>Look into fire tower + fire spell interaction.</li>
-                <li>Make an earth spell.</li>
-            </ul>
-            <p>Changelog:</p>
-            <ul>
-                <li>2016-05-05: Added RequireJS.</li>
-                <li>2016-05-05: I'm declaring the IE11 Memory Leak solved, although there appears to be a bug with IE development tools that will cause a memory leak if you use the memory profiler.</li>
-                <li>2016-05-04: Upgraded jstree to 3.3.0.</li>
-                <li>2016-05-04: Upgraded jQuery to 1.12.3.</li>
-                <li>2016-05-03: Upgraded KnockoutJS to 3.4.0.</li>
-                <li>2016-04-29: Upgraded Phaser to 2.4.7.</li>
-                <li>2016-04-29: Found another issue with timing which should be fixed now. Now uses performance.now() if the browser supports it but falls back to Date.now() otherwise.</li>
-                <li>2016-04-29: Renamed Fire Rate to Attack Delay.</li>
-                <li>2016-04-29: Hopefully also fixed a subtle timing issue that may have caused towers to fire at the same time despite having different rates and may have also been involved with the bug some were experiencing where upgrade all would stop towers from firing.</li>
-                <li>2016-04-28: Hopefully addressed issue with upgrade all being slow. In my tests the new upgrade all will upgrade 60 level 1 kinetic towers to level 1095 in 200ms, as opposed to the ~50-100s it would've taken before.</li>
-                <li>2016-04-26: Mana Burst was erroneously granting a chance to increase mana pool at high levels of mana. Now you must cast it at 1/3rd mana for this to occur, the chance scales from 5% at 1/3rd mana to 100% at close to 0 mana. To compensate for this I have changed mana burst to grant its additional damage when your mana pool is over 90% full instead of having to be at full mana. The description has been updated to describe all of these changes.</li>
-                <li>2016-04-26: You can no longer sell your last tower or template scrap your last tower.</li>
-                <li>2016-04-26: Refreshing will no longer grant old towers the benefits of Initial Engineering.</li>
-                <li>2016-04-26: Escape key will first cancel an action, but if there is no action selected it will de-select any selected tower/enemy.</li>
-                <li>2016-04-26: Removed text that tells the player to press shift to continue the same action, since actions now repeat by default.</li>
-                <li>2016-04-26: Fixed an issue where the blueprint action was allowed after prestige without the appropriate skill.</li>
-                <li>2016-04-25: Fixed issue where selling blocks returned more gold than they cost to buy.</li>
-                <li>2016-04-25: Fixed issue with prestige not reseting blueprint counts, causing towers to be unaffordable.</li>
-                <li>2016-04-16: Learning tower templates is now a one rank skill which unlocks the blueprinting/templating action. This action scraps a tower in exchange for blueprint points of that tower type. Each blueprint point increases the starting damage of towers of that type by 1 and gold cost by 5.</li>
-                <li>2016-04-16: There is now a new category of actions called... actions. Currently only tower templates uses this.</li>
-                <li>2016-04-16: Added hover indicators with text for most actions (except spells), these indicators also show where its valid to perform an action.</li>
-                <li>2016-03-31: Added Arcane Knowledge skill which gives another method to increase max mana outside of using mana burst.</li>
-                <li>2016-03-29: The ban hammer had to be made slightly stronger. Saves will no longer respect insane range or attack speed values, it will treat them as if you built a new tower instead.</li>
-                <li>2016-03-27: Added a visual indicator for relative tower power per type.</li>
-                <li>2016-03-26: The ban hammer has arrived: Upgrading towers no longer reduces fire rate nor does it increase range.</li>
-                <li>2016-03-26: Help system now shows unread messages in the help button instead of popping up a dialog box each time a new topic is discovered.</li>
-                <li>2016-03-23: Wrote a skills help file in the new system that explains the rank up that occurs every 20 ranks of non-maxable skills.</li>
-                <li>2016-03-23: Migrated the help popups to a new help system, the main difference is now you can go back and read popups that had come up in the past by clicking the 'Help' button.</li>
-                <li>2016-03-21: Skill descriptions now show the list of skills granted at certain ranks.</li>
-                <li>2016-03-21: Implemented Mana Regeneration (Advanced) which increases mana regeneration as a percentage.</li>
-                <li>2016-03-21: Actions now repeat automatically until canceled instead of requiring a modifier key.</li>
-                <li>2016-03-21: Actions now clear the cursor if they would've created the same type of cursor (this allows keybind double-tap to cancel).</li>
-                <li>2016-03-20: The path no longer recalculates at the start of a wave.</li>
-                <li>2016-03-20: Unbound the 'a' key from upgrade all. It now requires a click.</li>
-                <li>2016-03-19: Upgrade using all gold now performs upgrades in batches (currently 20 a frame) instead of doing all of them at once which was causing freezing.</li>
-                <li>2016-03-18: Fixed an issue where previously existing towers weren't being cleaned up on load.</li>
-                <li>2016-03-18: Spell level now properly resets on prestige.</li>
-                <li>2016-03-18: Added the ability to go to a previous wave.</li>
-                <li>2016-03-18: Directly queueable skills now show the time they'll add to the queue before you click on it.</li>
-                <li>2016-03-17: Fixed bug with prestige resets not clearing the skill display in the skill tree.</li>
-                <li>2016-03-17: Reduced the base cost for magical affinity from 5 minutes to 2 minutes, to hopefully encourage early interaction with spells.</li>
-                <li>2016-03-17: The path (purple line) is only recalculated when a block crosses the current line or when a new wave starts, this is to minimize the unnecessary path jumps.</li>
-                <li>2016-03-16: While writing the instability tooltip I realized that the way instability currently works there were some spells adding runse that would then do no damage on reaction because only elemental towers added instability. Now all elemental damage adds a random portion to instability.</li>
-                <li>2016-03-16: Active tooltips are now hidden when the currently selected enemy disappears, this is to stop popups from persisting when a boss goes off the edge.</li>
-                <li>2016-03-16: Instability now has a tooltip.</li>
-                <li>2016-03-16: Tentatively declaring the selecting-dead-enemy-bug vanquished.</li>
-                <li>2016-03-16: Added Wizardry skill, which increases arcane damage, to lead into things like the mana regen skill below.</li>
-                <li>2016-03-16: Mana regeneration now shows as a tool tip on the mana bar.</li>
-                <li>2016-03-16: Mana regeneration has been changed from a static 0.001% of max mana (which became overpowered at high mana) to start at 1 and be increased by the no-max skill called Mana Regeneration.</li>
-                <li>2016-03-16: Implemented Arcane Sacrifice, a spell which, if it kills an enemy, will increase the damage and mana cost of all other spells.</li>
-                <li>2016-03-15: Fixed a bug where loading a save hash would repeat spell slots.</li>
-                <li>2016-03-15: Fixed the bug where a reload would refresh the center block, technically allowing an infinite amount of gold generation.</li>
-                <li>2016-03-14: Fixed mana bugs involving the cursor overlays.</li>
-                <li>2016-03-14: Fixed a bug with certain block placements and spawning.</li>
-                <li>2016-03-14: Added keybinds q,w,e.. for building blocks and towers and keybinds 1,2,3... for spells. Escape now cancels a cursor.</li>
-                <li>2016-03-14: Replaced the previous menu with rows of graphical icons.</li>
-                <li>2016-03-13: Changed the multi-buy key to SHIFT from CTRL to avoid a bizarre issue that stopped further click evens when CTRL clicking sprites.</li>
-                <li>2016-03-12: Reduced the growth of block costs.</li>
-                <li>2015-12-26: Swarm unit increase nerfed, now produces 3-7 units instead of 5-10.</li>
-                <li>2015-12-26: The game now tracks what level of the various boss powers you've seen and tries to limit future boss levels to one increment above what you've already seen. Basically this means if you're at the point where you can receive up to 5 boss powers you shouldn't in one level receive 5x Swarm and then in another receive 5x Regeneration unless you've seen 4x those powers before.</li>
-                <li>2015-12-26: Powers are only shown when an enemy has powers, if there are multiple powers they are now shown in sorted order with the strongest power first.</li>
-                <li>2015-12-26: Nerfed the max duration on air towers, now the time that enemies are locked in a wind storm range from 0.5s to 1.5s. I wanted the air towers to be strong but it looked too goofy to have the animation slowly whisk enemies across the map.</li>
-                <li>2015-12-26: Earth towers now also cause bleed on impact equal to the boulder damage.</li>
-                <li>2015-12-26: Cleaned up some code that should make the save hash slightly smaller.</li>
-                <li>2015-12-23: Nerfed the reduction rate of bleeding damage but also added a skill called anti-coagulants that reduces this nerf, after 10 ranks it causes bleeding to be increased on tick instead of reduced.</li>
-                <li>2015-12-20: Added a button to remove individual queue items (if nothing else in the queue depended on them)</li>
-                <li>2015-12-19: Added a button to clear the queue and a massive nerf to the prestige system, it now only impacts learning rate.</li>
-                <li>2015-12-18: Prestige system added. Make sure to save your game first.</li>
-                <li>2015-12-18: Added several new infinitely expanding skills, there is now at least one in each major skill branch.</li>
-                <li>2015-12-18: Experimental Change: Skills become twice as effective when you reach rank 20 in them, this repeats for every 20 ranks.</li>
-                <li>2015-12-16: Added the ability to queue up all of the prerequisites for a given skill.</li>
-                <li>2015-12-16: Added some additional checks to the skill queue.</li>
-                <li>2015-12-16: Buffed the kinetic tower skill from 1% increase per rank to 5%.</li>
-                <li>2015-12-15: Tower range indicators no longer fire when your cursor is loaded.</li>
-                <li>2015-12-15: The nerf hammer has been dropped on range. It now suffers diminishing returns.</li>
-                <li>2015-12-14: Added the Smolder spell on learning fire affinity.</li>
-                <li>2015-12-14: Added the Frost Shatter spell on learning water affinity.</li>
-                <li>2015-12-13: Now allows you to cancel spell casting and the various cursors will disappear if you move them off of the screen.</li>
-                <li>2015-12-13: Added the first spell, mana burst upon learning magical affinity. Spell damage currently scales on the total damage of all your towers.</li>
-                <li>2015-12-13: Greatly improved how enemies respond to path recalculation.</li>
-                <li>2015-12-13: There is now a visual indicator for building towers and blocks.</li>
-                <li>2015-12-13: Refactored how cursors work for buying, this is to make way for spells.</li>
-                <li>2015-12-13: Holding CTRL now allows you to buy/sell multiple times in a row for towers and blocks.</li>
-                <li>2015-12-11: Skill labels now update in the tree based on their level.</li>
-                <li>2015-12-11: Added skill queueing! Hopefully I resolved all the bugs I introduced by doing this, but probably not. </li>
-                <li>2015-12-11: Reworked skills UI into a separate dialog box instead of the table.</li>
-                <li>2015-12-05: Hopefully the windstorm proc (the somewhat rare chance that an air reaction gets a bonus) should look less nutty now.</li>
-                <li>2015-12-05: Now hides the menu when your cursor is active (when you're buying a block or tower)</li>
-                <li>2015-12-05: Implemented yet another experimental UI change, skills are now stored in a filterable paginated table so they don't take a crazy amount of space.</li>
-                <li>2015-12-04: Implemented an experimental menu UI change.</li>
-                <li>2015-12-03: Instead of trying to knockback all enemies as a separate air event which caused weird looking stuff air rune activations now have a chance to produce a storm that captures all enemies.</li>
-                <li>2015-12-03: All of the elemental towers now do 20% more damage for each rune after the first, e.g. an enemy with 3 water runes that freezes takes instability + 72% additional damage.</li>
-                <li>2015-12-03: Teleport now selects randomly between tiles that it could jump to instead of picking the one with the best distance.</li>
-                <li>2015-12-03: Implemented the mana bar, (gained on learning Magical Affinity). Currently you gain 0.1% of your max mana a second.</li>
-                <li>2015-12-02: Massively buffed Refined Blueprints skill (from 1%/rank to 5%/rank).</li>
-                <li>2015-12-02: Fixed an issue where the tooltips weren't updating on skill level increase.</li>
-                <li>2015-12-01: Fixed the bug where farm/progress mode wasn't being loaded properly.</li>
-                <li>2015-11-29: Changed skill descriptions to calculate the current benefit you're getting and the next ranks benefit instead of a static string.</li>
-                <li>2015-11-29: Changed the skill system from the notion of a skill granting a new skill to the notion of a skill requiring a set of skills. This will allow me to make skills that require multiple prerequisites.</li>
-                <li>2015-11-29: Added a visual effect to burns caused by the fire runes.</li>
-                <li>2015-11-28: Reworked elemental system (yet again), towers now have a chance to attach elemental runes to monsters. Each second each rune has a chance to activate consuming all the runes of the same type and creating an effect of that type. Damage of a given type is increased by 20% for each rune of that type on the target.</li>
-                <li>2015-11-21: Implemented scrapping skill.</li>
-                <li>2015-11-21: Moving back to importing a million javascript files since gulp slows down prototyping so much.</li>
-                <li>2015-11-20: Added a gulp file for concatenating all the javascript and css files into minified versions. Changed sprite map to JSON which seems to result in fewer errors loading.</li>
-                <li>2015-11-17: Added a load/save feature.</li>
-                <li>2015-11-17: Added a credits screen so I can properly attribute the wonderful folks who jave released free game art that is being used in this project.</li>
-                <li>2015-11-15: Reworked movement hopefully avoiding the recurrant recovering-from-freezing bugs.</li>
-                <li>2015-11-14: Removed vex in favor of jQuery UI.</li>
-                <li>2015-11-13: Combined the text and the progress bar to save space.</li>
-                <li>2015-11-13: Teleport no longer functions when frozen or knocked up (by the air tower).</li>
-                <li>2015-11-13: Adjusted nearly all of the skill up times, they were previously set to beta values now it actually takes a few minutes.</li>
-                <li>2015-11-12: Added farm/progress mode.</li>
-                <li>2015-11-12: Changed tooltips to actually work properly.</li>
-                <li>2015-11-12: Air tower rework, it now scoops up enemies in a whirlwind and knocks them back far fewer spaces.</li>
-                <li>2015-11-12: Fixed a bug where the save file would record towers you had already sold, this is probably the cause of folks reporting that their tower damage was much lower after a refersh.</li>
-                <li>2015-11-08: UI update, made top level buttons for changelog and skills.</li>
-                <li>2015-11-08: Reduced the scaling on tower cost increase, reduced the difference in cost from elemental towers to kinetic towers.</li>
-                <li>2015-11-08: Removed current health percentage damage from elemental damage.</li>
-                <li>2015-11-08: Added the upgrades for elemental towers.</li>
-                <li>2015-11-07: Added the ability to sell blocks without towers currently on them.</li>
-                <li>2015-11-07: Added trace line for the path of the mobs.</li>
-                <li>2015-11-04: Added shield power and sprite.</li>
-                <li>2015-07-26: Implemented a couple more skills under initial engineering and fixed a layout issue that would prevent clicks on the right side of the game (whoops).</li>
-                <li>2015-07-24: Made the timing system for background timers more robust.</li>
-                <li>2015-07-03: Removed upgrade system and science system and replaced it with time based training.</li>
-                <li>2015-06-29: BigNumber.js errors mostly abated.</li>
-                <li>2015-06-13: Added bignumber.js to allow the total health and gold value of a wave exceed the max javascript value.</li>
-                <li>2015-06-07: Fire and earth towers are implented. Fire towers cause a slight burn and increase damage from all towers, earth towers drop boulders from the sky and deal AoE damage.</li>
-                <li>2015-06-07: Air tower is implemented. It knocks back single enemies, when those enemies hit other enemies they take damage.</li>
-                <li>2015-06-06: Can no longer put a block at 0,0 for obvious reasons.</li>
-                <li>2015-06-05: Removed the regular map with the fixed path, added blocks and A* pathing. Towers must now be built on blocks.</li>
-                <li>2015-06-04: Elemental towers are in, however only the water tower has its effects currently.</li>
-                <li>2015-06-03: Tower damage is now shown humanized.</li>
-                <li>2015-06-03: Boss powers now show on click and have tool tips explaining what they do and how powerful they are.</li>
-                <li>2015-06-01: Fixed a bug where multi-spawn boss fights weren't clearing after one reached the edge.</li>
-                <li>2015-06-01: Fixed a bug where one bullet could hit two enemies when spaced close together.</li>
-                <li>2015-06-01: Added an event timer that fires every second and refactored regenerating to use it.</li>
-                <li>2015-05-30: Updated the boss generation to use an an algorithm based on the idea of 'powers' instead of using pre generated boss fights.</li>
-                <li>2015-05-30: Changed upgrade UI to show random left and right choices instead of a big select box.</li>
-                <li>2015-05-25: Added floating damage text.</li>
-                <li>2015-05-12: Added an upgrade system. For every 5 science levels you can choose to either increase the science bonus of science towers or regular towers. More to come.</li>
-                <li>2015-05-09: Implented <b>beta</b> saving feature. It saves the game after the conclusion of each wave.</li>
-                <li>2015-05-07: Science levels now increase the effectiveness of towers by a percentage (e.g. 44 science levels = +44% damage).</li>
-                <li>2015-05-07: Finally fixed range indicators on towers.</li>
-                <li>2015-05-07: Nerfed the amount of range gained on tower upgrade.</li>
-                <li>2015-05-07: Added an indicator for the current unit selected (tower or enemy).</li>
-                <li>2015-05-07: Added a button to spend all of your gold on upgrades (it does this in the most efficient way possible)..</li>
-                <li>2015-05-07: Added a dialog box explaining the current functionality of science.</li>
-                <li>2015-05-07: Bosses now drop an amount of science equivalent to their wave number.</li>
-                <li>2015-05-07: Every 10 levels a towers damage doubles. Made a dialog to explain this.</li>
-                <li>2015-05-07: Added an "Upgrade Least Upgraded" button.</li>
-                <li>2015-05-07: Made a slight gold penalty (10%) when a regular enemy is allowed to go through the entire path.</li>
-                <li>2015-05-07: Nerfed the fast dog boss (1.5x speed to 1.3x speed).</li>
-                <li>2015-05-07: Boosted gold from killing enemies. Massively nerfed gold from reaching new science levels.</li>
-                <li>2015-05-07: Fixed a bug where the game loop was looping through all enemies instead of all alive enemies. Woops.</li>
-
-            </ul>
-        </div>
-        <script type="text/javascript" src="js/phaser.min.js"></script>
-        <script type="text/javascript" src="js/lodash.min.js"></script>
-        <script type="text/javascript" src="js/knockout-3.4.0.min.js"></script>
-        <script type="text/javascript" src="js/ko.observableDictionary.js"></script>
-        <script type="text/javascript" src="js/jquery-1.12.3.min.js"></script>
-        <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
-        <script type="text/javascript" src="js/bignumber.min.js"></script>
-        <script type="text/javascript" src="js/moment.js"></script>
-        <script type="text/javascript" src="js/easystar-0.2.1.min.js"></script>
-        <script type="text/javascript" src="js/PathFinderPlugin.js"></script>
-        <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="js/jstree.min.js"></script>
-        <script type="text/javascript" src="inc_tower.js"></script>
-        <script type="text/javascript" src="js/Tower.class.js"></script>
-        <script type="text/javascript" src="js/Enemy.class.js"></script>
+                </ul>
+            </li>
+        </ul>
+        <p>
+            Potential art:
+        </p>
+        <ul>
+            <li>http://kenney.nl/assets</li>
+            <li>http://opengameart.org/content/running-caveman-spritesheet</li>
+            <li>http://opengameart.org/content/castle-platformer (bat)</li>
+            <li>http://opengameart.org/content/lpc-wolf-animation</li>
+            <li>http://opengameart.org/content/giant-spider-32x32</li>
+            <li>http://opengameart.org/content/lpc-imp-2</li>
+            <li>http://opengameart.org/content/lpc-children-walk-animation</li>
+            <li>http://opengameart.org/content/block-ninja-2d-sprites</li>
+            <li>http://opengameart.org/content/necromancer-0</li>
+            <li>http://opengameart.org/content/tower-defense-prototyping-assets-4-monsters-some-tiles-a-background-image
+                (bird)
+            </li>
+            <li>http://opengameart.org/content/dungeon-crawler-sprites</li>
+            <li>http://opengameart.org/content/a-load-of-overworld-34-rpg-sprites</li>
+            <li>http://opengameart.org/content/16x16-16x24-32x32-rpg-enemies-updated
+            <li>http://opengameart.org/content/loyalty-lies-monsters-chaos-monster-02</li>
+            <li>http://opengameart.org/content/denzis-32x32-orthogonal-tilesets</li>
+        </ul>
+        <p>Todo:</p>
+        <ul>
+            <li>Allow multiple preferred powers so you can have flying + something else for example.</li>
+            <li>All towers should self describe what they do on selection.</li>
+            <li>Clean up selection area.</li>
+            <li>Button to return to the highest level you've reached.</li>
+            <li>Show what path changes will look like when placing a block.</li>
+            <li>Stream-line tower+block commands.</li>
+            <li>Add some sort of system to increase engagement and encourage active engagement.</li>
+            <li>Meta upgrades like an upgrade to convert time-based skill learning to kill-based, etc.</li>
+            <li>Multiple areas/map changes.</li>
+            <li>Address possible pathing issues with air towers.</li>
+            <li>Investigate sequential squares idea.</li>
+            <li>Investigate strange pathing at the end of mazes.</li>
+            <li>Look into traps (don't block pathing)</li>
+            <li>Look into spells that affect towers.</li>
+            <li>Emphasize that skills have child skills either by changing the theme or through text.</li>
+            <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
+            <li>Look into indicators for tower level.</li>
+            <li>Look into music and sound effects (particularly for finishing a skill).</li>
+            <li>Revisit blueprint formula.</li>
+            <li>Look at making a flat version of the upgrade menu to more easily compare skills that have not been
+                maxed. <a
+                        href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hoq1s">From
+                    this reddit comment.</a></li>
+            <li>Speed settings, maybe just after prestige?</li>
+            <li>Architect and engineering towers. See <a
+                    href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2io9b9">this
+                comment.</a></li>
+            <li>Look into bug where upgrade all stops towers from firing see <a
+                    href="https://www.reddit.com/r/incremental_games/comments/4gcym8/incremental_tower_defense/d2hlu04">here</a>
+            </li>
+            <li>Add +10, +100, etc. to tower level.</li>
+            <li>Look into help system.</li>
+            <li>Implement rebuild</li>
+            <li>Allow multiple tower selection or rebuild by type</li>
+            <li>Look into air tower + air spell interaction.</li>
+            <li>Look into fire tower + fire spell interaction.</li>
+            <li>Revisit the IE11 memory leak</li>
+        </ul>
+    </div>
+    <script data-main="js/loader" src="js/require.min.js"></script>
+    <!--<script type="text/javascript" src="js/phaser.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/lodash.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/knockout-3.4.0.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/ko.observableDictionary.js"></script>-->
+    <!--<script type="text/javascript" src="js/jquery-1.12.3.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/jquery.qtip.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/bignumber.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/moment.js"></script>-->
+    <!--<script type="text/javascript" src="js/easystar-0.2.1.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/PathFinderPlugin.js"></script>-->
+    <!--<script type="text/javascript" src="js/jquery-ui.min.js"></script>-->
+    <!--<script type="text/javascript" src="js/jstree.min.js"></script>-->
+    <!--<script type="text/javascript" src="inc_tower.js"></script>-->
+    <!--<script type="text/javascript" src="js/Tower.class.js"></script>-->
+    <!--<script type="text/javascript" src="js/Enemy.class.js"></script>-->
 
 
-
-
-    </body>
+</body>
 </html>
