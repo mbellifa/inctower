@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/easystar', 'lib/lodash'], function (incTower, EasyStar, _) {
+define(['incTower/core', 'lib/EasyStar', 'lib/lodash'], function (incTower, EasyStar, _) {
     'use strict';
     var pathModule = {};
     pathModule.tileForbidden = new Array(25);
