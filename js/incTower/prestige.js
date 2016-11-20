@@ -29,6 +29,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
             incTower.incrementObservable(incTower.prestigePoints, incTower.prestigePointsNext());
             incTower.gold(new BigNumber(150));
             incTower.wave(0);
+            incTower.maxWave(0);
             incTower.spellLevel(new BigNumber(0));
             incTower.farmMode(false);
             _.forEach(incTower.skills.keys(), function (skill) {

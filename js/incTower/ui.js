@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
+define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, ko, saveModule) {
     'use strict';
     incTower.currentlySelected = ko.observable(null);
     incTower.currentlySelected.subscribe(function (value) {
@@ -25,6 +25,10 @@ define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
         incTower.incrementObservable(incTower.wave, -1);
         incTower.nukeEnemies();
     };
+    incTower.toMaxWave = function () {
+        incTower.wave(incTower.maxWave());
+        incTower.nukeEnemies();
+    };
     incTower.showReddit = function () {
         var win = window.open('http://incTower.reddit.com/', '_blank');
     };
@@ -48,7 +52,6 @@ define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
         });
     };
     incTower.showCredits = function () {
-        'use strict';
         $('#credits').dialog({
             width: 500,
             height: 500
@@ -66,9 +69,9 @@ define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
                     var save;
                     try {
                         save = atob($('#b64_load').val());
-                        loadSave(save);
+                        saveModule.loadSave(save);
                     } catch (e) {
-                        okDialog({
+                        incTower.okDialog({
                             title: "Save Game",
                             message: "There was an issue with your save game. It cannot be loaded."
                         });

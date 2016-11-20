@@ -14,19 +14,25 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             describe: function () {
                 return "This unit is part of a swarm which causes it to spawn several copies with less health.";
             },
-            maxLevel: 2
+            maxLevel: 2,
+            ofNoun: ['Replication'],
+            adjective: ['Fertile', 'Abundant', 'Fruitful']
         },
         regenerating: {
             name: 'Regenerating',
             describe: function (mult) {
                 return "Regenerates " + (0.5 * mult) + "% of its max health a second.";
-            }
+            },
+            ofNoun: ['Regeneration'],
+            adjective: ['Healing', 'Restorative']
         },
         healthy: {
             name: 'Healthy',
             describe: function (mult) {
                 return "Has " + (10 * mult) + "% bonus health.";
-            }
+            },
+            ofNoun: ['Vigor'],
+            adjective: ['Healthy', 'Hearty', 'Robust']
         },
         fast: {
             name: 'Fast',
@@ -37,20 +43,26 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 //Don't allow heavy and fast to mix.
                 if (entry.heavy) { return false; }
                 return true;
-            }
+            },
+            ofNoun: ['Alacrity'],
+            adjective: ['Fast', 'Agile', 'Nimble', 'Quick', 'Swift']
 
         },
         teleport: {
             name: 'Teleport',
             describe: function (mult) {
                 return "Has a 10% chance each second to teleport " + mult + " space(s), this power will only activate if this unit has another unit closer to the end zone to teleport to.";
-            }
+            },
+            ofNoun: ['Foresight'],
+            adjective: ['Beaming', 'Otherworldly']
         },
         shielding: {
             name: 'Shielding',
             describe: function (mult) {
                 return "This unit gets a shield that stops the next source of damage every " + incTower.humanizeNumber(4 / mult) + " seconds.";
-            }
+            },
+            ofNoun: ['Shielding'],
+            adjective: ['Safeguarded', 'Protected']
         },
         'fire-resistant': {
             name: 'Fire-Resistant',
@@ -60,7 +72,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 5,
             requirements: function () {
                 return incTower.getSkillLevel('fireAffinity') > 0;
-            }
+            },
+            ofNoun: ['Flame Resistance'],
+            adjective: ['Flame Retardant']
         },
         'water-resistant': {
             name: 'Water-Resistant',
@@ -70,7 +84,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 5,
             requirements: function () {
                 return incTower.getSkillLevel('waterAffinity') > 0;
-            }
+            },
+            ofNoun: ['Water Resistance'],
+            adjective: ['Icy']
         },
         'air-resistant': {
             name: 'Air-Resistant',
@@ -80,7 +96,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 5,
             requirements: function () {
                 return incTower.getSkillLevel('airAffinity') > 0;
-            }
+            },
+            ofNoun: ['Air Resistance'],
+            adjective: ['Wind Defiant']
 
         },
         'earth-resistant': {
@@ -91,7 +109,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 5,
             requirements: function () {
                 return incTower.getSkillLevel('earthAffinity') > 0;
-            }
+            },
+            ofNoun: ['Earth Resistance'],
+            adjective: ['Grounded']
         },
         'arcane-resistant': {
             name: 'Arcane-Resistant',
@@ -101,14 +121,18 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 5,
             requirements: function () {
                 return incTower.getSkillLevel('magicalAffinity') > 0;
-            }
+            },
+            ofNoun: ['Arcane Resistance'],
+            adjective: ['Wizardproof']
         },
         nullzone: {
             name: 'Null-Zone',
             describe: function (mult) {
-                return "Towers within " + mult + "space(s) of this unit cannot fire.";
+                return "Towers within " + incTower.humanizeNumber(1 + (mult * 0.5)) + " space(s) of this unit cannot fire.";
             },
-            maxLevel: 10
+            maxLevel: 10,
+            ofNoun: ['Dampening'],
+            adjective: ['Diminishing', 'Depressed']
         },
         armored: {
             name: 'Armored',
@@ -118,7 +142,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 }
                 return "Immune to kinetic damage.";
             },
-            maxLevel: 5
+            maxLevel: 5,
+            ofNoun: ['the Adamantine'],
+            adjective: ['Armored']
         },
         heavy: {
             name: 'Heavy',
@@ -132,7 +158,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 //Or fast
                 if (entry.fast) { return false; }
                 return true;
-            }
+            },
+            ofNoun: ['Substantial Girth'],
+            adjective: ['Heavy', 'Bulky', 'Hefty', 'Weighty']
         },
         flying: {
             name: 'Flying',
@@ -145,7 +173,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 if (entry.heavy) { return false; }
                 if (entry.preferredPower !== 'flying') { return false; }
                 return true;
-            }
+            },
+            ofNoun: ['Flight'],
+            adjective: ['Floating', 'Aerial', 'Soaring']
         }
     };
     incTower.seenPowers = {};
@@ -268,6 +298,8 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 incTower.seenPowers[power] = level;
             }
         });
+        baseEntry.title = incTower.getPackName(baseEntry);
+        console.log(baseEntry.title);
         return baseEntry;
 
     };
@@ -307,6 +339,8 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'duck07.png',
                 'duck08.png'
             ],
+            nounSingle: ['Penguin'],
+            nounPlural: ['Penguins'],
             power: 'swarm'
         },
         panda: {
@@ -315,8 +349,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'panda02.png',
                 'panda03.png'
             ],
-            power: 'shielding'
-
+            power: 'shielding',
+            nounSingle: ['Panda'],
+            nounPlural: ['Pandas']
         },
         dog: {
             animation: [
@@ -327,7 +362,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'dog05.png',
                 'dog06.png'
             ],
-            power: 'fast'
+            power: 'fast',
+            nounSingle: ['Hound', 'Dog'],
+            nounPlural: ['Hounds', 'Dogs']
         },
         penguin: {
             animation: [
@@ -336,7 +373,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'penguin03.png',
                 'penguin04.png'
             ],
-            power: 'healthy'
+            power: 'healthy',
+            nounSingle: ['Penguin'],
+            nounPlural: ['Penguins']
         },
         goblin: {
             animation: [
@@ -344,7 +383,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'goblin02.png',
                 'goblin03.png'
             ],
-            power: 'regenerating'
+            power: 'regenerating',
+            nounSingle: ['Goblin'],
+            nounPlural: ['Goblins']
         },
         skeleton: {
             animation: [
@@ -353,7 +394,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'skeleton03.png'
             ],
             //power: 'bleed-resist'
-            power: 'teleport'
+            power: 'teleport',
+            nounSingle: ['Skeleton'],
+            nounPlural: ['Skeletons']
         },
         zombie: {
             animation: [
@@ -361,7 +404,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'zombie02.png',
                 'zombie03.png'
             ],
-            power: 'teleport'
+            power: 'teleport',
+            nounSingle: ['Zombie'],
+            nounPlural: ['Zombies']
         },
         icebeetle: {
             animation: [
@@ -369,9 +414,11 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'icebeetle-02.png',
                 'icebeetle-03.png',
                 'icebeetle-04.png',
-                'icebeetle-05.png',
+                'icebeetle-05.png'
             ],
-            power: 'water-resistant'
+            power: 'water-resistant',
+            nounSingle: ['Ice Beetle'],
+            nounPlural: ['Ice Beetles']
         },
         firebeetle: {
             animation: [
@@ -381,7 +428,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'firebeetle-04.png',
                 'firebeetle-05.png'
             ],
-            power: 'fire-resistant'
+            power: 'fire-resistant',
+            nounSingle: ['Fire Beetle'],
+            nounPlural: ['Fire Beetles']
         },
         blackbeetle: {
             animation: [
@@ -391,7 +440,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'blackbeetle-04.png',
                 'blackbeetle-05.png'
             ],
-            power: 'armored'
+            power: 'armored',
+            nounSingle: ['Black Beetle'],
+            nounPlural: ['Black Beetles']
+
         },
         greenbeetle: {
             animation: [
@@ -401,7 +453,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'greenbeetle-04.png',
                 'greenbeetle-05.png'
             ],
-            power: 'regenerating'
+            power: 'regenerating',
+            nounSingle: ['Green Beetle'],
+            nounPlural: ['Green Beetles']
+
         },
         chicken: {
             animation: [
@@ -410,7 +465,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'chicken-03.png',
                 'chicken-04.png'
             ],
-            power: 'regenerating'
+            power: 'regenerating',
+            nounSingle: ['Chicken'],
+            nounPlural: ['Chickens']
+
         },
         cow: {
             animation: [
@@ -419,7 +477,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'cow-03.png',
                 'cow-04.png'
             ],
-            power: 'heavy'
+            power: 'heavy',
+            nounSingle: ['Cow'],
+            nounPlural: ['Cows']
+
         },
         llama: {
             animation: [
@@ -428,7 +489,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'llama-03.png',
                 'llama-04.png'
             ],
-            power: 'teleport'
+            power: 'teleport',
+            nounSingle: ['Llama'],
+            nounPlural: ['Llamas']
+
         },
         pig: {
             animation: [
@@ -437,7 +501,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'pig-03.png',
                 'pig-04.png'
             ],
-            power: 'teleport'
+            power: 'teleport',
+            nounSingle: ['Pig'],
+            nounPlural: ['Pigs']
+
         },
         sheep: {
             animation: [
@@ -446,7 +513,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'sheep-03.png',
                 'sheep-04.png'
             ],
-            power: 'teleport'
+            power: 'teleport',
+            nounSingle: ['Sheep'],
+            nounPlural: ['Sheep']
+
         },
         redfairy: {
             animation: [
@@ -457,7 +527,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'redfairy-05.png',
                 'redfairy-06.png'
             ],
-            power: 'flying'
+            power: 'flying',
+            nounSingle: ['Red Fairy'],
+            nounPlural: ['Red Fairies']
+
         },
         greenfairy: {
             animation: [
@@ -468,8 +541,214 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'greenfairy-05.png',
                 'greenfairy-06.png'
             ],
-            power: 'flying'
+            power: 'flying',
+            nounSingle: ['Green Fairy'],
+            nounPlural: ['Green Fairies']
+
         },
+        blackgolem: {
+            animation: [
+                'blackgolem-01.png',
+                'blackgolem-02.png',
+                'blackgolem-03.png'
+            ],
+            power: 'heavy',
+            nounSingle: ['Black Golem'],
+            nounPlural: ['Black Golems']
+
+        },
+
+        icegolem: {
+            animation: [
+                'icegolem-01.png',
+                'icegolem-02.png',
+                'icegolem-03.png'
+            ],
+            power: 'water-resistant',
+            nounSingle: ['Ice Golem'],
+            nounPlural: ['Ice Golems']
+
+        },
+        darkwizard: {
+            animation: [
+                'darkwizard-01.png',
+                'darkwizard-02.png',
+                'darkwizard-03.png'
+            ],
+            power: 'nullzone',
+            nounSingle: ['Dark Wizard'],
+            nounPlural: ['Dark Wizards']
+
+        },
+        redwizard: {
+            animation: [
+                'redwizard-01.png',
+                'redwizard-02.png',
+                'redwizard-03.png'
+            ],
+            power: 'nullzone',
+            nounSingle: ['Red Wizard'],
+            nounPlural: ['Red Wizards']
+        },
+        skull: {
+            animation: [
+                'skull-01.png',
+                'skull-02.png',
+                'skull-03.png'
+            ],
+            power: 'nullzone',
+            nounSingle: ['Floating Skull'],
+            nounPlural: ['Floating Skulls']
+
+        },
+        turtle: {
+            animation: [
+                'turtle-01.png',
+                'turtle-02.png',
+                'turtle-03.png'
+            ],
+            power: 'shielding',
+            nounSingle: ['Turtle'],
+            nounPlural: ['Turtles']
+
+        }
+
+    };
+    incTower.getPackName = function (pack) {
+        var formatStrings = [
+            '%possessiveTitle% %noun% %ofPower%',
+            '%adjectivePower% %noun% %ofPower%'
+        ];
+        var currentFormat = incTower.game.rnd.pick(formatStrings);
+        var powerList = [];
+        _.forOwn(pack.powers, function (rank, power) {
+           powerList.push({'level': rank, 'power': power});
+        });
+        var packPowers = _.orderBy(powerList, ['level'], ['desc']);
+        packPowers.push({'power': 'generic', 'level': 1});
+        console.log(packPowers);
+        var repeat = true;
+        while (repeat) {
+            repeat = false;
+            currentFormat = currentFormat.replace(/%(\w+)%/g, function (match, token) {
+                repeat = true;
+                if (token === 'noun') {
+                    if (pack.count > 1) {
+                        return incTower.game.rnd.pick(incTower.enemyTypes[pack.name].nounPlural);
+                    }
+                    return incTower.game.rnd.pick(incTower.enemyTypes[pack.name].nounSingle);
+                }
+                if (token === 'possessiveTitle') {
+                    var gender = incTower.game.rnd.pick(['male', 'female']);
+                    var titles = [];
+                    var names = [];
+                    if (gender === 'male') {
+                        titles = ['King', 'Lord', 'Duke', 'Viscount', 'Czar', 'Emporer', 'Khan', 'Prince', 'Count'];
+                        names = ['Merek', 'Carac', 'Tybalt', 'Brom', 'Hadrian'];
+                    } else {
+                        titles = ['Queen', 'Lady', 'Duchess', 'Princess', 'Countess'];
+                        names = ['Millicent', 'Ellyn', 'Thea', 'Gloriana', 'Beatrix', 'Mirabelle', 'Seraphina'];
+                    }
+                    return incTower.game.rnd.pick(titles) + ' ' + incTower.game.rnd.pick(names) + "'s";
+                }
+                if (token === 'ofPower') {
+                    var power = incTower.game.rnd.weightedPick(packPowers);
+                    _.pull(packPowers, power);
+                    packPowers.push(power);
+                    power = power.power
+                    if (power === 'generic') {
+                        return incTower.game.rnd.pick(['of the %genericAdj% %genericNounSingular%']);
+                    }
+                    return 'of ' + incTower.game.rnd.pick(incTower.bossPowers[power].ofNoun);
+                }
+                if (token === 'adjectivePower') {
+                    var power = incTower.game.rnd.weightedPick(packPowers);
+                    _.pull(packPowers, power);
+                    packPowers.push(power);
+                    power = power.power;
+                    if (power === 'generic') {
+                        return incTower.game.rnd.pick([
+                            'Alert',
+                            'Arrogant',
+                            'Assertive',
+                            'Bold',
+                            'Boundless',
+                            'Brazen',
+                            'Callous',
+                            'Crude',
+                            'Dark',
+                            'Dauntless',
+                            'Defiant',
+                            'Determined',
+                            'Dreamer',
+                            'Efficient',
+                            'Ferocious',
+                            'Frantic',
+                            'Furious',
+                            'Hostile',
+                            'Malicious',
+                            'Ornery',
+                            'Practical',
+                            'Profane',
+                            'Repulsive',
+                            'Rough',
+                            'Rude',
+                            'Scornful',
+                            'Sly',
+                            'Spiteful',
+                            'Tenacious',
+                            'Uncouth',
+                            'Vain',
+                            'Vulgar',
+                            'Wretched'
+                        ]);
+                    }
+                    return incTower.game.rnd.pick(incTower.bossPowers[power].adjective);
+                }
+                if (token === 'genericNounSingular') {
+                    return incTower.game.rnd.pick([
+                        'Age',
+                        'Bone',
+                        'Chain',
+                        'Dawn',
+                        'Flame',
+                        'Horn',
+                        'Ice',
+                        'Lamp',
+                        'Lotus',
+                        'Mask',
+                        'Mother',
+                        'Night',
+                        'Scarecrow',
+                        'Seed',
+                        'Throne',
+                        'Veil',
+                        'Volcano',
+                        'Year'
+                    ]);
+                }
+                if (token === 'genericAdj') {
+                    return incTower.game.rnd.pick([
+                        'Blackened',
+                        'Blessed',
+                        'Ethereal',
+                        'Glorious',
+                        'Golden',
+                        'Last',
+                        'Twisted',
+                        'Wrathful'
+                    ]);
+                }
+                if (token === 'genericNormalizedVerb') {
+                    return incTower.game.rnd.pick([
+                        'Destroyer',
+                        'Bringer'
+                    ]);
+                }
+            });
+
+        }
+        return currentFormat;
     };
 
     incTower.generateEnemy = function (difficulty) {
@@ -495,11 +774,14 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         var pack = [];
         var remainingHealthMultiplier = 1; //By default we split the health pool evenly across all the mobs
         var unspecifiedHealthWeights = 0;
+        var title = "";
         basePack.forEach(function (packEntry) {
             var count = 1;
             if ("count" in packEntry) {
                 count = packEntry.count;
             }
+            if (title.length > 0) { title += "\n"; }
+            title += packEntry.title;
             for (var j = 0; j < count; j++) {
                 var tempPack = {};
                 if ("healthWeight" in packEntry) { //We have a specific health weight set so we subtract from our remaining
@@ -539,6 +821,22 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
             new Enemy(offset, path.path[0].y * 32 + 16, packEntry);
         }
+        var titleColor = incTower.game.rnd.pick(['#FF6746', '#BACDD4', '#DFC67A', '#63A67F', '#B89384']);
+        console.log(titleColor);
+        incTower.createFloatingText({
+            noFloat: true,
+            x: 400,
+            y: 50,
+            font: "Arial",
+            fontSize: "18pt",
+            color: titleColor,
+            stroke: 'black',
+            strokeThickness: 3,
+            shadowed: true,
+            delay: 2500,
+            duration: 1000,
+            text: title
+        });
         incTower.generatingEnemies = false;
 
     };
@@ -577,30 +875,55 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             bleeding: ko.observable(new BigNumber(0))
         };
         this.events.onKilled.add(function () {
-            if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
-                incTower.currentlySelected(null);
-            }
-            this.removeChildren();
-            this.healthbar.destroy();
-            if (this.nullzoneGraphic !== undefined) {
-                this.nullzoneGraphic.destroy();
-            }
+            try {
+                if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
+                    incTower.currentlySelected(null);
+                }
+                console.log("onKilled");
+                console.log(typeof this.nullzoneGraphic);
+                if (this.nullzoneGraphic !== undefined) {
+                    this.nullzoneGraphic.destroy();
+                }
+                if (this.burningSprite) {
+                    this.burningSprite.animations.destroy();
+                    this.burningSprite.destroy();
+                }
+            } catch (e) {
 
-            this.healthbar = undefined;
-            //This appears to have been causing a memory leak.
-            this.animations.destroy();
-            this.events.onKilled.dispose();
-            this.healthSubscription.dispose();
-            this.chillSubscription.dispose();
-            if (this.burningSprite) {
-                this.burningSprite.animations.destroy();
-                this.burningSprite.destroy();
             }
+        }, this);
+        this.events.onDestroy.add(function () {
+            //This is gross but is necessary ot prevent random null reference errors
+            try {
+                if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
+                    incTower.currentlySelected(null);
+                }
+                this.removeChildren();
+                this.healthbar.destroy();
+                console.log("onDestroy");
+                console.log(typeof this.nullzoneGraphic);
+                if (this.nullzoneGraphic !== undefined) {
+                    this.nullzoneGraphic.destroy();
+                }
 
-            this.burningSprite = undefined;
-            this.floatText = undefined;
-            //this.statusEffects = undefined;
-            this.realSpeed = undefined;
+                this.healthbar = undefined;
+                //This appears to have been causing a memory leak.
+                this.animations.destroy();
+                // this.events.onKilled.dispose();
+                this.healthSubscription.dispose();
+                this.chillSubscription.dispose();
+                if (this.burningSprite) {
+                    this.burningSprite.animations.destroy();
+                    this.burningSprite.destroy();
+                }
+
+                this.burningSprite = undefined;
+                this.floatText = undefined;
+                //this.statusEffects = undefined;
+                this.realSpeed = undefined;
+            } catch (e) {
+
+            }
         }, this);
 
         this.chillSubscription = this.statusEffects.chilled.subscribe(chilledUpdate, this);
@@ -647,9 +970,11 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             this.nullzoneGraphic = incTower.game.add.graphics(0, 0);
             //this.addChild(this.nullzoneGraphic);
             this.nullzoneGraphic.beginFill(0x000000,0.5);
+            this.nullzoneGraphic.alpha = 0.5;
             this.nullzoneGraphic.lineStyle(1,0x000000,2);
-            this.nullzoneGraphic.drawCircle(0,0,64 * this.nullzone);
-            this.nullzoneCircle = new Phaser.Circle(0, 0, 64 * this.nullzone + 16);
+            var nullzoneDiameter = 64 + (32 * this.nullzone - 1);
+            this.nullzoneGraphic.drawCircle(0,0,nullzoneDiameter);
+            this.nullzoneCircle = new Phaser.Circle(0, 0, nullzoneDiameter + 16);
 
         }
         incTower.enemys.add(this);

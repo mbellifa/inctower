@@ -13,16 +13,11 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
     ];
     incTower.humanizeBigNumber = function (number, precision) {
         if (precision === undefined) { precision = 1;}
-        var thresh = 1000;
-        //number = 3;
         if (typeof(number.abs) !== 'function') { number = new BigNumber(number); }
-        if (number.abs() < thresh) { return number.toFixed(precision).replace('.0',''); }
-        var u = -1;
-        do {
-            number = number.div(thresh);
-            ++u;
-        } while (number.abs().gte(thresh));
-        return number.toFixed(precision).replace('.0','')+incTower.numSuffixes[u];
+        if (number.e < 4) { return number.toFixed(precision).replace('.0',''); }
+        var index = Math.floor(number.e / 3) - 1;
+        number = number.div(new BigNumber(10).pow((index+1)*3));
+        return number.toFixed(precision).replace('.0','')+incTower.numSuffixes[index];
     };
     utilModule.humanizeBigNumber = incTower.humanizeBigNumber;
 
@@ -170,10 +165,7 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
                 text = "+" + text;
             }
         }
-        var scatter = 0;
-        if ('scatter' in opt) {
-            scatter = opt.scatter;
-        }
+        var scatter = opt.scatter || 0;
         if (scatter > 0) {
             floatText.x = incTower.game.rnd.integerInRange(x - scatter, x + scatter);
             floatText.y = incTower.game.rnd.integerInRange(y - scatter, y + scatter);
@@ -181,19 +173,27 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
             floatText.x = x;
             floatText.y = y;
         }
-        var color = "#ff0033";
-        if ('color' in opt) {
-            color = opt.color;
-        }
-        var duration = 1000;
+        var color = opt.color || "#ff0033";
+        var duration = opt.duration || 1000;
 
-        if ('duration' in opt) {
-            duration = opt.duration;
+        var tweenTo = {alpha: 0};
+        if (opt.noFloat !== true) {
+            tweenTo.y = floatText.y - 30;
         }
         floatText.fill = color;
+        floatText.font = opt.font || "Arial";
+        floatText.fontSize = opt.fontSize || "14px";
+        floatText.strokeThickness = opt.strokeThickness || 1;
+        floatText.setShadow();
+        if (opt.shadowed) {
+            floatText.setShadow(3, 3);
+        }
+        floatText.stroke = opt.stroke || "white";
         floatText.alpha = 1;
         floatText.text = text;
-        var floatTween = incTower.game.add.tween(floatText).to({alpha: 0, y: floatText.y - 30}, duration, "Linear", true);
+        var delay = opt.delay || 0;
+        
+        var floatTween = incTower.game.add.tween(floatText).to(tweenTo, duration, "Linear", true, delay);
         floatTween.onComplete.add(function () {
             this.amount = undefined;
             //incTower.game.tweens.removeFrom(floatText);

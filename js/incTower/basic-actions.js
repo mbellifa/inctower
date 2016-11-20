@@ -20,6 +20,12 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
     };
     
     incTower.wave = ko.observable(0);
+    incTower.maxWave = ko.observable(0);
+    incTower.wave.subscribe(function (val) {
+        if (val > incTower.maxWave()) {
+            incTower.maxWave(val);
+        }
+    });
     incTower.buyBlock = function () {
          var curCursor = incTower.cursor();
         //If our cursor already holds this spell then cancel it.

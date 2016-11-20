@@ -598,6 +598,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 _.forEach(_.range(-1,2), function (xMod) {
                     _.forEach(_.range(-1,2), function (yMod) {
                         if (xMod === 0 && yMod === 0) { return; }
+                        var newTileX = tileX + xMod;
+                        var newTileY = tileY + yMod;
+                        if (newTileX < 0 || newTileY < 0 || newTileX > 24 || newTileY > 18) {
+                            return;
+                        }
                         if (!path.tileForbidden[tileX + xMod][tileY + yMod] || path.tileForbidden[tileX + xMod][tileY + yMod].support) {
                             return;
                         }
