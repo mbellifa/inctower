@@ -84,6 +84,9 @@ define(['lib/phaser', 'incTower/core', 'incTower/basic-actions'], function (Phas
                 if (incTower.cursor().textIndicator !== undefined) {
                     incTower.cursor().textIndicator.alpha = 0;
                 }
+                if (incTower.pathProspectiveGraphic !== undefined) {
+                    incTower.pathProspectiveGraphic.clear();
+                }
 
             };
             game.input.mouse.mouseOverCallback = function() {

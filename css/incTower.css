@@ -47,13 +47,6 @@ body {
     width: 50%;
     padding: 0px 0px 20px 10px;
 }
-/*.vex.vex-theme-wireframe {
-    text-align:center;
-}
-.vex.vex-theme-wireframe .vex-content {
-    width: auto !important;
-    display: inline-block;
-}*/
 
 #left_container {
     width:50%;
@@ -279,5 +272,23 @@ body {
     border-radius: 4px;
     color: #eee;
     padding: 0.2em;
+}
 
+/* Tooltips */
+
+.active-tooltip {
+    position: absolute;
+    left: -28000px;
+    top: -28000px;
+    display: none;
+    max-width: 280px;
+    min-width: 50px;
+    font-size: 1em;
+    line-height: 1.1em;
+    direction: ltr;
+    box-shadow: none;
+    padding: 0.5em;
+    background-color: #505050;
+    border-color: #303030;
+    color: #f3f3f3;
 }

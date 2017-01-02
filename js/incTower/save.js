@@ -1,9 +1,9 @@
-define(['incTower/core', 'lib/lodash', 'lib/jquery', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, $, ko, path, BigNumber) {
+define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber) {
     'use strict';
     var saveModule = {};
     saveModule.loadSave = function (save) {
         var savehex = btoa(save);
-        $('#b64_save').val(savehex);
+        document.getElementById('b64_save').innerHTML = savehex;
         console.log("Loading save: " + savehex);
         var i;
         save = JSON.parse(save);

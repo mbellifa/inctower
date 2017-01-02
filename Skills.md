@@ -44,7 +44,15 @@
 * [x] Sensors  – Increases the range of towers by 5% per level, five levels.
   * [x] Sensor Array – Builds a tower that marks targets, marked targets can be hit by any tower regardless of range.
   * [ ] Critical Strikes – All towers have a chance of revealing a weak spot causing extra damage. 2% chance per level, five levels.
-    * [ ] Crital Strike Damage - Increases the damage bonus done by critical strikes by 5% (no max)
+    * [ ] Critical Strike Damage - Increases the damage bonus done by critical strikes by 5% (no max)
   * [ ] Inteligence - Towers track their kills and gain intelligence points on the certain enemies they have killed.
     * [ ] Research Lab - Support tower: Grants adjacent towers a bonus to damage against the types that they have already killed.
 * [ ] Markets - Increases the gold value of monsters by 5% per rank (5 ranks)
+  * [ ] 
+  
+  
+* Ammo
+  * Kinetic
+    * Web
+    * Rockets
+    * Bullets

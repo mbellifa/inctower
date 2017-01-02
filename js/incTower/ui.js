@@ -4,7 +4,7 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
     incTower.currentlySelected.subscribe(function (value) {
         if (value === null) {
             //Hide all tooltips in case we were looking at a boss power.
-            $('.qtip').remove();
+            incTower.checkTooltips();
             incTower.currentlySelectedIndicator.destroy();
             incTower.currentlySelectedIndicator = null;
             return;
@@ -22,7 +22,8 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
     incTower.currentlySelectedIndicator = null; //Holds the graphic we'll use to show what we have selected.
     incTower.farmMode = ko.observable(false);
     incTower.prevWave = function () {
-        incTower.incrementObservable(incTower.wave, -1);
+        //We subtract 2 because once the enemies are gone it will increment the wave by one.
+        incTower.incrementObservable(incTower.wave, -2);
         incTower.nukeEnemies();
     };
     incTower.toMaxWave = function () {
@@ -108,7 +109,6 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
         return ['1', '2', '3', '4', '5', '6', '7', '8', '9'][i];
     };
     incTower.goldPerWave = function (wave) {
-        'use strict';
         return incTower.costCalc(30, wave, 1.2);
     };
 

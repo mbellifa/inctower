@@ -80,6 +80,43 @@ define(['incTower/core', 'lib/EasyStar', 'lib/lodash'], function (incTower, Easy
         });
         es.calculate();
     };
+    pathModule.calcProspectivePath = function (x,y, mode) { //Calculates what the new path would be with a block added at x,y
+        var walkables = [30];
+        var map = incTower.core.map;
+        var es = new EasyStar.js();
+        var grid = pathModule.layerToGrid(0);
+        mode = mode || 'add'; //Mode is whether we are calculating as if we added or removed a block.
+        if (mode === 'add') {
+            grid[y][x] = 5;
+        } else if (mode === 'subtract') {
+            grid[y][x] = 30;
+        }
+
+        es.setGrid(grid);
+        es.setAcceptableTiles( walkables);
+
+
+        es.findPath(0,0,24,18,function (p) {
+            if (p === null) {
+                return;
+            }
+
+            if (incTower.pathProspectiveGraphic === undefined) {
+                incTower.pathProspectiveGraphic = incTower.game.add.graphics(0, 0);
+            }
+            incTower.pathProspectiveGraphic.clear();
+            var colour = "0xcc33ff";
+            incTower.pathProspectiveGraphic.beginFill(colour);
+            incTower.pathProspectiveGraphic.lineStyle(2, colour, 0.5);
+            for (var i = 0; i < p.length - 1; i++) {
+                incTower.pathProspectiveGraphic.moveTo(p[i].x * 32 + 16, p[i].y * 32 + 16);
+                incTower.pathProspectiveGraphic.lineTo(p[i + 1].x * 32 + 16, p[i + 1].y * 32 + 16);
+            }
+            incTower.pathProspectiveGraphic.endFill();
+            incTower.game.world.bringToTop(incTower.enemys);
+        });
+        es.calculate();
+    };
     //Currently nothing blocks a flying creature so there is no point in calling this again.
     pathModule.recalcPathFlying = function () {
         var es = new EasyStar.js();

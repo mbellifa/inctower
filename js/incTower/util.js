@@ -123,20 +123,7 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
             y = opt.y;
         }
 
-
-        if (unusedIndex === undefined) {
-            incTower.floatingTexts.push(incTower.game.add.text(0, 0, "", {
-                font: "14px Arial",
-                stroke: 'white',
-                strokeThickness: 1,
-                fontWeight: "bold",
-                fill: "#ff0033",
-                align: "center"
-            }));
-            incTower.floatingTexts[incTower.floatingTexts.length - 1].anchor.set(0.5);
-            unusedIndex = incTower.floatingTexts.length - 1;
-        }
-        var floatText = incTower.floatingTexts[unusedIndex];
+        var floatText;
         var amount = new BigNumber(0);
         if ('amount' in opt) {
             amount = new BigNumber(opt.amount);
@@ -151,17 +138,37 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
                 floatText = opt.around.floatText[opt.type];
                 if (floatText.amount !== undefined) {
                     amount = amount.add(floatText.amount);
+                    floatText.amount = amount;
                 }
-            } else {
-                opt.around.floatText[opt.type] = floatText;
             }
-            opt.around.floatText[opt.type].amount = amount;
         }
+
+
+        if (floatText === undefined && unusedIndex === undefined) {
+            floatText = incTower.game.add.text(0, 0, "", {
+                font: "14px Arial",
+                stroke: 'white',
+                strokeThickness: 1,
+                fontWeight: "bold",
+                fill: "#ff0033",
+                align: "center"
+            });
+            incTower.floatingTexts.push(floatText);
+            floatText.anchor.set(0.5);
+        }
+        if (unusedIndex !== undefined) {
+            incTower.floatingTexts[unusedIndex].revive();
+            floatText = incTower.floatingTexts[unusedIndex];
+        }
+        if (opt.around !== undefined ) { /*&& !(opt.around.floatText[opt.type] !== undefined && opt.around.floatText[opt.type].alpha > 0.7)*/
+            opt.around.floatText[opt.type] = floatText;
+        }
+
         if ('text' in opt) {
             text = opt.text;
         } else {
             text = incTower.humanizeNumber(amount);
-            if (amount > 0) {
+            if (amount.gt(0)) {
                 text = "+" + text;
             }
         }
@@ -196,6 +203,7 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
         var floatTween = incTower.game.add.tween(floatText).to(tweenTo, duration, "Linear", true, delay);
         floatTween.onComplete.add(function () {
             this.amount = undefined;
+            this.kill();
             //incTower.game.tweens.removeFrom(floatText);
         }, floatText);
     };

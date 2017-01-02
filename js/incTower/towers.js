@@ -1,5 +1,6 @@
 define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor'], function (incTower, ko, BigNumber, Phaser, path, _, Cursor) {
     'use strict';
+    BigNumber.config({ERRORS: false});
     var tileSquare = 32;
     var incrementObservable = incTower.incrementObservable;
     incTower.availableTowers = ko.observableArray(['kinetic']);
@@ -12,6 +13,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     incTower.sellTowerPer = ko.pureComputed(function () {
         return 0.5 + (0.05 * incTower.getEffectiveSkillLevel('scrapping'));
     });
+
     incTower.buyTower = function (type) {
         if (type === undefined) {
             type = 'kinetic';
@@ -189,58 +191,93 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     incTower.createTower = function (opts) {
         new Tower(opts);
     };
+    incTower.ammoAttributes = {
+        bullet: {
+            name: 'Bullet',
+            describe: function () {
+                return 'These basic bullets have a medium range and inflict kinetic damage.';
+            }
+        },
+        shrapnel: {
+            name: 'Shrapnel Rounds',
+            describe: function () {
+                return 'These rounds explode once they penetrate causing intense internal bleeding. They deal less kinetic damage upfront but always cause a bleed for a significant portion of the damage.';
+            }
+        },
+        quack: {
+            name: 'Quack',
+            describe: function () {
+                return 'Test';
+            }
+        }
+    };
+    incTower.describeAmmo = function (ammoType) {
+        return incTower.ammoAttributes[ammoType].describe();
+    }
+    incTower.describeTower = function (tower) {
+        var attribs = incTower.towerAttributes[tower.towerType];
+        var ret = '<p><b>Tower:</b> ' + attribs.describe() + '</p>';
+        if (attribs.describeSupport !== undefined) {
+            ret += '<p><b>Support:</b> ' + attribs.describeSupport(tower) + '</p>';
+        }
+        if (attribs.ammoTypes !== undefined) {
+            ret += '<p><b>Ammo:</b> ' + incTower.describeAmmo(tower.ammoType()) + '</p>';
+        }
+        return ret;
+    };
     incTower.towerAttributes = {
         kinetic: {
             name: 'Kinetic',
-                baseCost: 25,
-                startingFireRate: 1500,
-                startingRange: 120,
-                damagePerLevel: 1,
-                describe: function () {
+            baseCost: 25,
+            startingFireRate: 1500,
+            startingRange: 120,
+            damagePerLevel: 1,
+            describe: function () {
                 return 'Kinetic towers are cheap to build and reliable. Their simpler parts make them cheaper to upgrade as well.';
-            }
+            },
+            ammoTypes: ko.observableArray(['bullet'])
         },
         earth: {
             name: 'Earth',
-                baseCost: 100,
-                damagePerLevel: 1,
-                startingRange: 100,
-                startingFireRate: 2500,
-                icon: 'earth-element.png',
-                describe: function () {
+            baseCost: 100,
+            damagePerLevel: 1,
+            startingRange: 100,
+            startingFireRate: 2500,
+            icon: 'earth-element.png',
+            describe: function () {
                 return 'Earth towers deal earth damage and have a chance to attach an earth rune to enemies. When an earth reaction happens a giant boulder falls from the sky on the affected enemy.';
             }
         },
         air: {
             name: 'Air',
-                baseCost: 100,
-                damagePerLevel: 1,
-                startingFireRate: 2500,
-                startingRange: 100,
-                icon: 'air-element.png',
-                describe: function () {
+            baseCost: 100,
+            damagePerLevel: 1,
+            startingFireRate: 2500,
+            startingRange: 100,
+            icon: 'air-element.png',
+            describe: function () {
                 return 'Air towers deal air damage and have a chance to attach an air rune to enemies. When an air reaction happens a group of enemies will be knocked back..';
             }
         },
         fire: {
             name: 'Fire',
-                baseCost: 100,
-                damagePerLevel: 1,
-                startingFireRate: 2500,
-                startingRange: 100,
-                icon: 'fire-element.png',
-                describe: function () {
+            baseCost: 100,
+            damagePerLevel: 1,
+            startingFireRate: 2500,
+            startingRange: 100,
+            icon: 'fire-element.png',
+            describe: function () {
                 return 'Fire towers deal fire damage and have a chance to attach a fire rune to enemies. When a fire reaction happens the affected enemy takes additional damage from all sources and takes burn damage over time.';
             }
         },
         water: {
             name: 'Water',
-                baseCost: 100,
-                damagePerLevel: 1,
-                startingFireRate: 2500,
-                startingRange: 100,
-                icon: 'water-element.png',
-                describe: function () {
+            baseCost: 100,
+            damagePerLevel: 1,
+            startingFireRate: 2500,
+            startingRange: 100,
+            icon: 'water-element.png',
+            describe: function () {
                 return 'Water towers deal water damage and have a chance to attach a water rune to enemies. When a water reaction occurs the affected enemy becomes either slowed or frozen in place depending on the number of runes.';
             }
         },
@@ -271,7 +308,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         });
     });
     incTower.towerCost = function (type) {
-        'use strict';
         var base = 25;
         base = incTower.towerAttributes[type].baseCost;
         var amount = incTower.costCalc(base, incTower.numTowers(), 1.4);
@@ -279,25 +315,25 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
         return amount;
     };
-    function TowerInputOver(sprite,pointer) {
-        'use strict';
+    function TowerInputOver(sprite, pointer) {
         if (incTower.rangeIndicator !== undefined) {
             return;
         }
         if (incTower.cursor()) {
             return;
         }
-        incTower.rangeIndicator = incTower.game.add.graphics(0,0);
+        incTower.rangeIndicator = incTower.game.add.graphics(0, 0);
         incTower.rangeIndicator.x = sprite.x; //+ (tileSquare / 2);
         incTower.rangeIndicator.y = sprite.y; //+ (tileSquare / 2);
 
-        incTower.rangeIndicator.beginFill(0xFF0000,0.3);
-        incTower.rangeIndicator.lineStyle(1,0x000000,2);
-        incTower.rangeIndicator.drawCircle(0,0,(sprite.trueRange() * 2) - 32);
+        incTower.rangeIndicator.beginFill(0xFF0000, 0.3);
+        incTower.rangeIndicator.lineStyle(1, 0x000000, 2);
+        incTower.rangeIndicator.drawCircle(0, 0, (sprite.trueRange() * 2) - 32);
 
 
     }
-    function TowerInputOut(sprite,pointer) {
+
+    function TowerInputOut(sprite, pointer) {
         if (incTower.rangeIndicator !== undefined) {
             incTower.rangeIndicator.destroy();
             incTower.rangeIndicator = undefined;
@@ -305,14 +341,20 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         }
 
     }
+
     function UpgradeTower(tower) {
         tower.upgrade();
     }
+
     function DestroyTower(tower, updateArray) {
-        if (updateArray === undefined) { updateArray = true; }
+        if (updateArray === undefined) {
+            updateArray = true;
+        }
         if (updateArray) {
             var index = incTower.towers.indexOf(tower);
-            if (index >= 0) { incTower.towers.splice(index, 1); }
+            if (index >= 0) {
+                incTower.towers.splice(index, 1);
+            }
         }
 
         path.tileForbidden[tower.tileX][tower.tileY] = false;
@@ -323,23 +365,26 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
         incTower.currentlySelected(null);
     }
+
     incTower.destroyTower = DestroyTower;
 
-    function TowerInputDown(sprite,pointer) {
+    function TowerInputDown(sprite, pointer) {
         if (incTower.cursor() !== false) {
             return false;
         }
         console.log("TOWER CLICKED");
         incTower.currentlySelected(sprite);
     }
+
     function calculateTowerUpgradeCost(towerType, level) {
-        var amount = incTower.costCalc(incTower.towerAttributes[towerType].baseCost,level,1.2);
+        var amount = incTower.costCalc(incTower.towerAttributes[towerType].baseCost, level, 1.2);
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('modularConstruction') * 0.05));
         return amount;
     }
+
     incTower.calculateTowerUpgradeCost = calculateTowerUpgradeCost;
-    function Tower (opt) {
+    function Tower(opt) {
         if (opt === undefined) {
             opt = {};
         }
@@ -350,7 +395,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         var tile = opt.tile;
 
         if (!path.tileForbidden[tileX][tileY]) {
-            Phaser.Sprite.call(this, incTower.game, worldX+16, worldY+16, 'incTower', 'Tower-32.png');
+            Phaser.Sprite.call(this, incTower.game, worldX + 16, worldY + 16, 'incTower', 'Tower-32.png');
 
             //this.tower = game.add.sprite(worldX+tileSquare/2, worldY+tileSquare/2, 'incTower', 'Tower-32.png');
             this.towerType = opt.towerType;
@@ -358,7 +403,15 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 incTower.towerMaxDamage[this.towerType] = ko.observable(new BigNumber(0));
             }
             if ('icon' in incTower.towerAttributes[this.towerType]) {
-                this.icon = incTower.game.add.sprite(worldX+tileSquare/2, worldY+tileSquare/2, 'incTower', incTower.towerAttributes[this.towerType].icon);
+                this.icon = incTower.game.add.sprite(worldX + tileSquare / 2, worldY + tileSquare / 2, 'incTower', incTower.towerAttributes[this.towerType].icon);
+            }
+            this.ammoType = ko.observable(false);
+            if ('ammoTypes' in incTower.towerAttributes[this.towerType]) {
+                if ('ammoType' in opt && incTower.towerAttributes[this.towerType].ammoTypes.indexOf(opt.ammoType) > 0) {
+                    this.ammoType(opt.ammoType);
+                } else {
+                    this.ammoType(incTower.towerAttributes[this.towerType].ammoTypes()[0]);
+                }
             }
             this.goldSpent = ko.observable(new BigNumber(opt.goldSpent || opt.cost || 0));
             this.worldX = worldX;
@@ -367,12 +420,12 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.tileY = tileY;
             this.tower = true;
             this.support = 'support' in incTower.towerAttributes[this.towerType] && incTower.towerAttributes[this.towerType].support;
-            this.powerBar = incTower.game.add.graphics(0,0); //This bar represents relative power
+            this.powerBar = incTower.game.add.graphics(0, 0); //This bar represents relative power
             this.addChild(this.powerBar);
             this.disabledFrames = ko.observable(0); //If this is non-zero the tower is disabled.
 
 
-            this.anchor.setTo(0.5,0.5);
+            this.anchor.setTo(0.5, 0.5);
             this.tile = tile;
             if (opt.damage) {
                 this.damage = ko.observable(new BigNumber(opt.damage));
@@ -390,9 +443,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticAmmo'));
                 }
                 return ret;
-            },this);
+            }, this);
             var totalDamageSubscription = function (newDamage) {
-                if (newDamage === undefined) { return; }
+                if (newDamage === undefined) {
+                    return;
+                }
                 if (newDamage.gt(incTower.towerMaxDamage[this.towerType]())) {
                     incTower.towerMaxDamage[this.towerType](newDamage);
                 }
@@ -401,18 +456,22 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
 
             this.relativeTowerPower = ko.computed(function () {
-                if (this.totalDamage() === undefined) { return; }
+                if (this.totalDamage() === undefined) {
+                    return;
+                }
                 var per = this.totalDamage().div(incTower.towerMaxDamage[this.towerType]()) * 1.0;
                 return per;
             }, this);
             var relativeTowerPowerSubscription = function (per) {
-                if (per === undefined) { return; }
+                if (per === undefined) {
+                    return;
+                }
                 var colour = '0xFF0000';
                 this.powerBar.clear();
                 this.powerBar.beginFill(colour);
                 this.powerBar.lineStyle(3, colour, 1);
-                this.powerBar.moveTo(-16,15);
-                this.powerBar.lineTo(-16,-32 * per + 16);
+                this.powerBar.moveTo(-16, 15);
+                this.powerBar.lineTo(-16, -32 * per + 16);
                 this.powerBar.endFill();
                 incTower.game.world.bringToTop(this.powerBar);
             };
@@ -451,9 +510,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
             this.buffs = ko.observableArray([]);
             this.inputEnabled = true;
-            this.events.onInputOver.add(TowerInputOver,this);
-            this.events.onInputOut.add(TowerInputOut,this);
-            this.events.onInputDown.add(TowerInputDown,this);
+            this.events.onInputOver.add(TowerInputOver, this);
+            this.events.onInputOut.add(TowerInputOut, this);
+            this.events.onInputDown.add(TowerInputDown, this);
             this.fireLastTime = incTower.game.time.now + this.fireTime;
             var upgradeCost = opt.remainingUpgradeCost;
             if (upgradeCost === undefined || isNaN(upgradeCost)) {
@@ -504,14 +563,17 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             path.tileForbidden[tileX][tileY] = this;
         }
     }
+
     Tower.prototype = Object.create(Phaser.Sprite.prototype);
     Tower.prototype.constructor = Tower;
-    Tower.prototype.add = function(pointer) {
+    Tower.prototype.add = function (pointer) {
         incTower.game.input.onDown.add(Tower.prototype.posit, this);
     };
     Tower.prototype.upgradeCost = function (byLevel) {
         'use strict';
-        if (this.remainingUpgradeCost === undefined) { return new BigNumber(0); }
+        if (this.remainingUpgradeCost === undefined) {
+            return new BigNumber(0);
+        }
         if (byLevel === undefined) {
             byLevel = 1;
         }
@@ -528,7 +590,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
     };
 
-    Tower.prototype.posit = function(pointer,opt) {
+    Tower.prototype.posit = function (pointer, opt) {
         opt.worldX = pointer.worldX - (pointer.worldX % tileSquare);
         opt.worldY = pointer.worldY - (pointer.worldY % tileSquare);
         opt.tileX = Math.floor(pointer.worldX / tileSquare);
@@ -538,9 +600,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         new Tower(opt);
     };
     Tower.prototype.update = function () {
-        if (incTower.paused()) { return; }
+        if (incTower.paused()) {
+            return;
+        }
         if (this.disabledFrames() > 0) {
-            incrementObservable(this.disabledFrames, -1);
+            incTower.incrementObservable(this.disabledFrames, -1);
             this.alpha = 0.2;
             return;
         }
@@ -551,14 +615,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     Tower.prototype.checkBuffs = function () {
         //Removes expired buffs
         this.buffs(_.reject(this.buffs(), function (buff) {
-           return incTower.game.time.now > buff.expiration;
+            return incTower.game.time.now > buff.expiration;
         }));
     };
     Tower.prototype.addBuff = function (type, source, duration, amount) {
         this.checkBuffs();
         var expiration = incTower.game.time.now + duration;
-        var previousBuff = _.find(this.buffs(), function(buff) {
-           return buff.source === source && buff.type === type;
+        var previousBuff = _.find(this.buffs(), function (buff) {
+            return buff.source === source && buff.type === type;
         });
         if (previousBuff) { //If we already have a buff by this source we increase the expiration time
             previousBuff.expiration = expiration;
@@ -577,7 +641,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         });
     };
     Tower.prototype.getBuffAmountByType = function (type) {
-        return _.reduce(_.map(this.getBuffsByType(type), function(buff) {
+        return _.reduce(_.map(this.getBuffsByType(type), function (buff) {
             return buff.amount;
         }), function (total, buffAmount) { // Code below is so we can sum both big numbers and primatives.
             if (_.isNumber(total)) {
@@ -588,16 +652,19 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         });
     };
 
-    Tower.prototype.fire = function() {
+    Tower.prototype.fire = function () {
         if (incTower.game.time.now >= this.fireLastTime) {
+
             //console.log("Now: " + game.time.now + " Last Fired:" + this.fireLastTime);
             if (this.support) {
                 var tileX = this.tileX;
                 var tileY = this.tileY;
                 var candidates = [];
-                _.forEach(_.range(-1,2), function (xMod) {
-                    _.forEach(_.range(-1,2), function (yMod) {
-                        if (xMod === 0 && yMod === 0) { return; }
+                _.forEach(_.range(-1, 2), function (xMod) {
+                    _.forEach(_.range(-1, 2), function (yMod) {
+                        if (xMod === 0 && yMod === 0) {
+                            return;
+                        }
                         var newTileX = tileX + xMod;
                         var newTileY = tileY + yMod;
                         if (newTileX < 0 || newTileY < 0 || newTileX > 24 || newTileY > 18) {
@@ -625,18 +692,22 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     }
                 }
                 this.fireLastTime = incTower.game.time.now + this.fireTime;
-                
+
             } else {
                 var enemiesInRange = [];
-                for (var i = 0;i < incTower.enemys.children.length;i++) {
-                    if (!incTower.enemys.children[i].alive) { continue; }
-                    if (incTower.enemys.children[i].x < 0 || incTower.enemys.children[i].y < 0) { continue; }
-                    if (incTower.game.physics.arcade.distanceBetween(incTower.enemys.children[i],this) <= this.trueRange()) {
+                for (var i = 0; i < incTower.enemys.children.length; i++) {
+                    if (!incTower.enemys.children[i].alive) {
+                        continue;
+                    }
+                    if (incTower.enemys.children[i].x < 0 || incTower.enemys.children[i].y < 0) {
+                        continue;
+                    }
+                    if (incTower.game.physics.arcade.distanceBetween(incTower.enemys.children[i], this) <= this.trueRange()) {
                         enemiesInRange.push(incTower.enemys.children[i]);
                     }
                 }
                 if (enemiesInRange.length > 0) {
-                    var chosenEnemy = enemiesInRange[(Math.random()*enemiesInRange.length) | 0];
+                    var chosenEnemy = enemiesInRange[(Math.random() * enemiesInRange.length) | 0];
                     var sprite = 'bullet.png';
                     if (!(sprite in incTower.deadBullets)) {
                         incTower.deadBullets[sprite] = [];
@@ -644,7 +715,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     var bullet = incTower.deadBullets[sprite].shift();
                     if (bullet !== undefined) {
                         bullet.revive();
-                        bullet.reset(this.x,this.y);
+                        bullet.reset(this.x, this.y);
                     } else {
                         bullet = incTower.bullets.create(this.x, this.y, 'incTower', sprite, true);
                         incTower.game.physics.enable(bullet, Phaser.Physics.ARCADE);
@@ -655,9 +726,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     this.fireLastTime = incTower.game.time.now + this.fireTime;
                     incTower.game.physics.arcade.moveToObject(bullet, chosenEnemy, 300);
                     bullet.fired = incTower.game.time.now;
+                    bullet.ammoType = this.ammoType();
                 }
             }
-                
+
         }
     };
     Tower.prototype.sell = function () {
@@ -665,7 +737,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         DestroyTower(this);
     };
     Tower.prototype.upgrade = function (byLevel) {
-        'use strict';
         if (byLevel === undefined) {
             byLevel = 1;
         }

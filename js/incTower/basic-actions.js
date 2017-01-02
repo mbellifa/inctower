@@ -55,6 +55,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                             return false;
                         }
                     });
+                    if (incTower.pathProspectiveGraphic !== undefined) {
+                        incTower.pathProspectiveGraphic.clear();
+                    }
                 }
             }, function (x, y) {
                 var tileX = Math.floor(x / tileSquare);
@@ -71,6 +74,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                     var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
                     if (tileIndex > 4 && tileIndex < 9) {
                         valid = false;
+                    }
+                } else {
+                    if (incTower.pathProspectiveGraphic !== undefined) {
+                        incTower.pathProspectiveGraphic.clear();
                     }
                 }
                 if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
@@ -92,9 +99,28 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                         this.textIndicator.alpha = 1;
                         var cost = incTower.blockCost();
                         this.textIndicator.text = '-' + incTower.humanizeNumber(cost) + 'g';
+                        var blockOnPath = false;
+                        _.forEach(pathModule.path, function (pathUnit) {
+                            if (pathUnit.x === tileX && pathUnit.y === tileY) {
+                                blockOnPath = true;
+                                return false;
+                            }
+                        });
+                        if (blockOnPath) {
+                            pathModule.calcProspectivePath(tileX, tileY, 'add');
+                        } else {
+                            if (incTower.pathProspectiveGraphic !== undefined) {
+                                incTower.pathProspectiveGraphic.clear();
+                            }
+                        }
+
+
                     } else {
                         if (this.textIndicator !== undefined) {
                             this.textIndicator.alpha = 0;
+                        }
+                        if (incTower.pathProspectiveGraphic !== undefined) {
+                            incTower.pathProspectiveGraphic.clear();
                         }
                         this.indicator.beginFill(0x760076, 0.5);
                     }
@@ -167,6 +193,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 if (!(tileIndex > 4 && tileIndex < 9)) {
                     valid = false;
                 }
+            } else {
+                if (incTower.pathProspectiveGraphic !== undefined) {
+                    incTower.pathProspectiveGraphic.clear();
+                }
             }
             if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
                 this.indicator.clear();
@@ -196,12 +226,16 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                     }
                     if (cost === undefined) {
                         cost = incTower.prevBlockCost();
+                        pathModule.calcProspectivePath(tileX, tileY, 'subtract');
                     }
                     this.textIndicator.text = '+' + incTower.humanizeNumber(cost) + 'g';
 
                 } else {
                     if (this.textIndicator !== undefined) {
                         this.textIndicator.alpha = 0;
+                    }
+                    if (incTower.pathProspectiveGraphic !== undefined) {
+                        incTower.pathProspectiveGraphic.clear();
                     }
                     this.indicator.beginFill(0x760076, 0.5);
                 }

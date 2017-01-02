@@ -879,14 +879,16 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
                     incTower.currentlySelected(null);
                 }
-                console.log("onKilled");
-                console.log(typeof this.nullzoneGraphic);
-                if (this.nullzoneGraphic !== undefined) {
+                // console.log("onKilled");
+                // console.log(typeof this.nullzoneGraphic);
+                if (this.nullzoneGraphic) {
                     this.nullzoneGraphic.destroy();
+                    this.nullzoneGraphic = null;
                 }
                 if (this.burningSprite) {
                     this.burningSprite.animations.destroy();
                     this.burningSprite.destroy();
+                    this.burningSprite = null;
                 }
             } catch (e) {
 
@@ -1002,7 +1004,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         this.elementalRuneDiminishing = {};
         this.realSpeed = ko.computed(function () {
             var speed = this.speed;
-            console.log(this.speed);
             if (!this.heavy || this.statusEffects.chilled() < 100) { //Heavy enemies are only impacted by chill when they are fully frozen.
                 speed -= speed * (this.statusEffects.chilled() * 0.01);
             }

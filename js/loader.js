@@ -20,10 +20,6 @@ requirejs.config({
             deps: [],
             exports: 'jQuery'
         },
-        'lib/jquery.qtip': {
-            deps: ['lib/jquery'],
-            exports: 'jQuery.fn.qtip'
-        },
         'lib/bignumber': {
             deps: [],
             //exports: 'BigNumber'
@@ -46,19 +42,10 @@ requirejs.config({
         'lib/jstree': {
             deps: ['lib/jquery']
         },
-        'inc_tower': {
-            deps: ['phaser', 'lodash', 'knockout', 'ko.observableDictionary', 'jquery.qtip', 'bignumber', 'moment',  'jquery-ui',  'jstree' ]
-        },
-        'Tower.class': {
-            deps: ['inc_tower']
-        },
-        'Enemy.class': {
-            deps: ['inc_tower']
-        }
     }
 });
 
-requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incTower/tooltips', 'lib/jquery.qtip', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave'],
+requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incTower/tooltips', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave'],
     function(incTower, $, BigNumber, ko, tooltips) {
     $(document).ready(function () {
         'use strict';
@@ -108,7 +95,11 @@ requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incT
             core: {
                 data: incTower.skillTreeData(),
                 multiple: false,
-                check_callback: true
+                check_callback: true,
+                'themes': {
+                    'name': 'proton',
+                    'responsive': true
+                }
             }
         });
         $('#sortable_queue').sortable({

@@ -1,5 +1,8 @@
 define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lodash', 'lib/ko.observableDictionary', 'lib/jstree', 'incTower/util',  'incTower/tooltips'], function (incTower, ko, BigNumber, moment, _) {
     'use strict';
+
+
+
     var humanizeNumber = incTower.humanizeNumber;
     incTower.skillAttributes = {
         construction: {
@@ -105,14 +108,17 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         },
         shrapnelAmmo: {
             fullName: 'Shrapnel Ammo',
-            baseCost: 20,
+            baseCost: 900,
             growth: 1.1,
-            maxLevel: 5,
+            maxLevel: 1,
             describeRank: function (rank) {
-                return 'There is a ' + (5 * rank) + '% chance on hit that the target will bleed for 100% of tower damage.';
+                return 'Allows your kinetic towers to be equipped with shrapnel rounds which will do less damage initially but will always cause bleeding.';
             },
             grants: {
-                5: ['anticoagulants']
+                1: ['anticoagulants']
+            },
+            onMax: function () {
+                incTower.addToObsArray(incTower.towerAttributes.kinetic.ammoTypes, 'shrapnel')
             }
         },
         anticoagulants: {
@@ -452,8 +458,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         //Whenever the active skill changes make sure our tooltip updates
         incTower.checkTooltips();
     });
-    incTower.skillTreeUpdateLabel = function (skillName) {
-        'use strict';
+    incTower.getSkillTreeLabel = function (skillName) {
         var maxLevel = incTower.skillAttributes[skillName].maxLevel;
         if (maxLevel === undefined) {
             maxLevel = '&infin;';
@@ -464,11 +469,21 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             currentLevel = incTower.getSkillLevel(skillName);
             stars = _.repeat('&#9733;', Math.floor(currentLevel / 20));
         }
-
-
-        var label = incTower.skillAttributes[skillName].fullName + stars + ' (' + currentLevel + ' / ' + maxLevel + ')';
-        $('#skills_tree').jstree('rename_node', '#' + skillName, label);
+        return incTower.skillAttributes[skillName].fullName + stars + ' (' + currentLevel + ' / ' + maxLevel + ')';
     };
+    incTower.skillTreeUpdateLabel = function (skillName) {
+        $('#skills_tree').jstree('rename_node', '#' + skillName, incTower.getSkillTreeLabel(skillName));
+    };
+    incTower.skillTreeMode = ko.observable('tree');
+    incTower.skillTreeMode.subscribe(function (newVal) {
+       if (newVal === 'flat') {
+           $('#skills_tree').jstree(true).settings.core.data = incTower.skillTreeDataFlat();
+           $('#skills_tree').jstree(true).refresh();
+       } else {
+           $('#skills_tree').jstree(true).settings.core.data = incTower.skillTreeData();
+           $('#skills_tree').jstree(true).refresh();
+       }
+    });
     incTower.checkQueue = function () {
         'use strict';
         while (true) {
@@ -746,7 +761,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         return incTower.skills.get(name)() !== null;
     };
     incTower.getActiveSkillName = function () {
-        'use strict';
         var active = incTower.activeSkill();
         if (active in incTower.skillAttributes) {
             return incTower.skillAttributes[active].fullName;
@@ -754,7 +768,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         return '';
     };
     incTower.skillRate = function () {
-        'use strict';
         return 1 + 0.1 * incTower.prestigePoints();
     };
     incTower.timeUntilSkillUp = function (pointDiff) {
@@ -829,15 +842,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         return this.skills.get(this.activeSkill())().get('skillPoints')().dividedBy(this.skills.get(this.activeSkill())().get('skillPointsCap')()).times(100);
     },incTower);
     incTower.skillTreeData = function () {
-        'use strict';
         var data = [];
         function addSkillToData (skill, parent) {
             if (parent === undefined) { parent = "#"; }
-            var maxLevel = incTower.skillAttributes[skill].maxLevel;
-            if (maxLevel === undefined) { maxLevel = '&infin;'; }
-            var currentLevel = '--';
-            if (incTower.haveSkill(skill)) { currentLevel = incTower.getSkillLevel(skill); }
-            var label = incTower.skillAttributes[skill].fullName + ' (' + currentLevel + ' / ' + maxLevel + ')';
+            var label = incTower.getSkillTreeLabel(skill);
             data.push({id: skill, parent: parent, text: label });
             if (incTower.skillAttributes[skill].grants !== undefined) {
                 var origin = skill;
@@ -849,6 +857,30 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
         return data;
     };
+    incTower.skillTreeDataFlat = function () {
+        var data = [];
+        function addSkillToData (skill) {
+            var currentLevel = '--';
+            if (incTower.haveSkill(skill)) { currentLevel = incTower.getSkillLevel(skill); }
+            var maxLevel = incTower.skillAttributes[skill].maxLevel;
+            if (incTower.skillAttributes[skill].grants !== undefined) {
+                _.map(incTower.possibleGrants(skill), function (skill) {
+                    addSkillToData(skill);
+                });
+            }
+            if (maxLevel !== undefined && currentLevel !== '--' && currentLevel === maxLevel) {
+                return;
+            }
+
+            var label = incTower.getSkillTreeLabel(skill);
+            data.push({id: skill, parent: '#', text: label });
+
+        }
+        _.map(incTower.startingSkills,function (skill) { addSkillToData(skill); });
+        data = _.sortBy(data, ['text']);
+        return data;
+    };
+
     _.forEach(incTower.startingSkills, function (skill) {
         if (!incTower.haveSkill(skill)) {
             incTower.gainSkill(skill);

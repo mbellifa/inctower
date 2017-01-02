@@ -14,15 +14,16 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
         incTower.deadBullets[frame].push(bullet);
         var damage = bullet.damage;
+        if (bullet.ammoType === 'shrapnel') { // Shrapnel rounds cause half the damge up front and automatically cause half of the remaining damage as bleeding.
+            damage = damage.times(0.5);
+            incrementObservable(enemy.statusEffects.bleeding, damage.times(0.5));
+        }
+
         var towerType = firingTower.towerType;
+
         var adaptiveSkill = incTower.getEffectiveSkillLevel('adaptiveUpgrades');
         if (adaptiveSkill > 0) {
             incrementObservable(firingTower.remainingUpgradeCost, enemy.goldValue().times(0.001 * adaptiveSkill).neg());
-        }
-        if (towerType === 'kinetic') {
-            if (incTower.game.rnd.frac() < (0.05 * incTower.getEffectiveSkillLevel('shrapnelAmmo'))) {
-                incrementObservable(enemy.statusEffects.bleeding, damage);
-            }
         }
         enemy.assignDamage(damage,towerType);
         if (towerType === 'fire' || towerType === 'water' || towerType === 'air' || towerType === 'earth') {
@@ -125,12 +126,12 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var currentTime = incTower.game.time.now;
         incTower.updateRealTime();
 
-
         if ((!incTower.generatingEnemies) && (incTower.enemys.countLiving() === 0)) {
             if (incTower.wave() > 0) {
                 //Save state
+
                 var saveData = JSON.stringify(saveManager.createSaveObj(incTower));
-                $('#b64_save').val(btoa(saveData));
+                document.getElementById('b64_save').innerHTML = btoa(saveData);
                 localStorage.setItem("save",saveData);
             }
             incTower.nukeEnemies();
@@ -200,8 +201,11 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         incTower.game.physics.arcade.overlap(incTower.bullets, incTower.enemys, collisionHandler, null, this);
     }
 
-
-    incTower.game = new Phaser.Game(800, 608, Phaser.AUTO, 'gameContainer', {preload: preload, create: create, update: update}, false, false);
+    var mode = Phaser.AUTO;
+    if (navigator.userAgent.match(/Trident.*rv\:11\./) || navigator.userAgent.indexOf("Edge/") > -1 || navigator.userAgent.indexOf("MSIE ") > -1) {
+        mode = Phaser.CANVAS; // IE has a memory leak with WebGL for some reason so we force it to use Canvas in this case.
+    }
+    incTower.game = new Phaser.Game(800, 608, mode, 'gameContainer', {preload: preload, create: create, update: update}, false, false);
     return incTower;
 
 });

@@ -29,6 +29,9 @@ define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
             if (incTower.cursor().textIndicator) {
                 incTower.cursor().textIndicator.destroy();
             }
+            if (incTower.pathProspectiveGraphic !== undefined) {
+                incTower.pathProspectiveGraphic.clear();
+            }
         }
         incTower.cursor(false);
     };
