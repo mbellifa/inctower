@@ -63,7 +63,7 @@
                             data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
                 </div>
                 <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
-                <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span
+                <div data-bind="if: prestigePoints() > 0 || prestigePointsNext() > 0"><b>Prestige</b>: <span
                         data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }"
                         class="tooltip"></span> <span
                         data-bind="if: prestigePointsNext() > 0"><b>(Next Reset:</b> +<span
