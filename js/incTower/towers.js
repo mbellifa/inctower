@@ -98,6 +98,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
 
             }));
+        } else {
+            incTower.clearCursor();
         }
     };
     incTower.totalTowerDamage = ko.pureComputed(function () {
@@ -196,24 +198,249 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             name: 'Bullet',
             describe: function () {
                 return 'These basic bullets have a medium range and inflict kinetic damage.';
+            },
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'kinetic');
             }
         },
         shrapnel: {
             name: 'Shrapnel Rounds',
             describe: function () {
                 return 'These rounds explode once they penetrate causing intense internal bleeding. They deal less kinetic damage upfront but always cause a bleed for a significant portion of the damage.';
+            },
+            damageModifier: 0.5, //Does 50% of normal kinetic damage.
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'kinetic');
+                incrementObservable(enemy.statusEffects.bleeding, bullet.damage.times(0.5));
             }
         },
-        quack: {
-            name: 'Quack',
+        arcaneOrb: { //TODO: Implement
+            name: 'Arcane Orb',
             describe: function () {
-                return 'Test';
+                return 'Fires an Arcane Orb which deals arcane damage and grants 1 mana on-hit.';
+            },
+            icon: 'arcane-element.png',
+            bulletSprite: 'arcane-bullet.png',
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'arcane');
+                if (incTower.mana().lt(incTower.maxMana())) {
+                    incrementObservable(incTower.mana, 1);
+                }
+            }
+        },
+        /*
+         if (towerType === 'fire' || towerType === 'water' || towerType === 'air' || towerType === 'earth') {
+         }
+*/
+        airOrb: {
+            name: 'Air Orb',
+            describe: function () {
+                return "Fires a air orb which deals earth damage and has a chance to attach a air rune to an enemy.";
+            },
+            icon: 'air-element.png',
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'air');
+                var chance = 0.10; //10% base chance of applying a rune
+                chance += (0.05 * incTower.getEffectiveSkillLevel('airRuneApplication')); //increases by 5% per rank in the relevant skill
+                var runesAdded = enemy.addElementalRunesDiminishing('air', chance);
+                if (runesAdded > 0) {
+                    enemy.addElementalRunesDiminishing('air',0.05 * incTower.getEffectiveSkillLevel('airAdvancedRuneApplication'));
+                }
+
+            }
+        },
+
+        earthOrb: {
+            name: 'Earth Orb',
+            describe: function () {
+                return "Fires a fire orb which deals earth damage and has a chance to attach a earth rune to an enemy.";
+            },
+            icon: 'earth-element.png',
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'earth');
+                var chance = 0.10; //10% base chance of applying a rune
+                chance += (0.05 * incTower.getEffectiveSkillLevel('earthRuneApplication')); //increases by 5% per rank in the relevant skill
+                var runesAdded = enemy.addElementalRunesDiminishing('earth', chance);
+                if (runesAdded > 0) {
+                    enemy.addElementalRunesDiminishing('earth',0.05 * incTower.getEffectiveSkillLevel('earthAdvancedRuneApplication'));
+                }
+            }
+
+        },
+        fireOrb: {
+            name: 'Fire Orb',
+            describe: function () {
+                return "Fires a fire orb which deals fire damage and has a chance to attach a fire rune to an enemy.";
+            },
+            icon: 'fire-element.png',
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'fire');
+                var chance = 0.10; //10% base chance of applying a rune
+                chance += (0.05 * incTower.getEffectiveSkillLevel('fireRuneApplication')); //increases by 5% per rank in the relevant skill
+                var runesAdded = enemy.addElementalRunesDiminishing('fire', chance);
+                if (runesAdded > 0) {
+                    enemy.addElementalRunesDiminishing('fire',0.05 * incTower.getEffectiveSkillLevel('fireAdvancedRuneApplication'));
+                }
+            }
+        },
+        waterOrb: {
+            name: 'Water Orb',
+            describe: function () {
+                return "Fires a water orb which deals fire damage and has a chance to attach a water rune to an enemy.";
+            },
+            icon: 'water-element.png',
+            collision: function (tower, bullet, enemy) {
+                enemy.assignDamage(bullet.damage, 'water');
+                var chance = 0.10; //10% base chance of applying a rune
+                chance += (0.05 * incTower.getEffectiveSkillLevel('waterRuneApplication')); //increases by 5% per rank in the relevant skill
+                var runesAdded = enemy.addElementalRunesDiminishing('water', chance);
+                if (runesAdded > 0) {
+                    enemy.addElementalRunesDiminishing('water',0.05 * incTower.getEffectiveSkillLevel('waterAdvancedRuneApplication'));
+                }
+            }
+        },
+        airCatalyst: {
+            name: 'Air Catalyst',
+            describe: function () {
+                return "Consumes air runes to knock back enemies in an area.";
+            },
+            icon: 'air-element.png',
+            collision: function (tower, bullet, enemy) {
+                var airRunes = enemy.consumeRunes('air');
+                var originX = enemy.x;
+                var originY = enemy.y;
+                var minX = Math.max(0, originX - 32 * airRunes);
+                var maxX = Math.min(800, originX + 32 * airRunes);
+                var minY = Math.max(0, originY - 32 * airRunes);
+                var maxY = Math.min(608, originY + 32 * airRunes);
+                var tweenLength = Math.max(500, Math.min(1500, 250 * airRunes - 1));
+
+                var destTileNum = Math.floor(Math.max(0, enemy.curTile - Math.max(1, airRunes)));
+                var kbX = enemy.path[destTileNum].x * 32 + 16; //Knock back X and Y
+                var kbY = enemy.path[destTileNum].y * 32 + 16;
+                var impactedEnemies = [];
+                for (var i = 0; i < incTower.enemys.children.length; i++) {
+                    if (!incTower.enemys.children[i].alive) {
+                        continue;
+                    }
+                    if (incTower.enemys.children[i].x >= minX && incTower.enemys.children[i].x <= maxX && incTower.enemys.children[i].y >= minY && incTower.enemys.children[i].y <= maxY) {
+                        impactedEnemies.push(incTower.enemys.children[i]);
+                    }
+                }
+                var airDamage = bullet.damage.times(Math.pow(1.2, Math.max(0, airRunes - 1)));
+
+                for (var i = 0; i < impactedEnemies.length; i++) {
+                    impactedEnemies[i].assignDamage(airDamage, 'air');
+                    if (!impactedEnemies[i].heavy && impactedEnemies[i].alive) {
+                        impactedEnemies[i].knockback = true;
+                        impactedEnemies[i].animations.paused = true;
+                        impactedEnemies[i].curTile = destTileNum;
+                        impactedEnemies[i].addDiminishingReturns('air', airRunes * 3);
+                        var tweenModifier = 1;
+                        if (impactedEnemies[i].flying) {
+                            tweenModifier = 2;
+                        }
+                        var tweenTo = {
+                            angle: ['+90', '+180', '+270', '+360'],
+                            x: [maxX, maxX, minX, minX],
+                            y: [minY, maxY, maxY, minY]
+                        };
+                        //If we are in the air twice as long we spin around twice instead of once.
+                        if (tweenModifier === 2) {
+                            tweenTo.angle = tweenTo.angle.concat(tweenTo.angle);
+                            tweenTo.x = tweenTo.x.concat(tweenTo.x);
+                            tweenTo.y = tweenTo.y.concat(tweenTo.y);
+                        }
+                        tweenTo.angle.push('+450');
+                        tweenTo.x.push(kbX + incTower.game.rnd.integerInRange(-16, 16));
+                        tweenTo.y.push(kbY + incTower.game.rnd.integerInRange(-16, 16));
+                        var knockbackTween = incTower.game.add.tween(impactedEnemies[i]).to(tweenTo, tweenLength * tweenModifier, "Sine.easeInOut", false);
+                        knockbackTween.onComplete.add(function () {
+                            this.knockback = false;
+                            this.nextTile();
+                        }, impactedEnemies[i]);
+                        knockbackTween.interpolation(Phaser.Math.bezierInterpolation);
+                        knockbackTween.start();
+                    }
+                }
+
+            }
+        },
+        earthCatalyst: {
+            name: 'Earth Catalyst',
+            describe: function () {
+                return "Consumes earth runes to summon a giant boulder from the sky, crushing enemies in an area and causing them to bleed.";
+            },
+            icon: 'earth-element.png',
+            collision: function (tower, bullet, enemy) {
+                var earthRunes = enemy.consumeRunes('earth');
+                var boulder = incTower.game.add.sprite(enemy.x, enemy.y, 'incTower', 'rock' + incTower.game.rnd.integerInRange(1, 3) + '.png');
+                boulder.anchor.setTo(0.5, 0.5);
+                incTower.game.physics.enable(boulder, Phaser.Physics.ARCADE);
+                var bigDim = boulder.width;
+                if (boulder.height > bigDim) {
+                    bigDim = boulder.height;
+                }
+                var endWidth = Math.max(tileSquare * earthRunes * 0.5, tileSquare);
+                var startWidth = endWidth * 4;
+                boulder.damageOnImpact = bullet.damage.times(Math.pow(1.2, Math.max(0, earthRunes - 1)));
+                boulder.scale.x = startWidth / bigDim;
+                boulder.scale.y = startWidth / bigDim;
+
+                var boulderTween = incTower.game.add.tween(boulder.scale).to({
+                    x: endWidth / bigDim,
+                    y: endWidth / bigDim
+                }, 500, Phaser.Easing.Quadratic.In, true);
+                boulderTween.onComplete.add(function () {
+                    incTower.game.physics.arcade.overlap(this, incTower.enemys, function (boulder, enemy) {
+                        enemy.assignDamage(boulder.damageOnImpact, 'earth');
+                        enemy.addDiminishingReturns('earth', earthRunes);
+                        incTower.incrementObservable(enemy.statusEffects.bleeding, boulder.damageOnImpact);
+                    }, null, this);
+                    this.destroy();
+                }, boulder);
+
+
+            }
+        },
+        fireCatalyst: {
+            name: 'Fire Catalyst',
+            describe: function () {
+                return "Consumes fire runes to lighting enemies on fire and increasing the damage that they take from all sources.";
+            },
+            icon: 'fire-element.png',
+            collision: function (tower, bullet, enemy) {
+                var fireRunes = enemy.consumeRunes('fire');
+                incrementObservable(enemy.statusEffects.sensitivity, 20 * fireRunes);
+                incrementObservable(enemy.statusEffects.burning, bullet.damage.times(Math.pow(1.2, Math.max(0, fireRunes - 1))));
+            }
+        },
+        waterCatalyst: {
+            name: 'Water Catalyst',
+            describe: function () {
+                return "Consumes water runes to chilling enemies, slowing their movement speed.";
+            },
+            icon: 'water-element.png',
+            collision: function (tower, bullet, enemy) {
+                var waterRunes = enemy.consumeRunes('water');
+                incrementObservable(enemy.statusEffects.chilled, 50 * waterRunes);
+                if (enemy.statusEffects.chilled().gte(100)) {
+                    incTower.createFloatingText({
+                        'color': '#0000CC',
+                        'duration': 2000,
+                        'around': enemy,
+                        'text': 'Frozen!',
+                        'type': 'frozen'
+                    });
+                    enemy.addDiminishingReturns('water', waterRunes * 3);
+                }
+                enemy.assignDamage(bullet.damage.times(Math.pow(1.2, Math.max(0, waterRunes - 1))), 'water');
             }
         }
     };
     incTower.describeAmmo = function (ammoType) {
         return incTower.ammoAttributes[ammoType].describe();
-    }
+    };
     incTower.describeTower = function (tower) {
         var attribs = incTower.towerAttributes[tower.towerType];
         var ret = '<p><b>Tower:</b> ' + attribs.describe() + '</p>';
@@ -236,6 +463,17 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 return 'Kinetic towers are cheap to build and reliable. Their simpler parts make them cheaper to upgrade as well.';
             },
             ammoTypes: ko.observableArray(['bullet'])
+        },
+        elemental: {
+            name: 'Elemental',
+            baseCost: 100,
+            damagePerLevel: 1,
+            startingRange: 100,
+            startingFireRate: 2500,
+            describe: function () {
+                return 'Elemental towers deal damage and also unlock mystical elemental effects, depending on the ammo chosen.';
+            },
+            ammoTypes: ko.observableArray(['arcaneOrb'])
         },
         earth: {
             name: 'Earth',
@@ -361,6 +599,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         if (tower.icon) {
             tower.icon.destroy();
         }
+        if (tower.levelIndicator) {
+            tower.levelIndicator.destroy();
+        }
         tower.destroy();
 
         incTower.currentlySelected(null);
@@ -402,9 +643,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             if (incTower.towerMaxDamage[this.towerType] === undefined) {
                 incTower.towerMaxDamage[this.towerType] = ko.observable(new BigNumber(0));
             }
-            if ('icon' in incTower.towerAttributes[this.towerType]) {
-                this.icon = incTower.game.add.sprite(worldX + tileSquare / 2, worldY + tileSquare / 2, 'incTower', incTower.towerAttributes[this.towerType].icon);
-            }
             this.ammoType = ko.observable(false);
             if ('ammoTypes' in incTower.towerAttributes[this.towerType]) {
                 if ('ammoType' in opt && incTower.towerAttributes[this.towerType].ammoTypes.indexOf(opt.ammoType) > 0) {
@@ -413,6 +651,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     this.ammoType(incTower.towerAttributes[this.towerType].ammoTypes()[0]);
                 }
             }
+            this.ammoType.subscribe(function () { this.updateIcon(); }, this);
             this.goldSpent = ko.observable(new BigNumber(opt.goldSpent || opt.cost || 0));
             this.worldX = worldX;
             this.worldY = worldY;
@@ -441,6 +680,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 if (this.towerType === 'kinetic') {
                     ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticTowers'));
                     ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticAmmo'));
+                }
+                if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].damageModifier) {
+                    ret = ret.times(incTower.ammoAttributes[this.ammoType()].damageModifier);
                 }
                 return ret;
             }, this);
@@ -481,6 +723,20 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             relativeTowerPowerSubscription.call(this, this.relativeTowerPower());
 
             this.level = ko.observable(opt.level || 1);
+
+            this.level.subscribe(function (newLevel) {
+                this.updateLevelIndicator();
+            }, this);
+            this.levelIndicator = incTower.game.add.text(0, 0, "", {
+                font: "14px Arial",
+                stroke: 'black',
+                strokeThickness: 1,
+                fontWeight: "bold",
+                fill: '#eee',
+                boundsAlignH: "center"
+            });
+            this.levelIndicator.setTextBounds(this.worldX, this.worldY - 2, tileSquare, tileSquare);
+            this.updateLevelIndicator();
             var defaultFireRate = 2000;
             if ('startingFireRate' in incTower.towerAttributes[this.towerType]) {
                 defaultFireRate = incTower.towerAttributes[this.towerType].startingFireRate;
@@ -561,16 +817,39 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             incTower.towers.push(this);
             //Store a reference to ourselves in the tileForbidden array so we can find neighbors.
             path.tileForbidden[tileX][tileY] = this;
+            this.updateIcon();
+
         }
     }
 
     Tower.prototype = Object.create(Phaser.Sprite.prototype);
     Tower.prototype.constructor = Tower;
+    Tower.prototype.updateLevelIndicator = function () {
+        this.levelIndicator.text = this.level();
+    };
     Tower.prototype.add = function (pointer) {
         incTower.game.input.onDown.add(Tower.prototype.posit, this);
     };
+    Tower.prototype.updateIcon = function () {
+        var newIcon = false;
+        if ('icon' in incTower.towerAttributes[this.towerType]) {
+            newIcon = incTower.towerAttributes[this.towerType].icon;
+        }
+        if (!newIcon && this.ammoType()) {
+            var ammoProps = incTower.ammoAttributes[this.ammoType()];
+            if ('icon' in ammoProps) {
+                newIcon = ammoProps.icon;
+            }
+        }
+        if (this.icon) {
+            this.icon.destroy();
+        }
+        if (newIcon) {
+            this.icon = incTower.game.add.sprite(this.worldX + tileSquare / 2, this.worldY + tileSquare / 2, 'incTower', newIcon);
+        }
+    };
     Tower.prototype.upgradeCost = function (byLevel) {
-        'use strict';
+
         if (this.remainingUpgradeCost === undefined) {
             return new BigNumber(0);
         }
@@ -709,6 +988,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 if (enemiesInRange.length > 0) {
                     var chosenEnemy = enemiesInRange[(Math.random() * enemiesInRange.length) | 0];
                     var sprite = 'bullet.png';
+                    if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].bulletSprite) {
+                        sprite = incTower.ammoAttributes[this.ammoType()].bulletSprite;
+                    }
+
                     if (!(sprite in incTower.deadBullets)) {
                         incTower.deadBullets[sprite] = [];
                     }

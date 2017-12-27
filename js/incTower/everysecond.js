@@ -7,12 +7,17 @@ define(['incTower/core', 'lib/bignumber'], function (incTower, BigNumber) {
         var incrementObservable = incTower.incrementObservable;
         incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.manaRegeneration())));
         incTower.checkQueue();
-
+        incrementObservable(incTower.skillPoints, incTower.skillRate());
+        incrementObservable(incTower.gold, incTower.getEffectiveSkillLevel('investment'));
         var skillName = incTower.activeSkill();
         var skill = incTower.skills.get(skillName)();
         if (skill !== null) {
-            incrementObservable(skill.get('skillPoints'), incTower.skillRate());
-            while (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
+            var transferAmount = BigNumber.min(skill.get('skillPointsCap')(), incTower.skillPoints());
+            incrementObservable(incTower.skillPoints, transferAmount.neg());
+            skill.get('skillPoints')(skill.get('skillPoints')().add(transferAmount));
+
+            //incrementObservable(skill.get('skillPoints'), incTower.skillRate());
+            while (incTower.activeSkill() && skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
                 skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
                 incrementObservable(skill.get('skillLevel'));
                 //console.log(incTower.activeSkill());
@@ -73,7 +78,7 @@ define(['incTower/core', 'lib/bignumber'], function (incTower, BigNumber) {
                 if (effect().gt(0)) {
                     var reduction = 0.8;
                     if (effectName === 'bleeding') {
-                        reduction = 0.5 + (0.05 * incTower.getEffectiveSkillLevel('anticoagulants'));
+                        reduction = 0.5 + (0.0125 * incTower.getEffectiveSkillLevel('anticoagulants'));
                     }
                     effect(effect().times(reduction));
                     if (effectName === 'burning') {
@@ -94,35 +99,6 @@ define(['incTower/core', 'lib/bignumber'], function (incTower, BigNumber) {
                 if (dim < 0.5) { return 0; }
                 return dim * 0.95;
             });
-            var reaction = false;
-            _.forEach(enemy.elementalRunes, function (rune) {
-                var chance = 0.1; //Base 10% chance for each rune to start a reaction
-                chance *= Math.pow(0.97, enemy.elementalRuneDiminishing[rune.runeType] || 0); //Reduced chance based on diminishing returns
-                if (incTower.game.rnd.frac() < chance) {
-                    reaction = rune.runeType;
-                    return false;
-                }
-            });
-            if (reaction) {
-                var newElementalRunes = [];
-                var eligibleToReact = {};
-                eligibleToReact[reaction] = true;
-                var reactionCounts = {};
-                _.forEach(enemy.elementalRunes, function (rune) {
-                    var runeType = rune.runeType;
-                    if (runeType in eligibleToReact) {
-                        if (!(runeType in reactionCounts)) { reactionCounts[runeType] = 0; }
-                        reactionCounts[runeType]++;
-                        rune.destroy();
-                    } else {
-                        newElementalRunes.push(rune);
-                    }
-                });
-                enemy.elementalRunes = newElementalRunes;
-                enemy.repositionRunes();
-                enemy.performReaction(reaction, reactionCounts);
-                //Run the reaction
-            }
         });
     };
 });

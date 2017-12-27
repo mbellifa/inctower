@@ -16,14 +16,17 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
         }
         incTower.currentlySelectedIndicator.x = value.x; //+ (tileSquare / 2);
         incTower.currentlySelectedIndicator.y = value.y; //+ (tileSquare / 2);
-
     });
 
     incTower.currentlySelectedIndicator = null; //Holds the graphic we'll use to show what we have selected.
     incTower.farmMode = ko.observable(false);
     incTower.prevWave = function () {
         //We subtract 2 because once the enemies are gone it will increment the wave by one.
-        incTower.incrementObservable(incTower.wave, -2);
+        var waveAmount = -2;
+        if (incTower.farmMode()) {
+            waveAmount = -1;
+        }
+        incTower.incrementObservable(incTower.wave, waveAmount);
         incTower.nukeEnemies();
     };
     incTower.toMaxWave = function () {
@@ -109,8 +112,8 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
         return ['1', '2', '3', '4', '5', '6', '7', '8', '9'][i];
     };
     incTower.goldPerWave = function (wave) {
-        return incTower.costCalc(30, wave, 1.2);
+        return incTower.costCalc(30, wave, 1.2).times(1 + (0.01 * incTower.getEffectiveSkillLevel('marketConnections')));
     };
 
-    console.log(incTower);
+//    console.log(incTower);
 });

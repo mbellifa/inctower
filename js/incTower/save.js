@@ -33,9 +33,9 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                     } else if (_.isNumber(curVal) || _.isBoolean(curVal) || _.isString(curVal)) {
                         incTower[prop](save[prop]);
                     } else {
-                        console.log(prop);
-                        console.log(save[prop]);
-                        console.log(curVal);
+                        // console.log(prop);
+                        // console.log(save[prop]);
+                        // console.log(curVal);
                         //should be a big number if we're getting here.
                         incTower[prop](new BigNumber(save[prop]));
                     }
@@ -47,19 +47,23 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
         }
         if ('towerBlueprints' in save) {
             _.mapValues(save.towerBlueprints, function(blueprintPoints, towerType) {
+                if (towerType === 'fire' || towerType === 'water' || towerType === 'earth' || towerType === 'air') {
+                    towerType = 'elemental'; // All of the old elemental towers blueprint points get added into elementals
+                }
+
                 if (!_.has(incTower.towerBlueprints, towerType)) {
                     incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
                 }
-                incTower.towerBlueprints[towerType](new BigNumber(blueprintPoints));
+                incTower.towerBlueprints[towerType](incTower.towerBlueprints[towerType]().plus(new BigNumber(blueprintPoints)));
             });
         }
         if ('blocks' in save) {
             _.forEach(incTower.blocks(), function (block) {
-                incTower.core.map.putTile(30,block.x,block.y,"Ground");
+                incTower.core.map.putTile(30,block.x,block.y);
             });
             incTower.blocks([]);
             _.forEach(save.blocks, function (block) {
-                incTower.core.map.putTile(incTower.game.rnd.integerInRange(5,8),block.x,block.y,"Ground");
+                incTower.core.map.putTile(incTower.game.rnd.integerInRange(5,8),block.x,block.y);
                 incTower.blocks.push({x:block.x, y: block.y});
             });
             path.recalcPath();
@@ -78,8 +82,14 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             incTower.towers([]);
 
             _.forEach(save.towers, function (tower) {
+                //console.log(tower);
                 var tileY = tower.tileY;
                 var tileX = tower.tileX;
+                //If our save contains old elemental towers we convert them to elemental towers of the same type
+                if (tower.towerType === 'water' || tower.towerType === 'fire'  || tower.towerType === 'air'  || tower.towerType === 'earth') {
+                    tower.ammoType = tower.towerType + 'Orb';
+                    tower.towerType = 'elemental';
+                }
                 var index = incTower.core.map.layers[0].data[tileY][tileX].index;
                 if (index >= 5 && index <= 8) {
                     incTower.createTower(tower);

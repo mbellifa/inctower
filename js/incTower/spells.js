@@ -25,7 +25,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
     }, incTower);
     incTower.rawMaxMana = ko.observable(new BigNumber(0));
     incTower.percentageMaxMana = ko.computed(function () {
-        'use strict';
         if (this.maxMana().eq(0)) {
             return 0;
         }
@@ -34,7 +33,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
 
     incTower.mana = ko.observable(new BigNumber(0));
     incTower.describeManaRegeneration = ko.pureComputed(function () {
-        return 'Regenerating ' + incTower.manaRegeneration() + ' mana per second.';
+        return 'Regenerating ' + incTower.humanizeNumber(incTower.manaRegeneration()) + ' mana per second.';
     });
     incTower.manaRegeneration = ko.pureComputed(function () {
         return (1 + incTower.getEffectiveSkillLevel('manaRegeneration')) * (1 + 0.05 * incTower.getEffectiveSkillLevel('manaRegenerationAdvanced'));

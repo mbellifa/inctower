@@ -20,7 +20,7 @@
 <body>
 <div class="topnav">
     <span class="header"><a href="http://inctower.reddit.com" target="_blank">Incremental Tower Defense<span
-            class="version">0.2.2</span></a></span>
+            class="version">0.2.3</span></a></span>
     <span class="toplinks">
                 <button data-bind="click: function () { $root.showHelp(); }">Help <span
                         data-bind="if: $root.unreadHelps() > 0"><span data-bind="text: $root.unreadHelps()"
@@ -65,13 +65,15 @@
                 <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
                 <div data-bind="if: prestigePoints() > 0"><b>Prestige</b>: <span
                         data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }"
-                        class="tooltip"></span></div>
-                <div data-bind="if: prestigePointsNext() > 0"><b>Prestige (Next Reset)</b>: <span
+                        class="tooltip"></span> <span
+                        data-bind="if: prestigePointsNext() > 0"><b>(Next Reset:</b> +<span
                         data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }"
-                        class="tooltip"></span><br>
-                    <button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button>
+                        class="tooltip"></span><b>)</b><br>
+                <button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></span>
                 </div>
 
+            </div>
+            <span data-bind="if: incTower.activeSkill()">
                 <b>Currently Training:</b> <span
                     data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }"
                     class="tooltip"></span>.
@@ -83,77 +85,86 @@
                             class="text">Skill up <span
                             data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
                 </div>
-                <div class="progressBar tooltip"
-                     data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
-                    <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span
-                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
-                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-                    <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span
-                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
-                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-                </div>
+            </span>
+            <span data-bind="if: !incTower.activeSkill()">
+                <b>Skill Points:</b> <span
+                    data-bind="text: humanizeNumber(skillPoints())"
+                    class="tooltip" data-tooltip="Skill points naturally accrue over time may also be gained through other means. Points can be spent on skills and when there are items in the skill queue all skill points will go directly to those skills instead of accruing."></span>.
+
+            </span>
+
+            <div class="progressBar tooltip"
+                 data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
+                <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span
+                        class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                        data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span
+                        class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                        data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
             </div>
+
         </div>
         <div id="icons">
-        <div>
-        <div class="icon-header"><b>Build:</b></div>
-        <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn"
-                data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
-            <div class="keybind">Q</div>
-            <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
-            <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
-        </button>
-            <!-- ko foreach: availableTowers -->
-                    <button data-bind="click: function () { $root.buyTower($data); }, attr: { 'data-tooltip': $root.towerAttributes[$data].describe() }"
-                            class="tooltip icon-btn">
-                        <div class="keybind" data-bind="text: $root.towerKeybindLetter($index())"></div>
-                        <div style="width: 32px; height: 32px;"
-                             data-bind="style: { background: $root.towerIconCSS($data) }"></div>
-                        <span data-bind="text: $root.humanizeNumber($root.towerCost($data))"></span>g
-                    </button>
-            <!-- /ko -->
-        </div>
-        <div>
-        <div class="icon-header"><b>Actions:</b></div>
-        <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn"
-                data-tooltip="Sell towers and blocks.">
-            <div class="keybind">S</div>
-            <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
-        </button>
-        <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }"
-                class="tooltip icon-btn">
-            <div class="keybind">L</div>
-            <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
-        </button>
-        <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip"
-                data-tooltip="Upgrade all towers using ALL gold.">
-            <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
-        </button>
-            <!-- ko foreach: availableActions -->
-            <button data-bind="click: function () { $root.castAction($data); }, attr: { 'data-tooltip': $root.actionAttributes[$data].describe() }"
-                            class="tooltip icon-btn">
-                        <div class="keybind" data-bind="text: $root.actionAttributes[$data].keybind"></div>
-                        <div style="width: 32px; height: 32px;"
-                             data-bind="style: { background: $root.actionIconCSS($data) }"></div>
-                    </button>
-            <!-- /ko -->
-        </div>
-        <div data-bind="if: availableSpells().length > 0">
-            <p class="icon-header"><b>Spells:</b> (Spell Level: <span
-                    data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }"
-                    class="tooltip"></span>)</p>
-            <!-- ko foreach: availableSpells -->
+            <div>
+                <div class="icon-header"><b>Build:</b></div>
+                <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn"
+                        data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
+                    <div class="keybind">Q</div>
+                    <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
+                    <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
+                </button>
+                <!-- ko foreach: availableTowers -->
+                <button data-bind="click: function () { $root.buyTower($data); }, attr: { 'data-tooltip': $root.towerAttributes[$data].describe() }"
+                        class="tooltip icon-btn">
+                    <div class="keybind" data-bind="text: $root.towerKeybindLetter($index())"></div>
+                    <div style="width: 32px; height: 32px;"
+                         data-bind="style: { background: $root.towerIconCSS($data) }"></div>
+                    <span data-bind="text: $root.humanizeNumber($root.towerCost($data))"></span>g
+                </button>
+                <!-- /ko -->
+            </div>
+            <div>
+                <div class="icon-header"><b>Actions:</b></div>
+                <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn"
+                        data-tooltip="Sell towers and blocks.">
+                    <div class="keybind">S</div>
+                    <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
+                </button>
+                <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }"
+                        class="tooltip icon-btn">
+                    <div class="keybind">L</div>
+                    <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
+                </button>
+                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip"
+                        data-tooltip="Upgrade all towers using ALL gold.">
+                    <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
+                </button>
+                <!-- ko foreach: availableActions -->
+                <button data-bind="click: function () { $root.castAction($data); }, attr: { 'data-tooltip': $root.actionAttributes[$data].describe() }"
+                        class="tooltip icon-btn">
+                    <div class="keybind" data-bind="text: $root.actionAttributes[$data].keybind"></div>
+                    <div style="width: 32px; height: 32px;"
+                         data-bind="style: { background: $root.actionIconCSS($data) }"></div>
+                </button>
+                <!-- /ko -->
+            </div>
+            <div data-bind="if: availableSpells().length > 0">
+                <p class="icon-header"><b>Spells:</b> (Spell Level: <span
+                        data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }"
+                        class="tooltip"></span>)</p>
+                <!-- ko foreach: availableSpells -->
 
-            <button data-bind="click: function () { $root.castSpell($data); }, attr: { 'data-tooltip': $root.spellAttributes[$data].describe() }"
-                    class="tooltip icon-btn">
-                <div class="keybind" data-bind="text: $root.spellKeybindLetter($index())"></div>
-                <div style="width: 32px; height: 32px; border: 1px solid black;"
-                     data-bind="style: { background: $root.spellIconCSS($data) }"></div>
-                <span data-bind="text: $root.humanizeNumber($root.spellAttributes[$data].trueManaCost())"></span> Mana
-            </button>
-            <!-- /ko -->
+                <button data-bind="click: function () { $root.castSpell($data); }, attr: { 'data-tooltip': $root.spellAttributes[$data].describe() }"
+                        class="tooltip icon-btn">
+                    <div class="keybind" data-bind="text: $root.spellKeybindLetter($index())"></div>
+                    <div style="width: 32px; height: 32px; border: 1px solid black;"
+                         data-bind="style: { background: $root.spellIconCSS($data) }"></div>
+                    <span data-bind="text: $root.humanizeNumber($root.spellAttributes[$data].trueManaCost())"></span>
+                    Mana
+                </button>
+                <!-- /ko -->
 
-        </div>
+            </div>
         </div>
         <div id="buyBlockActive"
              data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
@@ -177,7 +188,8 @@
         <div data-bind="if: currentlySelected()">
             <div>
                 <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
-                    <div style="float: right; width: 50%; background-color: lightgrey; padding: 0 0.5em;" data-bind="html: $root.describeTower(currentlySelected())"></div>
+                    <div style="float: right; width: 50%; background-color: lightgrey; padding: 0 0.5em;"
+                         data-bind="html: $root.describeTower(currentlySelected())"></div>
                     <p><b>Currently Selected Tower:</b> <span data-bind="if: currentlySelected().support">
                                 <span data-bind="attr: { 'data-tooltip': $root.towerAttributes[currentlySelected().towerType].describeSupport($root.currentlySelected()) }"
                                       class="tooltip">
@@ -199,10 +211,10 @@
                             }
                         "></select>
                     </div>
-                    <button data-bind="click: function () { PayToUpgradeTower(currentlySelected()); }">Upgrade (<span
+                    <button data-bind="click: function () { currentlySelected().payToUpgrade(); }">Upgrade (<span
                             data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)
                     </button>
-                    <button data-bind="click: function () { SellTower(currentlySelected()); }">Sell (<span
+                    <button data-bind="click: function () { currentlySelected().sell(); }">Sell (<span
                             data-bind="text: humanizeNumber(currentlySelected().goldSpent().times(incTower.sellTowerPer()))"></span>g)
                     </button>
                     <div data-bind="if: currentlySelected().buffs().length > 0">
@@ -277,7 +289,9 @@
         (Redshrike), hosted by OpenGameArt.org <a
                 href="http://opengameart.org/content/16x16-16x24-32x32-rpg-enemies-updated">here</a> and <a
                 href="http://opengameart.org/content/a-load-of-overworld-34-rpg-sprites">here</a>.</p>
-    <p>Proton theme for jstree from <a href="https://github.com/orangehill/jstree-bootstrap-theme">Orange Hill Development</a>.</p>
+    <p>Proton theme for jstree from <a href="https://github.com/orangehill/jstree-bootstrap-theme">Orange Hill
+        Development</a>.</p>
+    <p>Arcane Orb icon and bullet from <a href="http://www.amon.co">Amon</a> on <a href="https://opengameart.org/content/magic-orbs">OpenGameArt</a>.</p>
 
 </div>
 <div id="save" title="Saves">
@@ -288,7 +302,8 @@
     </p>
 </div>
 <div id="skills" title="Skills">
-    <input type="radio" name="skillTreeMode" value="tree" data-bind="checked: skillTreeMode"> Tree | <input type="radio" name="skillTreeMode" value="flat" data-bind="checked: skillTreeMode"> Flat
+    <input type="radio" name="skillTreeMode" value="tree" data-bind="checked: skillTreeMode"> Tree | <input
+        type="radio" name="skillTreeMode" value="flat" data-bind="checked: skillTreeMode"> Flat
     <div id="skills_tree">
     </div>
     <div id="skills_desc">
@@ -336,20 +351,84 @@
 <div id="changelog" title="Changelog">
     <p>Changelog:</p>
     <ul>
+        <li>Version 0.2.3:
+            <ul>
+                <li>2017-12-16: Prestige points are now awarded at a curve starting at 1 instead of 4. In addition to encourage deep runs there is an overall multiplier added every 100 waves. E.g. 2x prestige at Wave 201 and above, 3x prestige at 301 and above.</li>
+                <li>2017-12-26: Fixed a bug with the previous wave button that decremented two waves instead of one when in farm mode (Github Issue #8). Thanks desci!</li>
+                <li>2017-12-26: Clicking a button or keybind for a tower will now clear the cursor if you do not have a sufficient amount of gold for that type of tower (Github Issue #8). Thanks desci!</li>
+                <li>2017-12-26: There are now white level indicators overlayed on all towers.</li>
+                <li>2017-12-26: Added Market Connections as a new secondary skill under investment.</li>
+                <li>2017-12-26: Added a new starting skill and branch called Investment.</li>
+                <li>2017-12-26: As part of rebalancing skill times anti-coagulants was massively reduced in skill points cost. The effect has been reduced accordingly from 5% / rank to 1.25% / rank. Meaning that it now requires level 20 to halt bleeding reduction instead of rank 10, however the skill point cost has been massively reduced.</li>
+                <li>2017-12-21: Fixed a bug preventing stored skill points from being applied to new skill training.</li>
+                <li>2017-12-21: Related to the entry below, added the ability for ammo types to have their own bullet sprites.</li>
+                <li>2017-12-21: Added Arcane icon for Arcane Orb ammo on magic towers.</li>
+                <li>2017-12-21: Upgraded Phaser.js to 2.9.4 (community edition).</li>
+                <li>2017-08-20: Changed the mana regeneration display to prettify in the numbers.</li>
+                <li>2017-08-20: Implemented the arcane orb ammo type which grants +1 mana on hit and causes arcane damage.</li>
+                <li>2017-04-29: Upgraded Knockout.js to 3.4.2, BigNumber.js
+                    to 4.0, EasyStar.js to 0.4.1, jsTree to 3.3.3, and moment.js to 2.17.1.
+                </li>
+                <li>2017-03-20: It is now possible to not be actively learning a skill, doing so accrues skillpoints which can then be spent on a skill.</li>
+                <li>2017-03-11: The bug where nullzoned enemies were leaving behind their nullzones appears to be
+                    quashed.
+                </li>
+
+                <li>2017-02-05: Along with the previous change the elemental rune reaction system has been folded
+                    into ammo types. Previously runes had a chance every second to proc their reaction which was
+                    subject entirely to RNG. Now there are elemental catalyst ammo types which consume the given
+                    type of elemental rune and cause that reaction.
+                </li>
+                <li>2017-01-17: Fire, earth, water, air towers collapsed into elemental towers, previously gained
+                    blueprint points should be converted to the new towers.
+                </li>
+                <li>2017-01-14: Significant nerf to prestige. Rather than each point granting 10% increase to learn
+                    rate each point grants 1% and is subjected to diminishing returns after 100% increase. This was
+                    done because these large linear increases meant that after the first prestige, usually
+                    regardless of when you prestiged, all non-infinite skill costs become negligable. This also
+                    encourages deeper runs to counter-act the diminishing returns. To account for this nearly all
+                    skills will be adjusted down, including the scaling of infinite skills.
+                </li>
+
+                <li>2017-01-08: Tweaked tooltips to increase the buffer between the mouse and actual tooltip and
+                    cancel the tooltip if you mouse over the tooltip to prevent tooltips from blocking buttons.
+                </li>
+            </ul>
+        </li>
         <li>Version 0.2.2:
             <ul>
-                <li>2017-01-02: For the ammo change below the shrapnel ammo skill has been replaced with a 1 rank skill that simply grants the ammo type.</li>
+                <li>2017-01-02: For the ammo change below the shrapnel ammo skill has been replaced with a 1 rank
+                    skill that simply grants the ammo type.
+                </li>
                 <li>2017-01-02: Upgraded jQuery-UI (for dialogs) to 1.12.1.</li>
-                <li>2017-01-02: Added a grey box which describes a tower including its general description, support function if it has one, and ammo if it has it. This replaces the very small support tower description that existed before.</li>
-                <li>2016-12-26: Added an ammo system (currently only for kinetic towers). This allows one tower to have different modes. Currently there is only regular bullets and shrapnel rounds (which are learned) for kinetic towers.</li>
-                <li>2016-12-17: Finally squashed the IE11/Edge memory leak bug. Apparently the canvas renderer will not leak in IE but WebGL will.</li>
-                <li>2016-12-14: The tooltip library previously being used (qTip) does not support jQuery 3.x so I have removed it and rewritten tooltips without the library or jQuery.</li>
-                <li>2016-12-14: Upgraded jQuery to the 3.x branch. Phaser itself does not support IE8 so this shouldn't change the compatibility for the game overall</li>
+                <li>2017-01-02: Added a grey box which describes a tower including its general description, support
+                    function if it has one, and ammo if it has it. This replaces the very small support tower
+                    description that existed before.
+                </li>
+                <li>2016-12-26: Added an ammo system (currently only for kinetic towers). This allows one tower to
+                    have different modes. Currently there is only regular bullets and shrapnel rounds (which are
+                    learned) for kinetic towers.
+                </li>
+                <li>2016-12-17: Finally squashed the IE11/Edge memory leak bug. Apparently the canvas renderer will
+                    not leak in IE but WebGL will.
+                </li>
+                <li>2016-12-14: The tooltip library previously being used (qTip) does not support jQuery 3.x so I
+                    have removed it and rewritten tooltips without the library or jQuery.
+                </li>
+                <li>2016-12-14: Upgraded jQuery to the 3.x branch. Phaser itself does not support IE8 so this
+                    shouldn't change the compatibility for the game overall
+                </li>
                 <li>2016-12-10: Upgraded Knockout.js to 3.4.1</li>
-                <li>2016-12-02: Added a flat skill mode which allows you to view only skills that you can place points in without the extra hierarchy information.</li>
+                <li>2016-12-02: Added a flat skill mode which allows you to view only skills that you can place
+                    points in without the extra hierarchy information.
+                </li>
                 <li>2016-12-02: Fixed bug where stars weren't showing on infinite skills for every 20 ranks.</li>
-                <li>2016-11-28: Added Proton theme to skills dialog to hopefully make it much clearer if a skill item can be expandable or not.</li>
-                <li>2016-11-20: Placing a block or selling a block now shows what the new path would look like, if performing that action would change the path.</li>
+                <li>2016-11-28: Added Proton theme to skills dialog to hopefully make it much clearer if a skill
+                    item can be expandable or not.
+                </li>
+                <li>2016-11-20: Placing a block or selling a block now shows what the new path would look like, if
+                    performing that action would change the path.
+                </li>
 
 
             </ul>
@@ -357,11 +436,15 @@
 
         <li>Version 0.2.1:
             <ul>
-                <li>2016-11-20: Fixed a bug where sensor towers placed on the edge of the map would cause errors/freezing.</li>
+                <li>2016-11-20: Fixed a bug where sensor towers placed on the edge of the map would cause
+                    errors/freezing.
+                </li>
                 <li>2016-11-20: Fixed an issue which caused all save game loads to quit working.</li>
                 <li>2016-11-20: Changed google font load to HTTPS to avoid mixed content warnings.</li>
-                <li>2016-09-04: Added a 'fast forward' button to return to the highest wave you've ever witnessed.</li>
-                <li>2016-09-04: Revised the previous/pause/play buttons into symbols to save space and added tooltips
+                <li>2016-09-04: Added a 'fast forward' button to return to the highest wave you've ever witnessed.
+                </li>
+                <li>2016-09-04: Revised the previous/pause/play buttons into symbols to save space and added
+                    tooltips
                     for each.
                 </li>
                 <li>2016-09-04: Reduced the scaling on nullzone. Now grants 1 space of dampening at rank 1 and an
@@ -371,19 +454,25 @@
                     their announcement.
                 </li>
                 <li>2016-07-10: Added power adjectives and an alternate styling to wave titles.</li>
-                <li>2016-07-06: Each wave is now introduced with a title generated based on the pack that's coming.</li>
-                <li>2016-06-22: Added 6 new sprites (red wizard, black wizard, black golem, blue golem, flying skull,
+                <li>2016-07-06: Each wave is now introduced with a title generated based on the pack that's
+                    coming.
+                </li>
+                <li>2016-06-22: Added 6 new sprites (red wizard, black wizard, black golem, blue golem, flying
+                    skull,
                     turtle).
                 </li>
             </ul>
         </li>
         <li>Version 0.2:
             <ul>
-                <li>2016-06-20: Added versions. I've declared all changes that have been live for the past month and a
-                    half version 0.1, and I dub this version 0.2. The version number now shows next to the title of the
+                <li>2016-06-20: Added versions. I've declared all changes that have been live for the past month and
+                    a
+                    half version 0.1, and I dub this version 0.2. The version number now shows next to the title of
+                    the
                     game.
                 </li>
-                <li>2016-06-20: Linked the header and a new button to Reddit. I'm hoping to build up a community there.
+                <li>2016-06-20: Linked the header and a new button to Reddit. I'm hoping to build up a community
+                    there.
                     Maybe potentially replacing the woefully inadequate help feature with a reddit wiki.
                 </li>
 
@@ -853,7 +942,8 @@
                     increase
                     the science bonus of science towers or regular towers. More to come.
                 </li>
-                <li>2015-05-09: Implemented <b>beta</b> saving feature. It saves the game after the conclusion of each
+                <li>2015-05-09: Implemented <b>beta</b> saving feature. It saves the game after the conclusion of
+                    each
                     wave.
                 </li>
                 <li>2015-05-07: Science levels now increase the effectiveness of towers by a percentage (e.g. 44
@@ -901,9 +991,11 @@
     </ul>
     <p>Todo:</p>
     <ul>
+        <li>Investigate starting path being nearly out of range of the starting tower.</li>
+        <li>Add skills that impact effets, additional damage to frozen targets etc.</li>
+        <li>Generalize support towers using ammo types.</li>
         <li>Nerf anti-coagulants by adding an element of RNG (20% on bleed tick to increase or similar).</li>
-        <li>Look into making prestige logarithmic scaling instead of linear scaling and readjusting the skill times accordingly.</li>
-        <li>If there are no issues with the ammo system on kinetic towers apply the system to elemental/support towers.</li>
+        <li>Add skills that scale on prestige.</li>
         <li>Allow multiple preferred powers so you can have flying + something else for example.</li>
         <li>Clean up selection area.</li>
         <li>Stream-line tower+block commands.</li>
@@ -916,7 +1008,6 @@
         <li>Look into traps (don't block pathing)</li>
         <li>Look into spells that affect towers.</li>
         <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
-        <li>Look into indicators for tower level.</li>
         <li>Look into music and sound effects (particularly for finishing a skill).</li>
         <li>Revisit blueprint formula.</li>
         <li>Speed settings, maybe just after prestige?</li>
@@ -928,6 +1019,7 @@
         <li>Implement rebuild</li>
         <li>Allow multiple tower selection or rebuild by type</li>
         <li>Investigate a blood pool idea</li>
+        <li>Need icon for shrapnel tower</li>
     </ul>
 </div>
 <script data-main="js/loader" src="js/require.min.js"></script>

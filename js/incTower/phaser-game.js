@@ -13,32 +13,15 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var frame = bullet._frame.name;
         if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
         incTower.deadBullets[frame].push(bullet);
-        var damage = bullet.damage;
-        if (bullet.ammoType === 'shrapnel') { // Shrapnel rounds cause half the damge up front and automatically cause half of the remaining damage as bleeding.
-            damage = damage.times(0.5);
-            incrementObservable(enemy.statusEffects.bleeding, damage.times(0.5));
+        if (bullet.ammoType !== false) {
+            incTower.ammoAttributes[bullet.ammoType].collision(firingTower, bullet, enemy);
+        } else {
+            enemy.assignDamage(bullet.damage, firingTower.towerType);
         }
-
-        var towerType = firingTower.towerType;
-
         var adaptiveSkill = incTower.getEffectiveSkillLevel('adaptiveUpgrades');
         if (adaptiveSkill > 0) {
             incrementObservable(firingTower.remainingUpgradeCost, enemy.goldValue().times(0.001 * adaptiveSkill).neg());
         }
-        enemy.assignDamage(damage,towerType);
-        if (towerType === 'fire' || towerType === 'water' || towerType === 'air' || towerType === 'earth') {
-            var chance = 0.10; //10% base chance of applying a rune
-            chance += (0.05 * incTower.getEffectiveSkillLevel(towerType + 'RuneApplication')); //increases by 5% per rank in the relevant skill
-            var runesAdded = enemy.addElementalRunesDiminishing(firingTower.towerType, chance);
-            if (runesAdded > 0) {
-                enemy.addElementalRunesDiminishing(firingTower.towerType,0.05 * incTower.getEffectiveSkillLevel(towerType + 'AdvancedRuneApplication'));
-            }
-        }
-
-
-
-
-
     }
 
     function preload() {
@@ -70,7 +53,6 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         incTower.game.stage.disableVisibilityChange = true;
         incTower.core.map = incTower.game.add.tilemap('desert');
         incTower.core.map.addTilesetImage('Desert', 'tiles');
-
         incTower.core.layer = incTower.core.map.createLayer('Ground');
         incTower.core.layer.resizeWorld();
         path.recalcPath();

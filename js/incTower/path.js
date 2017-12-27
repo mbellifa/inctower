@@ -39,7 +39,7 @@ define(['incTower/core', 'lib/EasyStar', 'lib/lodash'], function (incTower, Easy
         es.findPath(0,0,24,18,function (p) {
             if (p === null) {
                 var block = incTower.blocks.pop();
-                map.putTile(30, block.x, block.y, "Ground");
+                map.putTile(30, block.x, block.y);
                 incTower.incrementObservable(incTower.gold, incTower.blockCost());
                 pathModule.recalcPath();
                 return;

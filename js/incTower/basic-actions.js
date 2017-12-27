@@ -47,7 +47,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 var cost = incTower.blockCost();
                 if (incTower.gold().gte(cost) && incTower.core.map.layers[0].data[tileY][tileX].index > 8) {
                     incrementObservable(incTower.gold, -cost);
-                    incTower.core.map.putTile(incTower.game.rnd.integerInRange(5, 8), tileX, tileY, "Ground");
+                    incTower.core.map.putTile(incTower.game.rnd.integerInRange(5, 8), tileX, tileY);
                     incTower.blocks.push({x: tileX, y: tileY});
                     _.forEach(pathModule.path, function (pathUnit) {
                         if (pathUnit.x === tileX && pathUnit.y === tileY) {
@@ -166,7 +166,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 return;
             }
             if (tileIndex > 4 && tileIndex < 9 && !pathModule.tileForbidden[tileX][tileY]) {
-                incTower.core.map.putTile(30, tileX, tileY, "Ground");
+                incTower.core.map.putTile(30, tileX, tileY);
                 incrementObservable(incTower.gold, incTower.prevBlockCost());
                 for (var i = 0; i < incTower.blocks().length; i++) {
                     var curBlock = incTower.blocks()[i];

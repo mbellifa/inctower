@@ -5,7 +5,7 @@ define(["incTower/core", 'lib/lodash'], function (incTower, _) {
         if (tooltips.activeTooltip.style.display === 'block') {
             tooltips.activeTooltip.style.display = 'none';
         }
-    }, 200);
+    }, 150);
     tooltips.describedElement = undefined; // Current element having a tooltip displayed on it
     tooltips.init = function () {
         tooltips.activeTooltip = document.createElement('div');
@@ -15,14 +15,9 @@ define(["incTower/core", 'lib/lodash'], function (incTower, _) {
 
         document.body.appendChild(tooltips.activeTooltip);
         document.addEventListener('mouseover', _.debounce(function (e) {
-            //console.log(e);
             var element = e.target;
             while (true) {
                 if (element === null) { break; }
-                if (element === tooltips.activeTooltip) {
-                    tooltips.hoverOffTimeFunc.cancel();
-                    break;
-                }
                 if (element.className.indexOf('tooltip') > -1) {
                     tooltips.describedElement = element;
                     tooltips.hoverOffTimeFunc.cancel();
@@ -30,16 +25,15 @@ define(["incTower/core", 'lib/lodash'], function (incTower, _) {
                     if (tooltips.activeTooltip.style.display !== 'block') {
                         tooltips.activeTooltip.style.display = 'block';
                     }
+                    var buffer = 15;
                     var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
                     var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-                    var left = Math.min(e.pageX + 7, w - 280);
+                    var left = Math.min(e.pageX + buffer, w - 280);
                     left = Math.max(left, 0);
                     var tooltipHeight = getComputedStyle(tooltips.activeTooltip).height;
                     tooltipHeight = parseInt(tooltipHeight.replace('px',''));
-                    console.log(tooltipHeight);
-                    var top = Math.min(e.pageY + 7, h - tooltipHeight);
+                    var top = Math.min(e.pageY + buffer, h - tooltipHeight);
                     top = Math.max(top, 0);
-
                     tooltips.activeTooltip.style.top = top + 'px';
                     tooltips.activeTooltip.style.left = left + 'px';
                     break;

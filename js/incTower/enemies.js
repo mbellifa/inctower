@@ -210,9 +210,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         var eligiblePowers = _.clone(bossPowers);
 
         var randomizeChance = .5;
-        console.log("Preferred Power: " + preferredPower);
+        //console.log("Preferred Power: " + preferredPower);
         var find_power_seen_before = function (power) {
-            console.log(power);
+            //console.log(power);
             var seenBefore = (incTower.seenPowers[power] || 0) + 1;
             var currentPowerLevel = baseEntry.powers[power] || 0;
             if (currentPowerLevel >= incTower.bossPowers[power].maxLevel) {
@@ -240,7 +240,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
             var currentPreferredLevel = baseEntry.powers[preferredPower] || 0;
             var maximumPowerLevel = Math.max(_.max(_.values(baseEntry.powers)) || 0, 0);
-            console.log("Preferred Power: " + preferredPower + " : " + currentPreferredLevel + " <= " + maximumPowerLevel);
+            //console.log("Preferred Power: " + preferredPower + " : " + currentPreferredLevel + " <= " + maximumPowerLevel);
             if (currentPreferredLevel < maximumPowerLevel || maximumPowerLevel === 0) {
 
                 _.pull(eligiblePowers, preferredPower);
@@ -253,7 +253,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     incTower.shuffle(eligiblePowers);
                 }
             }
-            console.log(eligiblePowers);
+//            console.log(eligiblePowers);
             var power = undefined;
             if (power === undefined) {
                 power = _.find(eligiblePowers, find_power_seen_before);
@@ -299,7 +299,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
         });
         baseEntry.title = incTower.getPackName(baseEntry);
-        console.log(baseEntry.title);
         return baseEntry;
 
     };
@@ -321,7 +320,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         } else {
             ret.push(incTower.generateBasePack(normal, totalPowers, incTower.game.rnd.integerInRange(3,7)));
         }
-        console.log(ret);
+        //console.log(ret);
         return ret;
     };
 
@@ -363,8 +362,8 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'dog06.png'
             ],
             power: 'fast',
-            nounSingle: ['Hound', 'Dog'],
-            nounPlural: ['Hounds', 'Dogs']
+            nounSingle: ['Hound', 'Dog', 'Doggo', 'Pupper'],
+            nounPlural: ['Hounds', 'Dogs', 'Doggos', 'Puppers']
         },
         penguin: {
             animation: [
@@ -626,7 +625,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         });
         var packPowers = _.orderBy(powerList, ['level'], ['desc']);
         packPowers.push({'power': 'generic', 'level': 1});
-        console.log(packPowers);
+//        console.log(packPowers);
         var repeat = true;
         while (repeat) {
             repeat = false;
@@ -822,7 +821,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             new Enemy(offset, path.path[0].y * 32 + 16, packEntry);
         }
         var titleColor = incTower.game.rnd.pick(['#FF6746', '#BACDD4', '#DFC67A', '#63A67F', '#B89384']);
-        console.log(titleColor);
         incTower.createFloatingText({
             noFloat: true,
             x: 400,
@@ -902,8 +900,8 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 }
                 this.removeChildren();
                 this.healthbar.destroy();
-                console.log("onDestroy");
-                console.log(typeof this.nullzoneGraphic);
+//                console.log("onDestroy");
+//                console.log(typeof this.nullzoneGraphic);
                 if (this.nullzoneGraphic !== undefined) {
                     this.nullzoneGraphic.destroy();
                 }
@@ -929,6 +927,47 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         }, this);
 
         this.chillSubscription = this.statusEffects.chilled.subscribe(chilledUpdate, this);
+        this.burningSubscription = this.statusEffects.burning.subscribe(function (newBurns) {
+            if (newBurns.gt(0)) {
+                if (this.burningSprite === undefined) {
+                    this.burningSprite = incTower.game.add.sprite(0, -4, 'incTower', "smokefire-0001.png");
+                    this.burningSprite.anchor.setTo(0.5, 0.5);
+                    this.burningSprite.scale.x = 0.5;
+                    this.burningSprite.scale.y = 0.5;
+                    this.burningSprite.angle = 270;
+                    this.addChild(this.burningSprite);
+                    this.burningSprite.animations.add('burn', [
+                        "smokefire-0001.png",
+                        "smokefire-0002.png",
+                        "smokefire-0003.png",
+                        "smokefire-0004.png",
+                        "smokefire-0005.png",
+                        "smokefire-0006.png",
+                        "smokefire-0007.png",
+                        "smokefire-0008.png",
+                        "smokefire-0009.png",
+                        "smokefire-0010.png",
+                        "smokefire-0011.png",
+                        "smokefire-0012.png",
+                        "smokefire-0013.png",
+                        "smokefire-0014.png",
+                        "smokefire-0015.png",
+                        "smokefire-0016.png",
+                        "smokefire-0017.png",
+                        "smokefire-0018.png",
+                        "smokefire-0019.png",
+                        "smokefire-0020.png"
+                    ], 10, true, false);
+                    this.burningSprite.animations.play('burn');
+                } else {
+                    this.burningSprite.visible = true;
+                }
+            } else {
+                if (this.burningSprite !== undefined) {
+                    this.burningSprite.visible = false;
+                }
+            }
+        }, this);
         this.goldValue = ko.observable(opts.goldValue);
         this.healthbar = incTower.game.add.graphics(0, 0);
         this.addChild(this.healthbar);
@@ -1158,7 +1197,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 this.shieldSprite.visible = true;
             }
         }
-        if (this.nullzone > 0) {
+        if (this.nullzone > 0 && this.nullzoneGraphic) {
             this.nullzoneGraphic.x = this.x;
             this.nullzoneGraphic.y = this.y;
             this.nullzoneCircle.x = this.x;
@@ -1233,201 +1272,21 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
     Enemy.prototype.addDiminishingReturns = function (rune, amount) {
         this.elementalRuneDiminishing[rune] = (this.elementalRuneDiminishing[rune] || 0) + amount;
     };
-    Enemy.prototype.performReaction = function (reaction, reactionCounts, opts) {
-        var incrementObservable = incTower.incrementObservable;
-        if (opts === undefined) {
-            opts = {};
-        }
-        if (!this.alive) {
-            return;
-        }
-        if (this.statusEffects === undefined) {
-            return;
-        }
-        for (var key in reactionCounts) {
-            this.addDiminishingReturns(key, reactionCounts[key]);
-        }
-        if (reaction === 'water') {
-            var iceStormChance = reactionCounts.water - 4;
-            if (iceStormChance > 0 && !opts.noStorm && incTower.game.rnd.integerInRange(1, 100) >= iceStormChance) {
-                var newOpts = opts;
-                newOpts.noStorm = true;
-                incTower.enemys.forEachAlive(function (enemy) {
-                    enemy.performReaction(reaction, reactionCounts, newOpts);
-                    incTower.createFloatingText({
-                        'color': '#0000CC',
-                        'duration': 3000,
-                        'around': this,
-                        'text': 'Ice Storm!',
-                        'type': 'iceStorm'
-                    });
-                });
-            }
-            incrementObservable(this.statusEffects.chilled, 50 * reactionCounts.water);
-            if (this.statusEffects.chilled().gte(100)) {
-                incTower.createFloatingText({
-                    'color': '#0000CC',
-                    'duration': 2000,
-                    'around': this,
-                    'text': 'Frozen!',
-                    'type': 'frozen'
-                });
-            }
-            this.assignDamage(this.elementalInstability().times(Math.pow(1.2, Math.max(0, reactionCounts.water - 1))), 'water');
-
-        } else if (reaction === 'fire') {
-            var fireStormChance = reactionCounts.fire - 4;
-            if (fireStormChance > 0 && !opts.noStorm && incTower.game.rnd.integerInRange(1, 100) >= fireStormChance) {
-                var newOpts = opts;
-                newOpts.noStorm = true;
-                incTower.enemys.forEachAlive(function (enemy) {
-                    enemy.performReaction(reaction, reactionCounts, newOpts);
-                    incTower.createFloatingText({
-                        'color': '#CC0000',
-                        'duration': 3000,
-                        'around': this,
-                        'text': 'Fire Storm!',
-                        'type': 'fireStorm'
-                    });
-                });
-            }
-            incrementObservable(this.statusEffects.sensitivity, 20 * reactionCounts.fire);
-            incrementObservable(this.statusEffects.burning, this.elementalInstability().times(Math.pow(1.2, Math.max(0, reactionCounts.fire - 1))));
-            if (this.burningSprite === undefined) {
-                this.burningSprite = incTower.game.add.sprite(0, -4, 'incTower', "smokefire-0001.png");
-                this.burningSprite.anchor.setTo(0.5, 0.5);
-                this.burningSprite.scale.x = 0.5;
-                this.burningSprite.scale.y = 0.5;
-                this.burningSprite.angle = 270;
-                this.addChild(this.burningSprite);
-                this.burningSprite.animations.add('burn', [
-                    "smokefire-0001.png",
-                    "smokefire-0002.png",
-                    "smokefire-0003.png",
-                    "smokefire-0004.png",
-                    "smokefire-0005.png",
-                    "smokefire-0006.png",
-                    "smokefire-0007.png",
-                    "smokefire-0008.png",
-                    "smokefire-0009.png",
-                    "smokefire-0010.png",
-                    "smokefire-0011.png",
-                    "smokefire-0012.png",
-                    "smokefire-0013.png",
-                    "smokefire-0014.png",
-                    "smokefire-0015.png",
-                    "smokefire-0016.png",
-                    "smokefire-0017.png",
-                    "smokefire-0018.png",
-                    "smokefire-0019.png",
-                    "smokefire-0020.png"
-                ], 10, true, false);
-                this.burningSprite.animations.play('burn');
+    //Consumes runes of a given type, returning the number consumed
+    Enemy.prototype.consumeRunes = function (runeType) {
+        var count = 0;
+        var newElementalRunes = [];
+        _.forEach(this.elementalRunes, function (rune) {
+            if (rune.runeType === runeType) {
+                count++;
+                rune.destroy();
             } else {
-                this.burningSprite.visible = true;
+                newElementalRunes.push(rune);
             }
-        } else if (reaction === 'earth') {
-            var boulderStormChance = reactionCounts.earth - 4;
-            if (boulderStormChance > 0 && !opts.noStorm && incTower.game.rnd.integerInRange(0, 100) >= boulderStormChance) {
-                var newOpts = opts;
-                newOpts.noStorm = true;
-                incTower.enemys.forEachAlive(function (enemy) {
-                    enemy.performReaction(reaction, reactionCounts, newOpts);
-                    //incTower.createFloatingText({'color':'#CC0000', 'duration':3000, 'around':this,'text':'Fire Storm!', 'type':'fireStorm'});
-                });
-            }
-            var boulder = incTower.game.add.sprite(this.x, this.y, 'incTower', 'rock' + incTower.game.rnd.integerInRange(1, 3) + '.png');
-            boulder.anchor.setTo(0.5, 0.5);
-            incTower.game.physics.enable(boulder, Phaser.Physics.ARCADE);
-            var bigDim = boulder.width;
-            if (boulder.height > bigDim) {
-                bigDim = boulder.height;
-            }
-            var endWidth = Math.max(tileSquare * reactionCounts.earth * 0.5, tileSquare);
-            var startWidth = endWidth * 4;
-            boulder.damageOnImpact = this.elementalInstability().times(Math.pow(1.2, Math.max(0, reactionCounts.earth - 1)));
-            boulder.scale.x = startWidth / bigDim;
-            boulder.scale.y = startWidth / bigDim;
-
-            var boulderTween = incTower.game.add.tween(boulder.scale).to({
-                x: endWidth / bigDim,
-                y: endWidth / bigDim
-            }, 500, Phaser.Easing.Quadratic.In, true);
-            boulderTween.onComplete.add(function () {
-                incTower.game.physics.arcade.overlap(this, incTower.enemys, function (boulder, enemy) {
-                    enemy.assignDamage(boulder.damageOnImpact, 'earth');
-                    enemy.addDiminishingReturns('earth', reactionCounts.earth);
-                    incTower.incrementObservable(enemy.statusEffects.bleeding, boulder.damageOnImpact);
-                }, null, this);
-                this.destroy();
-            }, boulder);
-        } else if (reaction === 'air') {
-            var originX = this.x;
-            var originY = this.y;
-            var minX = Math.max(0, originX - 32 * reactionCounts.air);
-            var maxX = Math.min(800, originX + 32 * reactionCounts.air);
-            var minY = Math.max(0, originY - 32 * reactionCounts.air);
-            var maxY = Math.min(608, originY + 32 * reactionCounts.air);
-            var tweenLength = Math.max(500, Math.min(1500, 250 * reactionCounts.air - 1));
-            var windStormChance = reactionCounts.air - 4;
-            var windStorm = false;
-            if (windStormChance > 0 && !opts.noStorm && incTower.game.rnd.integerInRange(1, 100) >= windStormChance) {
-                //When we get a windstorm we impact all enemies on the map
-                windStorm = true;
-            }
-
-            //var destTileNum = Math.floor(Math.max(0,this.curTile - Math.max(1,diminishingReturns(reactionCounts.air, 2))));
-            var destTileNum = Math.floor(Math.max(0, this.curTile - Math.max(1, reactionCounts.air)));
-            var kbX = this.path[destTileNum].x * 32 + 16; //Knock back X and Y
-            var kbY = this.path[destTileNum].y * 32 + 16;
-            var impactedEnemies = [];
-            for (var i = 0; i < incTower.enemys.children.length; i++) {
-                if (!incTower.enemys.children[i].alive) {
-                    continue;
-                }
-                if (windStorm) {
-                    impactedEnemies.push(incTower.enemys.children[i]);
-                } else if (incTower.enemys.children[i].x >= minX && incTower.enemys.children[i].x <= maxX && incTower.enemys.children[i].y >= minY && incTower.enemys.children[i].y <= maxY) {
-                    impactedEnemies.push(incTower.enemys.children[i]);
-                }
-            }
-            var airDamage = this.elementalInstability().times(Math.pow(1.2, Math.max(0, reactionCounts.air - 1)));
-
-            for (var i = 0; i < impactedEnemies.length; i++) {
-                impactedEnemies[i].assignDamage(airDamage, 'air');
-                if (!impactedEnemies[i].heavy && impactedEnemies[i].alive) {
-                    impactedEnemies[i].knockback = true;
-                    impactedEnemies[i].animations.paused = true;
-                    impactedEnemies[i].curTile = destTileNum;
-                    impactedEnemies[i].addDiminishingReturns('air', reactionCounts.air * 3);
-                    var tweenModifier = 1;
-                    if (impactedEnemies[i].flying) {
-                        tweenModifier = 2;
-                    }
-                    var tweenTo = {
-                        angle: ['+90', '+180', '+270', '+360'],
-                        x: [maxX, maxX, minX, minX],
-                        y: [minY, maxY, maxY, minY]
-                    };
-                    //If we are in the air twice as long we spin around twice instead of once.
-                    if (tweenModifier === 2) {
-                        tweenTo.angle = tweenTo.angle.concat(tweenTo.angle);
-                        tweenTo.x = tweenTo.x.concat(tweenTo.x);
-                        tweenTo.y = tweenTo.y.concat(tweenTo.y);
-                    }
-                    tweenTo.angle.push('+450');
-                    tweenTo.x.push(kbX + incTower.game.rnd.integerInRange(-16, 16));
-                    tweenTo.y.push(kbY + incTower.game.rnd.integerInRange(-16, 16));
-                    var knockbackTween = incTower.game.add.tween(impactedEnemies[i]).to(tweenTo, tweenLength * tweenModifier, "Sine.easeInOut", false);
-                    knockbackTween.onComplete.add(function () {
-                        this.knockback = false;
-                        this.nextTile();
-                    }, impactedEnemies[i]);
-                    knockbackTween.interpolation(Phaser.Math.bezierInterpolation);
-                    knockbackTween.start();
-                }
-            }
-
-        }
+        });
+        this.elementalRunes = newElementalRunes;
+        this.repositionRunes();
+        return count;
     };
+
 });
