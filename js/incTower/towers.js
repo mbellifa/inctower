@@ -723,10 +723,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             relativeTowerPowerSubscription.call(this, this.relativeTowerPower());
 
             this.level = ko.observable(opt.level || 1);
-
-            this.level.subscribe(function (newLevel) {
-                this.updateLevelIndicator();
-            }, this);
             this.levelIndicator = incTower.game.add.text(0, 0, "", {
                 font: "14px Arial",
                 stroke: 'black',
@@ -735,6 +731,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 fill: '#eee',
                 boundsAlignH: "center"
             });
+            this.level.subscribe(function (newLevel) { this.updateLevelIndicator(); }, this);
             this.levelIndicator.setTextBounds(this.worldX, this.worldY - 2, tileSquare, tileSquare);
             this.updateLevelIndicator();
             var defaultFireRate = 2000;
@@ -817,6 +814,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             incTower.towers.push(this);
             //Store a reference to ourselves in the tileForbidden array so we can find neighbors.
             path.tileForbidden[tileX][tileY] = this;
+            this.events.onDestroy.add(this.cleanup, this);
+            this.events.onKilled.add(this.cleanup, this);
             this.updateIcon();
 
         }
@@ -824,6 +823,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
     Tower.prototype = Object.create(Phaser.Sprite.prototype);
     Tower.prototype.constructor = Tower;
+    Tower.prototype.cleanup = function () {
+        console.log("Clean up called!");
+        this.levelIndicator.destroy();
+    };
     Tower.prototype.updateLevelIndicator = function () {
         this.levelIndicator.text = this.level();
     };
