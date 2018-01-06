@@ -1,8 +1,40 @@
 //Module that creates the core incTower object with an instance of Phaser.
-define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/keybinds-cursors', 'incTower/save', 'incTower/everysecond', 'incTower/help', 'incTower/util', 'incTower/enemies'], function (incTower, Phaser, _, path, keybinds, saveManager) {
+define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/keybinds-cursors', 'incTower/save', 'lib/knockout', 'incTower/everysecond', 'incTower/help', 'incTower/util', 'incTower/enemies'], function (incTower, Phaser, _, path, keybinds, saveManager, ko) {
     'use strict';
     var incrementObservable = incTower.incrementObservable;
     incTower.shakeWorld = 0;
+    incTower.core.sounds = {};
+    incTower.core.sounds.music = {};
+    incTower.core.sounds.musicList = ko.observableArray(incTower.shuffle([
+        'Ove Melaa - Dark.ogg',
+        'Ove Melaa - Earth Is All We Have.ogg',
+        'Ove Melaa - Heaven Sings.mp3',
+        'Ove Melaa - High Stakes, Low Chances.mp3',
+        'Ove Melaa - Theme Crystalized.mp3',
+        'cynicmusic - Crystal Cave.mp3',
+        'cynicmusic - Battle Theme A.mp3',
+        'yd - Observing The Star.ogg',
+        'Alexandr Zhelanov - Mystical Theme.mp3',
+        'Alexandr Zhelanov - Heroic Minority.mp3',
+        'HorrorPen - Winds Of Stories.ogg',
+        'HorrorPen - No More Magic.mp3',
+        'Joth - Cyberpunk Moonlight Sonata.mp3',
+        'Bensound - Sci-Fi.mp3',
+        'Nico Maximilian - We\'re Leaving Now.mp3'
+    ]));
+    incTower.core.sounds.currentMusic = ko.pureComputed(function () {
+        if (incTower.core.sounds.musicList().length === 0) {
+            return false;
+        }
+        return incTower.core.sounds.musicList()[0];
+    });
+    incTower.currentMusic = incTower.core.sounds.currentMusic;
+    incTower.core.sounds.nextMusic = ko.pureComputed(function () {
+        if (incTower.core.sounds.musicList().length === 0) {
+            return false;
+        }
+        return incTower.core.sounds.musicList()[1];
+    });
     function collisionHandler(bullet, enemy) {
 
         bullet.target = undefined;
@@ -25,9 +57,10 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
     }
 
     function preload() {
-        incTower.game.load.tilemap('desert', 'assets/maps/tower-defense.json', null, Phaser.Tilemap.TILED_JSON);
+        incTower.game.load.tilemap('tower-defense-tiles', 'assets/maps/tower-defense2.json', null, Phaser.Tilemap.TILED_JSON);
         incTower.game.load.atlas('incTower', 'assets/sprites/main.png', 'assets/sprites/main.json');
-        incTower.game.load.image('tiles', 'assets/maps/tmw_desert_spacing.png');
+        incTower.game.load.image('tower-defense-tiles', 'assets/maps/tower-defense-tiles.png');
+        incTower.game.load.audio('positive', 'assets/audio/sound-effects/positive.ogg');
     }
     incTower.convergeUpdate = function () {
         var lastRealTime = incTower.lastUpdateRealTime;
@@ -51,8 +84,11 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         incTower.updateRealTime();
         incTower.game.physics.startSystem(Phaser.Physics.ARCADE);
         incTower.game.stage.disableVisibilityChange = true;
-        incTower.core.map = incTower.game.add.tilemap('desert');
-        incTower.core.map.addTilesetImage('Desert', 'tiles');
+        incTower.core.map = incTower.game.add.tilemap('tower-defense-tiles');
+        incTower.core.map.addTilesetImage('tower-defense-tiles', 'tower-defense-tiles');
+        incTower.core.sounds.effects = {
+            positive: incTower.game.add.audio('positive')
+        };
         incTower.core.layer = incTower.core.map.createLayer('Ground');
         incTower.core.layer.resizeWorld();
         path.recalcPath();
@@ -76,7 +112,7 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         }
         var save = localStorage.getItem("save");
         if (save !== null) {
-            saveManager.loadSave(save);
+            setTimeout(function () {saveManager.loadSave(save);}, 100);
         }
 
         //We need a load function here for this to really make sense
@@ -111,10 +147,8 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         if ((!incTower.generatingEnemies) && (incTower.enemys.countLiving() === 0)) {
             if (incTower.wave() > 0) {
                 //Save state
+                saveManager.triggerSave();
 
-                var saveData = JSON.stringify(saveManager.createSaveObj(incTower));
-                document.getElementById('b64_save').innerHTML = btoa(saveData);
-                localStorage.setItem("save",saveData);
             }
             incTower.nukeEnemies();
             if (incTower.wave() > 0 && incTower.wave() % 5 === 0) {
@@ -188,6 +222,71 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         mode = Phaser.CANVAS; // IE has a memory leak with WebGL for some reason so we force it to use Canvas in this case.
     }
     incTower.game = new Phaser.Game(800, 608, mode, 'gameContainer', {preload: preload, create: create, update: update}, false, false);
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden && !incTower.backgroundSound()) {
+            incTower.core.sounds.currentMusicObj.volume = 0;
+        } else {
+            incTower.core.sounds.currentMusicObj.volume = parseInt(incTower.musicVolume()) * 0.1;
+        }
+        // Modify behavior...
+    });
+    incTower.playSoundEffect = function (sound) {
+        if (!incTower.core.sounds) { return; }
+        var volume = parseInt(incTower.sfxVolume()) * 0.1;
+        if (document.hidden && !incTower.backgroundSound()) {
+            return;
+        }
+        if (volume === 0) { return; }
+        incTower.core.sounds.effects[sound].volume = volume;
+        incTower.core.sounds.effects[sound].play();
+    };
+    incTower.checkMusic = function () {
+        if (document.hidden && !incTower.backgroundSound()) {
+            return;
+        }
+        if (incTower.core.sounds.currentMusicObj && incTower.core.sounds.currentMusicObj.isPlaying) {
+            return;
+        }
+        if (incTower.core.sounds.currentMusicObj && incTower.core.sounds.currentMusicObj.isDecoding) {
+            return;
+        }
+        if (!incTower.musicVolume) { return; }
+        if (incTower.core.sounds.currentMusicObj && incTower.core.sounds.currentMusicObj.key === incTower.core.sounds.currentMusic()) {
+            incTower.core.sounds.currentMusicObj.play();
+        }
+
+        if (incTower.game.load.hasLoaded) {
+            if (!incTower.game.cache.checkSoundKey(incTower.core.sounds.currentMusic())) {
+                incTower.game.load.audio(incTower.core.sounds.currentMusic(), 'assets/audio/music/' + incTower.core.sounds.currentMusic());
+            } else if (!incTower.core.sounds.currentMusicObj || !incTower.core.sounds.currentMusicObj.isPlaying || incTower.core.sounds.currentMusicObj.key !== incTower.core.sounds.currentMusic()) {
+                //console.log("Adding music " + incTower.core.sounds.currentMusic());
+                incTower.core.sounds.currentMusicObj = incTower.game.add.audio(incTower.core.sounds.currentMusic());
+
+                incTower.core.sounds.currentMusicObj.volume = parseInt(incTower.musicVolume()) * 0.1;
+                incTower.core.sounds.currentMusicObj.onStop.add(function () {
+                    //Take the first item off hte list and put it at the end
+                    incTower.core.sounds.musicList.push(incTower.core.sounds.musicList.shift());
+
+                    // incTower.core.sounds.currentMusicObj.onStop.dispose();
+                    // incTower.core.sounds.currentMusicObj.destroy();
+
+                    incTower.checkMusic();
+                });
+                if (!incTower.core.sounds.currentMusicObj.isDecoding) {
+                    incTower.core.sounds.currentMusicObj.play();
+                }
+
+            }
+            if (!incTower.game.cache.checkSoundKey(incTower.core.sounds.nextMusic())) {
+                incTower.game.load.audio(incTower.core.sounds.nextMusic(), 'assets/audio/music/' + incTower.core.sounds.nextMusic());
+            }
+            incTower.game.load.start();
+            incTower.game.load.onLoadComplete.add(incTower.checkMusic);
+        }
+
+
+
+    };
     return incTower;
 
 });

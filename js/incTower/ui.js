@@ -20,6 +20,27 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
 
     incTower.currentlySelectedIndicator = null; //Holds the graphic we'll use to show what we have selected.
     incTower.farmMode = ko.observable(false);
+    incTower.masterVolume = ko.observable("5");
+    incTower.sfxVolume = ko.observable("5");
+    incTower.musicVolume = ko.observable("3");
+    incTower.backgroundSound = ko.observable(false);
+
+    //Play a sound when we change this to know what we set it to.
+    incTower.sfxVolume.subscribe(function (newVolume) {
+        incTower.playSoundEffect('positive');
+    });
+    //Adjust the music volume on change
+    incTower.musicVolume.subscribe(function (newVolume) {
+        if (incTower.core.sounds.currentMusicObj) {
+            incTower.core.sounds.currentMusicObj.volume = parseInt(newVolume) * 0.1;
+        }
+    });
+
+    incTower.masterVolume.subscribe(function (newVolume) {
+            incTower.game.sound.volume = parseInt(newVolume) * 0.1;
+    });
+
+
     incTower.prevWave = function () {
         //We subtract 2 because once the enemies are gone it will increment the wave by one.
         var waveAmount = -2;
@@ -30,7 +51,12 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
         incTower.nukeEnemies();
     };
     incTower.toMaxWave = function () {
-        incTower.wave(incTower.maxWave());
+        var wave = incTower.maxWave();
+        if (!incTower.farmMode()) {
+            wave--;
+        }
+
+        incTower.wave(wave);
         incTower.nukeEnemies();
     };
     incTower.showReddit = function () {
@@ -61,6 +87,15 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
             height: 500
         });
     };
+    incTower.showOptions = function () {
+        $('#options').dialog({
+            width: 500,
+            height: 500,
+            close: function( event, ui ) {
+                saveModule.triggerSave();
+            }
+        });
+    };
     incTower.showSaves = function () {
         $('#save').dialog({
             width: 500,
@@ -72,7 +107,7 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
                 Load: function () {
                     var save;
                     try {
-                        save = atob($('#b64_load').val());
+                        save = $('#b64_load').val();
                         saveModule.loadSave(save);
                     } catch (e) {
                         incTower.okDialog({
@@ -103,7 +138,6 @@ define(['incTower/core', 'lib/knockout', 'incTower/save'], function (incTower, k
         return 'Upgrade the tower with the lowest upgrade-cast. Currently the cost to do this is ' + incTower.humanizeNumber(incTower.cheapestUpgradeCost()) + 'g';
     };
     incTower.towerKeybindLetter = function (i) {
-        console.log(i);
         // Towers start at w because blocks are Q
         return ['W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O'][i];
     };

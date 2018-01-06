@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/phaser', 'incTower/path'], function (incTower, ko, _, BigNumber, Phaser, path) {
+define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'incTower/save'], function (incTower, ko, _, BigNumber, Phaser, path, saveModule) {
     'use strict';
     var tileSquare = 32;
 
@@ -1115,6 +1115,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             incTower.gainGold(this.goldValue(), this);
             this.kill();
         }
+        return damage;
     };
     Enemy.prototype.moveElmt = function () {
         if (this.knockback || this.teleporting) {
@@ -1141,6 +1142,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         }
         //We ran off the edge
         if (typeof(this.path[this.curTile]) === "undefined") {
+            if (Date.now() - saveModule.lastSave > 60000) {
+                saveModule.triggerSave();
+            }
+
             if (incTower.wave() % 5 === 0) {
                 //Boss ran off the edge
                 incTower.checkHelp('bosses');

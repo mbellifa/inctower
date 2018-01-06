@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor'], function (incTower, ko, BigNumber, Phaser, path, _, Cursor) {
+define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor', 'incTower/util'], function (incTower, ko, BigNumber, Phaser, path, _, Cursor) {
     'use strict';
     BigNumber.config({ERRORS: false});
     var tileSquare = 32;
@@ -37,7 +37,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 var towerType = incTower.cursor().param;
                 var cost = incTower.towerCost(towerType);
                 var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-                if (!path.tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 5 && tileIndex <= 8) {
+                if (!path.tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 1 && tileIndex <= 4) {
                     var opt = {};
                     opt.towerType = towerType;
                     opt.cost = cost;
@@ -57,7 +57,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 }
                 if (valid) {
                     var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-                    if (!(tileIndex > 4 && tileIndex < 9)) {
+                    if (tileIndex > 4) {
                         valid = false;
                     }
                 }
@@ -103,7 +103,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         }
     };
     incTower.totalTowerDamage = ko.pureComputed(function () {
-        'use strict';
         var tally = new BigNumber(0);
         var towerLength = incTower.numTowers();
         for (var i = 0; i < towerLength; ++i) {
@@ -113,7 +112,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         return tally;
     });
     incTower.averageDamage = ko.pureComputed(function () {
-        'use strict';
         var tally = new BigNumber(0);
         var towerLength = incTower.numTowers();
         for (var i = 0; i < towerLength; ++i) {
@@ -208,10 +206,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             describe: function () {
                 return 'These rounds explode once they penetrate causing intense internal bleeding. They deal less kinetic damage upfront but always cause a bleed for a significant portion of the damage.';
             },
+            icon: 'blood-icon.png',
             damageModifier: 0.5, //Does 50% of normal kinetic damage.
             collision: function (tower, bullet, enemy) {
-                enemy.assignDamage(bullet.damage, 'kinetic');
-                incrementObservable(enemy.statusEffects.bleeding, bullet.damage.times(0.5));
+                var damageAssigned = enemy.assignDamage(bullet.damage, 'kinetic');
+                incrementObservable(enemy.statusEffects.bleeding, damageAssigned.times(0.5));
             }
         },
         arcaneOrb: { //TODO: Implement
@@ -474,50 +473,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 return 'Elemental towers deal damage and also unlock mystical elemental effects, depending on the ammo chosen.';
             },
             ammoTypes: ko.observableArray(['arcaneOrb'])
-        },
-        earth: {
-            name: 'Earth',
-            baseCost: 100,
-            damagePerLevel: 1,
-            startingRange: 100,
-            startingFireRate: 2500,
-            icon: 'earth-element.png',
-            describe: function () {
-                return 'Earth towers deal earth damage and have a chance to attach an earth rune to enemies. When an earth reaction happens a giant boulder falls from the sky on the affected enemy.';
-            }
-        },
-        air: {
-            name: 'Air',
-            baseCost: 100,
-            damagePerLevel: 1,
-            startingFireRate: 2500,
-            startingRange: 100,
-            icon: 'air-element.png',
-            describe: function () {
-                return 'Air towers deal air damage and have a chance to attach an air rune to enemies. When an air reaction happens a group of enemies will be knocked back..';
-            }
-        },
-        fire: {
-            name: 'Fire',
-            baseCost: 100,
-            damagePerLevel: 1,
-            startingFireRate: 2500,
-            startingRange: 100,
-            icon: 'fire-element.png',
-            describe: function () {
-                return 'Fire towers deal fire damage and have a chance to attach a fire rune to enemies. When a fire reaction happens the affected enemy takes additional damage from all sources and takes burn damage over time.';
-            }
-        },
-        water: {
-            name: 'Water',
-            baseCost: 100,
-            damagePerLevel: 1,
-            startingFireRate: 2500,
-            startingRange: 100,
-            icon: 'water-element.png',
-            describe: function () {
-                return 'Water towers deal water damage and have a chance to attach a water rune to enemies. When a water reaction occurs the affected enemy becomes either slowed or frozen in place depending on the number of runes.';
-            }
         },
         sensor: {
             name: 'Sensor Array',
@@ -824,7 +779,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     Tower.prototype = Object.create(Phaser.Sprite.prototype);
     Tower.prototype.constructor = Tower;
     Tower.prototype.cleanup = function () {
-        console.log("Clean up called!");
         this.levelIndicator.destroy();
     };
     Tower.prototype.updateLevelIndicator = function () {

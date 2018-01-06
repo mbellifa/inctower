@@ -1,12 +1,26 @@
-define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber) {
+define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'lib/lz-string', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber, lzString) {
     'use strict';
     var saveModule = {};
     saveModule.loadSave = function (save) {
-        var savehex = btoa(save);
-        document.getElementById('b64_save').innerHTML = savehex;
-        console.log("Loading save: " + savehex);
+        document.getElementById('b64_save').innerHTML = save;
+        console.log("Loading save: " + save);
+        var origSave = save;
+        try {
+            save = lzString.decompressFromBase64(save);
+            if (save.length === 0) {
+                throw "Invalid compressed save";
+            }
+            save = JSON.parse(save);
+        } catch (e) {
+            save = origSave;
+            console.log("Loading the old way");
+            save = atob(save);
+            console.log(save);
+            save = JSON.parse(save);
+        }
         var i;
-        save = JSON.parse(save);
+//        console.log(save);
+        //save = JSON.parse(save);
         for (var prop in save) {
             if (save.hasOwnProperty(prop)) {
                 if (prop === 'towers') {
@@ -27,7 +41,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                     if (_.isArray(curVal)) {
                         incTower[prop]([]);
                         for (i = 0;i < save[prop].length;i++) {
-                            incTower.addToObsArray(incTower[prop],save[prop][i])
+                            incTower.addToObsArray(incTower[prop],save[prop][i]);
                             //incTower[prop].push(save[prop][i]);
                         }
                     } else if (_.isNumber(curVal) || _.isBoolean(curVal) || _.isString(curVal)) {
@@ -59,11 +73,12 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
         }
         if ('blocks' in save) {
             _.forEach(incTower.blocks(), function (block) {
-                incTower.core.map.putTile(30,block.x,block.y);
+
+                path.mutateTile(block.x, block.y);
             });
             incTower.blocks([]);
             _.forEach(save.blocks, function (block) {
-                incTower.core.map.putTile(incTower.game.rnd.integerInRange(5,8),block.x,block.y);
+                incTower.core.map.putTile(incTower.game.rnd.integerInRange(1,4),block.x,block.y);
                 incTower.blocks.push({x:block.x, y: block.y});
             });
             path.recalcPath();
@@ -91,7 +106,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                     tower.towerType = 'elemental';
                 }
                 var index = incTower.core.map.layers[0].data[tileY][tileX].index;
-                if (index >= 5 && index <= 8) {
+                if (index >= 0 && index <= 4) {
                     incTower.createTower(tower);
                 } else {
                     incTower.incrementObservable(incTower.gold,tower.goldSpent);
@@ -157,7 +172,10 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             'type',
             'physicsType',
             'autoUpgrade',
-            'pathDirty'
+            'pathDirty',
+            'ignoreChildInput',
+            '_exists',
+            'shakeWorld'
         ];
         if (typeof obj !== 'object') { return obj; }
         for (var prop in obj) {
@@ -165,18 +183,22 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 if (ko.isComputed(obj[prop])) { continue; }
                 if (dontSave.indexOf(prop) > -1) { continue; }
                 if (ko.isObservable(obj[prop])) {
+                    var obsValue = obj[prop]();
                     //console.log("Currently on: " + prop);
-                    if (_.isNumber(obj[prop]()) || typeof obj[prop]() === 'string' || typeof obj[prop]() === 'boolean') {
-                        save[prop] = obj[prop]();
-                    } else if (_.isArray(obj[prop]())) {
+                    if (_.isNumber(obsValue) || typeof obsValue === 'string' || typeof obsValue === 'boolean') {
+                        save[prop] = obsValue;
+                    } else if (_.isArray(obsValue)) {
                         save[prop] = [];
-                        for (var i = 0;i < obj[prop]().length;i++) {
-                            save[prop][i] = saveModule.createSaveObj(obj[prop]()[i]) ;
+                        for (var i = 0;i < obsValue.length;i++) {
+                            var newValue = saveModule.createSaveObj(obsValue[i]);
+                            if (newValue) {
+                                save[prop][i] = newValue;
+                            }
                         }
                     } else {
                         //Should be a big number if we get to ehre
-                        if (obj[prop]().toJSON === undefined) { console.log(prop + " ERROR"); }
-                        save[prop] = obj[prop]().trunc().toJSON();
+                        if (obsValue.toJSON === undefined) { console.log(prop + " ERROR"); }
+                        save[prop] = obsValue.trunc().toJSON();
                     }
                     continue;
                 }
@@ -207,7 +229,25 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 save[prop] = obj[prop];
             }
         }
+        if (Object.keys(save).length === 0 && save.constructor === Object) {
+            return false;
+        }
         return save;
+    };
+    saveModule.createPackagedSave = function (obj) { //If localStore is true it will rotate the localStorage
+        var saveObj = JSON.stringify(saveModule.createSaveObj(obj));
+        return lzString.compressToBase64(saveObj);
+    };
+    saveModule.lastSave = 0;
+    saveModule.triggerSave = function () {
+        saveModule.lastSave = Date.now();
+        var saveData = saveModule.createPackagedSave(incTower);
+        document.getElementById('b64_save').innerHTML = saveData;
+        var prevSave = localStorage.getItem("save");
+        if (prevSave) {
+            localStorage.setItem("save2", prevSave);
+        }
+        localStorage.setItem("save",saveData);
     };
 
     return saveModule;

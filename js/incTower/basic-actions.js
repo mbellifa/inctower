@@ -45,9 +45,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                     return;
                 }
                 var cost = incTower.blockCost();
-                if (incTower.gold().gte(cost) && incTower.core.map.layers[0].data[tileY][tileX].index > 8) {
+                if (incTower.gold().gte(cost) && incTower.core.map.layers[0].data[tileY][tileX].index > 4) {
                     incrementObservable(incTower.gold, -cost);
-                    incTower.core.map.putTile(incTower.game.rnd.integerInRange(5, 8), tileX, tileY);
+                    incTower.core.map.putTile(incTower.game.rnd.integerInRange(1, 4), tileX, tileY);
                     incTower.blocks.push({x: tileX, y: tileY});
                     _.forEach(pathModule.path, function (pathUnit) {
                         if (pathUnit.x === tileX && pathUnit.y === tileY) {
@@ -72,7 +72,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 }
                 if (valid) {
                     var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-                    if (tileIndex > 4 && tileIndex < 9) {
+                    if (tileIndex < 5) {
                         valid = false;
                     }
                 } else {
@@ -152,7 +152,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 return;
             }
             var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-            if (tileIndex > 4 && tileIndex < 9 && pathModule.tileForbidden[tileX][tileY]) {
+            if (tileIndex < 5 && pathModule.tileForbidden[tileX][tileY]) {
                 //Don't allow selling at one tower
                 if (incTower.numTowers() === 1) {
                     return false;
@@ -165,8 +165,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 });
                 return;
             }
-            if (tileIndex > 4 && tileIndex < 9 && !pathModule.tileForbidden[tileX][tileY]) {
-                incTower.core.map.putTile(30, tileX, tileY);
+            if (tileIndex > 0 && tileIndex < 5 && !pathModule.tileForbidden[tileX][tileY]) {
+                pathModule.mutateTile(tileX, tileY);
                 incrementObservable(incTower.gold, incTower.prevBlockCost());
                 for (var i = 0; i < incTower.blocks().length; i++) {
                     var curBlock = incTower.blocks()[i];
@@ -190,7 +190,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             }
             if (valid) {
                 var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-                if (!(tileIndex > 4 && tileIndex < 9)) {
+                if (tileIndex > 4) {
                     valid = false;
                 }
             } else {

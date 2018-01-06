@@ -152,7 +152,7 @@ requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incT
             }
         });
         incTower.incTower = incTower;
-        console.log(incTower);
+//        console.log(incTower);
         ko.applyBindings(incTower);
     });
 });

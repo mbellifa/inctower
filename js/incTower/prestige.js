@@ -77,18 +77,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
                 tower.kill();
             });
             incTower.towers_group.removeAll(true);
-            pathModule.tileForbidden = new Array(25);
-            for (var i = 0; i < 25; ++i) {
-                pathModule.tileForbidden[i] = new Array(19);
-                for (var j = 0; j < 19; j++) {
-                    pathModule.tileForbidden[i][j] = false;
-                }
-            }
+            pathModule.tileForbidden = pathModule.createCoordArray(false);
             _.forEach(incTower.blocks(), function (block) {
-                incTower.core.map.putTile(30, block.x, block.y);
+                pathModule.mutateTile(block.x, block.y);
             });
-            incTower.blocks([{x: 13, y: 9}]);
-            incTower.core.map.putTile(incTower.game.rnd.integerInRange(5, 8), 13, 9);
+            incTower.blocks([{x: 13, y: 9}, {x: 9, y: 9}]);
+
+            incTower.core.map.putTile(incTower.game.rnd.integerInRange(1, 4), 13, 9);
+            incTower.core.map.putTile(incTower.game.rnd.integerInRange(1, 4), 9, 9);
             incTower.nukeEnemies();
 
             incTower.towers.removeAll(true);

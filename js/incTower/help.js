@@ -13,7 +13,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber'], function (incTower, k
         return unread;
     }, incTower);
     incTower.selectedHelp.subscribe(function (value) {
-        incTower.addToObsArray(incTower.readHelp, value);
+        if (value) {
+            incTower.addToObsArray(incTower.readHelp, value);
+        }
     });
     incTower.checkHelp = function (topic) {
         if (incTower.availableHelp.indexOf(topic) < 0) {

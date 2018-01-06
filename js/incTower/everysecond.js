@@ -1,25 +1,36 @@
-define(['incTower/core', 'lib/bignumber'], function (incTower, BigNumber) {
+define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, BigNumber, pathModule) {
     'use strict';
     incTower.everySecond = function() {
         //Check paused
+        incTower.checkMusic();
+
         if (incTower.paused()) { return; }
+        //Mutate Map
+        if (Date.now() - pathModule.lastMutate > 10000) {
+            pathModule.mutateNextTile();
+        }
         //Training skills
         var incrementObservable = incTower.incrementObservable;
         incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.manaRegeneration())));
         incTower.checkQueue();
         incrementObservable(incTower.skillPoints, incTower.skillRate());
         incrementObservable(incTower.gold, incTower.getEffectiveSkillLevel('investment'));
-        var skillName = incTower.activeSkill();
-        var skill = incTower.skills.get(skillName)();
-        if (skill !== null) {
+
+        var skillUp = false;
+
+        while (incTower.activeSkill() && incTower.skillPoints().gt(0)) {
+            var skillName = incTower.activeSkill();
+            var skill = incTower.skills.get(skillName)();
             var transferAmount = BigNumber.min(skill.get('skillPointsCap')(), incTower.skillPoints());
             incrementObservable(incTower.skillPoints, transferAmount.neg());
             skill.get('skillPoints')(skill.get('skillPoints')().add(transferAmount));
 
             //incrementObservable(skill.get('skillPoints'), incTower.skillRate());
-            while (incTower.activeSkill() && skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
+            if (skill.get('skillPoints')().gte(skill.get('skillPointsCap')())) {
                 skill.get('skillPoints')(skill.get('skillPoints')().sub(skill.get('skillPointsCap')()));
                 incrementObservable(skill.get('skillLevel'));
+                skillUp = true;
+
                 //console.log(incTower.activeSkill());
                 skill.get('skillPointsCap')(incTower.costCalc(incTower.skillAttributes[incTower.activeSkill()].baseCost, skill.get('skillLevel')(), incTower.skillAttributes[incTower.activeSkill()].growth));
                 incTower.checkHelp('skills');
@@ -27,6 +38,9 @@ define(['incTower/core', 'lib/bignumber'], function (incTower, BigNumber) {
                 incTower.checkSkill(skillName);
                 incTower.checkQueue();
             }
+        }
+        if (skillUp) {
+            incTower.playSoundEffect('positive');
         }
         incTower.enemys.forEachAlive(function(enemy) {
             if (enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {

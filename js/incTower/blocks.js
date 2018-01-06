@@ -3,7 +3,7 @@ define(['incTower/core', 'lib/knockout', 'incTower/util'], function (incTower, k
     incTower.numBlocks = ko.pureComputed(function () {
         return incTower.blocks().length;
     });
-    incTower.blocks = ko.observableArray([{x: 13, y: 9}]);
+    incTower.blocks = ko.observableArray([{x: 13, y: 9}, {x: 9, y: 9}]);
     incTower.blockCost = function () {
         return util.costCalc(1, incTower.numBlocks(), 1.1);
     };

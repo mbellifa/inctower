@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8"/>
     <link rel="stylesheet" href="css/incTower.css" type="text/css">
     <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
@@ -20,7 +21,7 @@
 <body>
 <div class="topnav">
     <span class="header"><a href="http://inctower.reddit.com" target="_blank">Incremental Tower Defense<span
-            class="version">0.2.3</span></a></span>
+            class="version">0.2.4</span></a></span>
     <span class="toplinks">
                 <button data-bind="click: function () { $root.showHelp(); }">Help <span
                         data-bind="if: $root.unreadHelps() > 0"><span data-bind="text: $root.unreadHelps()"
@@ -30,6 +31,7 @@
                 <button data-bind="click: function () { $root.showSkills(); }">Skills</button>
                 <button data-bind="click: function () { $root.showSaves(); }">Saves</button>
                 <button data-bind="click: function () { $root.showCredits(); }">Credits</button>
+                <button data-bind="click: function () { $root.showOptions(); }">Options</button>
             </span>
 </div>
 <div id="center">
@@ -292,6 +294,23 @@
     <p>Proton theme for jstree from <a href="https://github.com/orangehill/jstree-bootstrap-theme">Orange Hill
         Development</a>.</p>
     <p>Arcane Orb icon and bullet from <a href="http://www.amon.co">Amon</a> on <a href="https://opengameart.org/content/magic-orbs">OpenGameArt</a>.</p>
+    <p>Blood icon (used by shrapnel towers) created by Sémhur can be found <a href="https://commons.wikimedia.org/wiki/File:Blood_drop.svg">here</a>.</p>
+    <p>Positive sound (used on skill up) from Lokif, found <a href="https://opengameart.org/content/gui-sound-effects">here</a></p>
+    <p>Music: Dark, Earth Is All We Have, Heaven Sings, High Stakes, Low Chances, and Theme Crystalized written and produced by Ove Melaa (Omsofware@hotmail.com). Found <a href="https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated">here</a>.</a></p>
+    <p>Music: Crystal Cave by cynicmusic found <a href="https://opengameart.org/content/crystal-cave-song18">here</a>.</p>
+    <p>Music: Battle Theme A by cynicmusic found <a href="https://opengameart.org/content/battle-theme-a">here</a>.</p>
+    <p>Music: Observing the Star by yd found <a href="https://opengameart.org/content/another-space-background-track">here</a>.</p>
+    <p>Music: Mystical Theme by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>) found <a href="https://opengameart.org/content/mystical-theme">here</a>.</p>
+    <p>Music: Heroic Minority by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>) found <a href="https://opengameart.org/content/heroic-minority">here</a>.</p>
+    <p>Music: Winds Of Stories by HorrorPen found <a href="https://opengameart.org/content/winds-of-stories">here</a>.</p>
+    <p>Music: No More Magic by HorrorPen found <a href="https://opengameart.org/content/no-more-magic">here</a>.</p>
+    <p>Music: Cyberpunk Moonlight Sonata by Jotn found <a href="https://opengameart.org/content/cyberpunk-moonlight-sonata">here</a>.</p>
+    <p>Music: Sci-Fi from <a href="http://www.bensound.com">BenSound.com</a>, found <a href="https://www.bensound.com/royalty-free-music/track/sci-fi">here</a>.</p>
+    <p>Music: We're Leaving Now from Nico Maximilian, found <a href="https://www.jamendo.com/track/1448049/we-re-leaving-now">here</a>.</p>
+    <p>Tileset by Leonard Pabin found <a href="https://opengameart.org/content/whispers-of-avalon-grassland-tileset">on OpenGameArt.org</a>.</p>
+
+
+
 
 </div>
 <div id="save" title="Saves">
@@ -348,12 +367,48 @@
 
 
 </div>
+
+<div id="options" title="Options">
+    <p><b>Sound:</b></p>
+    Master Volume: <select data-bind="value: $root.masterVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+
+    Sound Effect Volume: <select data-bind="value: $root.sfxVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+
+    Music Volume: <select data-bind="value: $root.musicVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+
+    Current Music: <span data-bind="text: currentMusic"></span><br>
+
+    Background Sounds: <input type="checkbox" data-bind="checked: $root.backgroundSound">
+
+
+</div>
 <div id="changelog" title="Changelog">
     <p>Changelog:</p>
     <ul>
+        <li>Version 0.2.4:
+            <ul>
+                <li>2018-01-05: There should in theory be a favicon for the game now.</li>
+                <li>2018-01-05: Shrapnel towers now have a blood icon.</li>
+                <li>2018-01-05: Saves now trigger when an enemy hits the edge of the map.</li>
+                <li>2018-01-05: Saves now store a backup locally when triggered although currently there isn't a way to access this backup save through the UI.</li>
+                <li>2018-01-05: Closing the options menu now triggers a save (so it will remember volume settings on reload without having to kill a wave).</li>
+                <li>2018-01-02: Added a constraint solving engine called csp.js by PrajitR to assist in efficiently calculating map changes.</li>
+                <li>2017-12-30: The game now uses a new tileset by Leonard Pabin. Over time the walking tiles will shift from grass to desert as an aesthetic effect, note that these changes will be lost on reload.</li>
+                <li>2017-12-30: You now start with two blocks, one in the center as usual and another closer to the default pathing at the start of the game.</li>
+                <li>2017-12-29: Added a display of the current playing song to options, you all can let me know which tracks you like/dislike.</li>
+                <li>2017-12-28: Added in a background sounds checkbox to options, by default sounds will not play in the background.</li>
+                <li>2017-12-28: Added in a master volume control that impacts both special effects sounds and music.</li>
+                <li>2017-12-28: Added in music with it's own volume control.</li>
+                <li>2017-12-28: There is now a sound effect when you learn a skill. There is now an options screen where you can control the sound effect volume, including turning it to 0.</li>
+                <li>2017-12-28: Shrapnel ammo now respects effects that reduce damage, like armored and shielded. The amount of bleeding done is now based on how much direct kinetic damage was done.</li>
+                <li>2017-12-28: Save games are now compressed. A save that would've previously taken about 43k characters now takes 12k characters. There's definitely room for improvement but this should be a solid start.</li>
+
+
+            </ul>
+        </li>
         <li>Version 0.2.3:
             <ul>
-                <li>2017-12-16: Prestige points are now awarded at a curve starting at 1 instead of 4. In addition to encourage deep runs there is an overall multiplier added every 100 waves. E.g. 2x prestige at Wave 201 and above, 3x prestige at 301 and above.</li>
+                <li>2017-12-26: Prestige points are now awarded at a curve starting at 1 instead of 4. In addition to encourage deep runs there is an overall multiplier added every 100 waves. E.g. 2x prestige at Wave 201 and above, 3x prestige at 301 and above.</li>
                 <li>2017-12-26: Fixed a bug with the previous wave button that decremented two waves instead of one when in farm mode (Github Issue #8). Thanks desci!</li>
                 <li>2017-12-26: Clicking a button or keybind for a tower will now clear the cursor if you do not have a sufficient amount of gold for that type of tower (Github Issue #8). Thanks desci!</li>
                 <li>2017-12-26: There are now white level indicators overlayed on all towers.</li>
@@ -991,8 +1046,7 @@
     </ul>
     <p>Todo:</p>
     <ul>
-        <li>Investigate starting path being nearly out of range of the starting tower.</li>
-        <li>Add skills that impact effets, additional damage to frozen targets etc.</li>
+        <li>Add skills that impact effects, additional damage to frozen targets etc.</li>
         <li>Generalize support towers using ammo types.</li>
         <li>Nerf anti-coagulants by adding an element of RNG (20% on bleed tick to increase or similar).</li>
         <li>Add skills that scale on prestige.</li>
@@ -1019,7 +1073,13 @@
         <li>Implement rebuild</li>
         <li>Allow multiple tower selection or rebuild by type</li>
         <li>Investigate a blood pool idea</li>
-        <li>Need icon for shrapnel tower</li>
+        <li>Look into saving every minute instead of on wave clear, and backup saves</li>
+        <li>Investigate swarm and health on mixed waves.</li>
+        <li>Add a button to update the ammo type of all of the currently selected towers type to the given ammo.</li>
+        <li>Look into a bleeding/burning immune boss power.</li>
+        <li>Look into a healer boss power.</li>
+        <li>Look into a speed boosting aura boss power.</li>
+        <li>Look into a life-link boss power.</li>
     </ul>
 </div>
 <script data-main="js/loader" src="js/require.min.js"></script>
