@@ -12,11 +12,18 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             }
             save = JSON.parse(save);
         } catch (e) {
-            save = origSave;
-            console.log("Loading the old way");
-            save = atob(save);
-            console.log(save);
-            save = JSON.parse(save);
+            try {
+                save = origSave;
+                console.log("Attempting to load base 64");
+                save = atob(save);
+                console.log(save);
+                save = JSON.parse(save);
+            } catch (e) {
+                save = origSave;
+                console.log("Loading plain JSON");
+                console.log(save);
+                save = JSON.parse(save);
+            }
         }
         var i;
 //        console.log(save);
