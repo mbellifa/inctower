@@ -67,22 +67,26 @@ requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incT
             e.preventDefault();
         });
         $('#skills').on('click','#skill_queue_prereqs', function (e) {
-            var prereqs = [];
-            var toFind = incTower.UIselectedSkill();
-            while (toFind !== false) {
-                var prereq = incTower.skillGetPrereq(toFind);
-                if (prereq) {
-                    toFind = prereq[0];
-                    prereqs.unshift(prereq);
-                } else {
-                    toFind = false;
+            if (!incTower.UIselectedSkill()) {
+                e.preventDefault();
+                return;
+            }
+            var prereqs = incTower.skillGetPrereqs(incTower.UIselectedSkill());
+            var index = prereqs.pairs.length;
+            while (index > 0) {
+                index--;
+                var skill = prereqs.pairs[index][0];
+                var level = prereqs.pairs[index][1];
+                var currentLevel = incTower.getSkillLevel(skill);
+                if (currentLevel < level) {
+                    _.forEach(_.range(currentLevel, level), function (rank) {
+                        var queueRank = incTower.directlyQueueable(skill);
+                        if (queueRank && queueRank <= rank + 1) {
+                            incTower.enqueueSkill(skill);
+                        }
+                    });
                 }
             }
-            _.forEach(prereqs, function(prereq) {
-                while (incTower.directlyQueueable(prereq[0]) && incTower.directlyQueueable(prereq[0]) <= prereq[1]) {
-                    incTower.enqueueSkill(prereq[0]);
-                }
-            });
             e.preventDefault();
         });
 
@@ -111,48 +115,15 @@ requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incT
                     var rank = jv.attr('data-rank');
                     potentialList.push([skill, parseInt(rank)]);
                 });
-                var skillTally = {};
-                var valid = true;
-                _.forEach(potentialList, function (item) {
-                    if (!valid) { return false; }
-                    var skill = item[0];
-                    var rank = item[1];
-                    if (!_.has(skillTally,skill)) {
-                        skillTally[skill] = incTower.getSkillLevel(skill);
-                        if (!incTower.haveSkill(skill)) {
-                            console.log(skill);
-                            valid = false;
-
-                        }
-                    }
-                    if (rank !== skillTally[skill] + 1) {
-                        console.log(skill + " out of order ranks");
-
-                        valid = false;
-                    }
-                    else {
-                        skillTally[skill] = rank;
-                    }
-                    if (incTower.skillAttributes[skill].grants) {
-                        var grants = [];
-                        _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
-                            if (rank >= level) {
-                                grants = grants.concat(skills);
-                            }
-                        });
-                        _.forEach(grants, function (grant) {
-                            if (!_.has(skillTally, grant)) { skillTally[grant] = 0; }
-                        });
-                    }
-                });
-
+                var valid = incTower.checkPotentialQueue(potentialList);
                 if (!valid) { return false; }
                 incTower.skillQueue(potentialList);
-                //incTower.activeSkill(potentialList[0][0]);
             }
         });
         incTower.incTower = incTower;
 //        console.log(incTower);
+        ko.options.deferUpdates = true;
+
         ko.applyBindings(incTower);
     });
 });

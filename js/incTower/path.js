@@ -376,6 +376,9 @@ define(['incTower/core', 'lib/EasyStar', 'lib/lodash', 'lib/csp'], function (inc
                 incTower.pathGraphic.lineTo(p[i + 1].x * 32 + 16, p[i + 1].y * 32 + 16);
             }
             incTower.pathGraphic.endFill();
+            incTower.pathGraphic = incTower.replaceGraphics(incTower.pathGraphic, 'path');
+            incTower.pathGraphic.x = 16;
+            incTower.pathGraphic.y = 16;
             incTower.game.world.bringToTop(incTower.enemys);
             incTower.enemys.forEachAlive(function (enemy) {
                 if (enemy.flying) {

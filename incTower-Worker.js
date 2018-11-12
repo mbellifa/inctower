@@ -5,10 +5,11 @@ self.addEventListener('message', function(e) {
     var data = e.data;
     switch (data.cmd) {
         case 'start':
-            console.log("attempting start");
-            setInterval(function () {
-                self.postMessage('update');
-            },1000);
+            if (!self.timer) {
+                self.timer = setInterval(function () {
+                    self.postMessage('update');
+                },1000);
+            }
             break;
         case 'stop':
             self.postMessage('WORKER STOPPED: ' + data.msg +

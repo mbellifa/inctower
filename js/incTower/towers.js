@@ -1,6 +1,9 @@
 define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor', 'incTower/util'], function (incTower, ko, BigNumber, Phaser, path, _, Cursor) {
     'use strict';
-    BigNumber.config({ERRORS: false});
+    BigNumber.config({
+        ERRORS: false,
+        POW_PRECISION: 100
+    });
     var tileSquare = 32;
     var incrementObservable = incTower.incrementObservable;
     incTower.availableTowers = ko.observableArray(['kinetic']);
@@ -110,7 +113,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             tally = tally.plus(tower.totalDamage());
         }
         return tally;
-    });
+    }).extend({ deferred: true });
     incTower.averageDamage = ko.pureComputed(function () {
         var tally = new BigNumber(0);
         var towerLength = incTower.numTowers();
@@ -211,6 +214,18 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             collision: function (tower, bullet, enemy) {
                 var damageAssigned = enemy.assignDamage(bullet.damage, 'kinetic');
                 incrementObservable(enemy.statusEffects.bleeding, damageAssigned.times(0.5));
+            }
+        },
+        sniper: {
+            name: 'Sniper',
+            describe: function () {
+                return 'These long range bullets deal greater at large range but take longer to reload.';
+            },
+            damageModifier: 1.5, //Does 150% of normal kinetic damage.
+            rangeModifier: 1.5,
+            reloadModifier: 2,
+            collision: function (tower, bullet, enemy) {
+                var damageAssigned = enemy.assignDamage(bullet.damage, 'kinetic');
             }
         },
         arcaneOrb: { //TODO: Implement
@@ -435,19 +450,68 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 }
                 enemy.assignDamage(bullet.damage.times(Math.pow(1.2, Math.max(0, waterRunes - 1))), 'water');
             }
+        },
+
+        //Support ammos
+        generator: {
+            name: 'Generator',
+            describe: function (tower) {
+                var rate = incTower.humanizeNumber(tower.fireTime() / 1000);
+                var damage = incTower.humanizeNumber(tower.totalDamage());
+                var duration = incTower.supportTowerDuration();
+                return 'Every ' + rate + "s this tower will grant back-up power, allowing a tower to fire through disabling effects such as Null-Zone, and granting a " + damage + " damage buff to a non-support tower that is adjacent to it. The buff lasts " + (duration / 1000).toFixed(2) + " seconds. This tower is immune to tower disabling effects such as Null-Zone.";
+
+            },
+            icon: 'power-lightning.png',
+            support: function (supportTower, targetTower) {
+                var duration = incTower.supportTowerDuration();
+                incTower.createFloatingText({
+                    'color': 'blue',
+                    'duration': duration,
+                    'around': targetTower,
+                    'text': 'Energized!',
+                    'type': 'buff'
+                });
+                targetTower.addBuff('energized', supportTower, duration, 1);
+                targetTower.addBuff('damage', supportTower, duration, supportTower.totalDamage());
+            }
+        },
+        sensor: {
+            name: 'Sensor Array',
+            describe: function (tower) {
+                var rate = incTower.humanizeNumber(tower.fireTime() / 1000);
+                var damage = incTower.humanizeNumber(tower.totalDamage());
+                var duration = incTower.supportTowerDuration();
+                return 'Every ' + rate + "s this tower will grant a 15% range buff and a " + damage + " damage buff to a non-support tower that is adjacent to it. The buff lasts " + (duration / 1000).toFixed(2) + " seconds.";
+            },
+            icon: 'radar-sweep.png',
+
+            support: function (supportTower, targetTower) {
+                var duration = incTower.supportTowerDuration();
+                incTower.createFloatingText({
+                    'color': 'purple',
+                    'duration': duration,
+                    'around': targetTower,
+                    'text': 'Range Buff!',
+                    'type': 'buff'
+                });
+                targetTower.addBuff('range', supportTower, duration, 0.15);
+                targetTower.addBuff('damage', supportTower, duration, supportTower.totalDamage());
+
+            }
         }
     };
-    incTower.describeAmmo = function (ammoType) {
-        return incTower.ammoAttributes[ammoType].describe();
+    incTower.supportTowerDuration = function () {
+      return 2000 * (1 + 0.1 * incTower.getEffectiveSkillLevel('batteryLongevity'));
+    };
+    incTower.describeAmmo = function (tower) {
+        return incTower.ammoAttributes[tower.ammoType()].describe(tower);
     };
     incTower.describeTower = function (tower) {
         var attribs = incTower.towerAttributes[tower.towerType];
         var ret = '<p><b>Tower:</b> ' + attribs.describe() + '</p>';
-        if (attribs.describeSupport !== undefined) {
-            ret += '<p><b>Support:</b> ' + attribs.describeSupport(tower) + '</p>';
-        }
         if (attribs.ammoTypes !== undefined) {
-            ret += '<p><b>Ammo:</b> ' + incTower.describeAmmo(tower.ammoType()) + '</p>';
+            ret += '<p><b>Ammo:</b> ' + incTower.describeAmmo(tower) + '</p>';
         }
         return ret;
     };
@@ -465,7 +529,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         },
         elemental: {
             name: 'Elemental',
-            baseCost: 100,
+            baseCost: 50,
             damagePerLevel: 1,
             startingRange: 100,
             startingFireRate: 2500,
@@ -474,22 +538,16 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             },
             ammoTypes: ko.observableArray(['arcaneOrb'])
         },
-        sensor: {
-            name: 'Sensor Array',
-            baseCost: 1000,
+        support: {
+            name: 'Support',
+            baseCost: 66,
             damagePerLevel: 1,
-            startingFireRate: 10000,
             startingRange: 32,
-            icon: 'radar-sweep.png',
+            startingFireRate: 10000,
             describe: function () {
-                return 'Sensor arrays periodically increase the range and damage of adjacent towers but do no damage themselves.';
+                return 'Support towers grant effects to the towers around them, and usually a damage boost based on the damage of the support tower.';
             },
-            describeSupport: function (tower) {
-                var rate = incTower.humanizeNumber(tower.fireTime / 1000);
-                var damage = incTower.humanizeNumber(tower.totalDamage());
-                return 'Every ' + rate + "s this tower will grant a 15% range buff and a " + damage + " damage buff to a non-support tower that is adjacent to it. The buff lasts 2 seconds.";
-            },
-            support: true
+            ammoTypes: ko.observableArray(['generator'])
         }
     };
     _.forEach(_.keys(incTower.towerAttributes), function (towerType) {
@@ -501,10 +559,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         });
     });
     incTower.towerCost = function (type) {
-        var base = 25;
-        base = incTower.towerAttributes[type].baseCost;
+        var base = BigNumber(incTower.towerAttributes[type].baseCost);
+        base = base.plus(incTower.towerAttributes[type].blueprintPoints().times(5));
         var amount = incTower.costCalc(base, incTower.numTowers(), 1.4);
-        amount = amount.plus(incTower.towerAttributes[type].blueprintPoints().times(5));
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
         return amount;
     };
@@ -565,10 +622,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     incTower.destroyTower = DestroyTower;
 
     function TowerInputDown(sprite, pointer) {
+        console.log(pointer);
         if (incTower.cursor() !== false) {
             return false;
         }
-        console.log("TOWER CLICKED");
         incTower.currentlySelected(sprite);
     }
 
@@ -614,8 +671,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.tileY = tileY;
             this.tower = true;
             this.support = 'support' in incTower.towerAttributes[this.towerType] && incTower.towerAttributes[this.towerType].support;
-            this.powerBar = incTower.game.add.graphics(0, 0); //This bar represents relative power
-            this.addChild(this.powerBar);
             this.disabledFrames = ko.observable(0); //If this is non-zero the tower is disabled.
 
 
@@ -629,8 +684,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 this.damage = ko.observable(defaultDamage);
 
             }
+            this.buffs = ko.observableArray([]);
             this.totalDamage = ko.pureComputed(function () {
-
                 var ret = this.damage();
                 if (this.towerType === 'kinetic') {
                     ret = ret.times(1 + 0.05 * incTower.getEffectiveSkillLevel('kineticTowers'));
@@ -639,43 +694,30 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].damageModifier) {
                     ret = ret.times(incTower.ammoAttributes[this.ammoType()].damageModifier);
                 }
+                var damageBuffs = this.getBuffAmountByType('damage');
+                if (damageBuffs) {
+                    ret = ret.plus(damageBuffs);
+                }
                 return ret;
             }, this);
-            var totalDamageSubscription = function (newDamage) {
-                if (newDamage === undefined) {
-                    return;
-                }
+            var damageSubscription = function (newDamage) {
+                if (newDamage === undefined) { return; }
                 if (newDamage.gt(incTower.towerMaxDamage[this.towerType]())) {
                     incTower.towerMaxDamage[this.towerType](newDamage);
                 }
             };
-            this.totalDamage.subscribe(totalDamageSubscription, this);
+            this.damage.subscribe(damageSubscription, this);
 
 
             this.relativeTowerPower = ko.computed(function () {
-                if (this.totalDamage() === undefined) {
+                if (this.damage() === undefined) {
                     return;
                 }
-                var per = this.totalDamage().div(incTower.towerMaxDamage[this.towerType]()) * 1.0;
+                var per = this.damage().div(incTower.towerMaxDamage[this.towerType]()) * 1.0;
                 return per;
             }, this);
-            var relativeTowerPowerSubscription = function (per) {
-                if (per === undefined) {
-                    return;
-                }
-                var colour = '0xFF0000';
-                this.powerBar.clear();
-                this.powerBar.beginFill(colour);
-                this.powerBar.lineStyle(3, colour, 1);
-                this.powerBar.moveTo(-16, 15);
-                this.powerBar.lineTo(-16, -32 * per + 16);
-                this.powerBar.endFill();
-                incTower.game.world.bringToTop(this.powerBar);
-            };
-            this.relativeTowerPower.subscribe(relativeTowerPowerSubscription, this);
 
-            totalDamageSubscription.call(this, this.totalDamage());
-            relativeTowerPowerSubscription.call(this, this.relativeTowerPower());
+            damageSubscription.call(this, this.damage());
 
             this.level = ko.observable(opt.level || 1);
             this.levelIndicator = incTower.game.add.text(0, 0, "", {
@@ -689,12 +731,19 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.level.subscribe(function (newLevel) { this.updateLevelIndicator(); }, this);
             this.levelIndicator.setTextBounds(this.worldX, this.worldY - 2, tileSquare, tileSquare);
             this.updateLevelIndicator();
-            var defaultFireRate = 2000;
-            if ('startingFireRate' in incTower.towerAttributes[this.towerType]) {
-                defaultFireRate = incTower.towerAttributes[this.towerType].startingFireRate;
-            }
-            defaultFireRate *= 1 - 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
-            this.fireTime = Math.min(opt.fireTime || defaultFireRate, defaultFireRate); //opt.fireTime ||
+            //this.fireTime = Math.min(opt.fireTime || defaultFireRate, defaultFireRate); //opt.fireTime ||
+            this.fireTime = ko.pureComputed(function () {
+                var fireRate = 2000;
+                if ('startingFireRate' in incTower.towerAttributes[this.towerType]) {
+                    fireRate = incTower.towerAttributes[this.towerType].startingFireRate;
+                }
+                fireRate *= 1 - 0.05 * incTower.getEffectiveSkillLevel('initialEngineering');
+
+                if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].reloadModifier) {
+                    fireRate *= incTower.ammoAttributes[this.ammoType()].reloadModifier;
+                }
+                return fireRate;
+            }, this);
             var defaultRange = 150;
             if ('startingRange' in incTower.towerAttributes[this.towerType]) {
                 defaultRange = incTower.towerAttributes[this.towerType].startingRange;
@@ -704,7 +753,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.range = ko.observable(Math.min(opt.range || defaultRange, defaultRange)); // opt.range ||
             this.trueRange = ko.pureComputed(function () {
                 //var ret = this.range;
-                if (this.towerType === 'sensor') {
+                if (this.towerType === 'support') {
                     return 64;
                 }
                 var range = this.range();
@@ -713,15 +762,37 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 if (rangeBuffs > 0) {
                     range *= (1 + rangeBuffs);
                 }
+                if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].rangeModifier) {
+                    range *= incTower.ammoAttributes[this.ammoType()].rangeModifier;
+                }
                 return range;
             }, this);
 
-            this.buffs = ko.observableArray([]);
+
             this.inputEnabled = true;
             this.events.onInputOver.add(TowerInputOver, this);
             this.events.onInputOut.add(TowerInputOut, this);
             this.events.onInputDown.add(TowerInputDown, this);
-            this.fireLastTime = incTower.game.time.now + this.fireTime;
+            this.powerBar = incTower.game.add.sprite(this.worldX, this.worldY, 'incTower', 'white.png');
+            this.powerBar.tint = '0xFF0000';
+            //this.powerBar.alignIn(this, Phaser.BOTTOM_LEFT);
+            //this.addChild(this.powerBar); //If this isn't selected then the power bar going off the screen will cause weird overflows causing towers to be selected on any click on the canvas
+            var relativeTowerPowerSubscription = function (per) {
+                if (per === undefined) {
+                    return;
+                }
+                var height = 32 * per;
+                this.powerBar.scale.setTo(3, height);
+                this.powerBar.y = this.worldY + (32 - height);
+
+                incTower.game.world.bringToTop(this.powerBar);
+            };
+            this.relativeTowerPower.subscribe(relativeTowerPowerSubscription, this);
+
+            relativeTowerPowerSubscription.call(this, this.relativeTowerPower());
+
+
+            this.fireLastTime = incTower.game.time.now + this.fireTime();
             var upgradeCost = opt.remainingUpgradeCost;
             if (upgradeCost === undefined || isNaN(upgradeCost)) {
                 upgradeCost = incTower.calculateTowerUpgradeCost(this.towerType, this.level());
@@ -780,6 +851,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     Tower.prototype.constructor = Tower;
     Tower.prototype.cleanup = function () {
         this.levelIndicator.destroy();
+        this.powerBar.destroy();
     };
     Tower.prototype.updateLevelIndicator = function () {
         this.levelIndicator.text = this.level();
@@ -805,14 +877,22 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.icon = incTower.game.add.sprite(this.worldX + tileSquare / 2, this.worldY + tileSquare / 2, 'incTower', newIcon);
         }
     };
+    Tower.prototype.updateAllAmmo = function () {
+        var ourTowerType = this.towerType;
+        var ammoType = this.ammoType();
+        if (!ammoType) { return; }
+        _.forEach(incTower.towers(), function (tower) {
+            if (tower.towerType === ourTowerType) {
+                tower.ammoType(ammoType);
+            }
+        });
+    };
     Tower.prototype.upgradeCost = function (byLevel) {
 
         if (this.remainingUpgradeCost === undefined) {
             return new BigNumber(0);
         }
-        if (byLevel === undefined) {
-            byLevel = 1;
-        }
+        byLevel = byLevel || 1;
         var cost = this.remainingUpgradeCost();
         byLevel--;
         var prosLevel = this.level() + 1;
@@ -839,10 +919,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         if (incTower.paused()) {
             return;
         }
-        if (this.disabledFrames() > 0) {
-            incTower.incrementObservable(this.disabledFrames, -1);
-            this.alpha = 0.2;
-            return;
+        if (this.disabledFrames() > 0 && !this.getBuffAmountByType('energized')) {
+            if (this.ammoType() === 'generator') {
+                this.disabledFrames(0);
+            } else {
+                incTower.incrementObservable(this.disabledFrames, -1);
+                this.alpha = 0.2;
+                return;
+            }
         }
         this.alpha = 1;
         this.checkBuffs();
@@ -862,6 +946,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         });
         if (previousBuff) { //If we already have a buff by this source we increase the expiration time
             previousBuff.expiration = expiration;
+            if (amount > previousBuff.amount) {
+                previousBuff.amount = amount;
+            }
         } else {
             this.buffs.push({
                 source: source,
@@ -889,48 +976,40 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     };
 
     Tower.prototype.fire = function () {
-        if (incTower.game.time.now >= this.fireLastTime) {
+        if (incTower.game.time.now < this.fireLastTime) { return; }
 
-            //console.log("Now: " + game.time.now + " Last Fired:" + this.fireLastTime);
-            if (this.support) {
-                var tileX = this.tileX;
-                var tileY = this.tileY;
-                var candidates = [];
-                _.forEach(_.range(-1, 2), function (xMod) {
-                    _.forEach(_.range(-1, 2), function (yMod) {
-                        if (xMod === 0 && yMod === 0) {
-                            return;
-                        }
-                        var newTileX = tileX + xMod;
-                        var newTileY = tileY + yMod;
-                        if (newTileX < 0 || newTileY < 0 || newTileX > 24 || newTileY > 18) {
-                            return;
-                        }
-                        if (!path.tileForbidden[tileX + xMod][tileY + yMod] || path.tileForbidden[tileX + xMod][tileY + yMod].support) {
-                            return;
-                        }
-                        candidates.push(path.tileForbidden[tileX + xMod][tileY + yMod]);
-                    });
-                });
-                if (candidates.length > 0) {
-                    var candidate = incTower.game.rnd.pick(candidates);
-                    if (this.towerType === 'sensor') {
-                        incTower.createFloatingText({
-                            'color': 'purple',
-                            'duration': 2000,
-                            'around': candidate,
-                            'text': 'Range Buff!',
-                            'type': 'buff'
-                        });
-                        candidate.addBuff('range', this, 2000, 0.15);
-                        candidate.addBuff('damage', this, 2000, this.totalDamage());
-
+        //console.log("Now: " + game.time.now + " Last Fired:" + this.fireLastTime);
+        if (this.towerType === 'support') {
+            var tileX = this.tileX;
+            var tileY = this.tileY;
+            var candidates = [];
+            _.forEach(_.range(-1, 2), function (xMod) {
+                _.forEach(_.range(-1, 2), function (yMod) {
+                    if (xMod === 0 && yMod === 0) {
+                        return;
                     }
-                }
-                this.fireLastTime = incTower.game.time.now + this.fireTime;
+                    var newTileX = tileX + xMod;
+                    var newTileY = tileY + yMod;
+                    if (newTileX < 0 || newTileY < 0 || newTileX > 24 || newTileY > 18) {
+                        return;
+                    }
+                    if (!path.tileForbidden[tileX + xMod][tileY + yMod] || path.tileForbidden[tileX + xMod][tileY + yMod].towerType === 'support') {
+                        return;
+                    }
+                    candidates.push(path.tileForbidden[tileX + xMod][tileY + yMod]);
+                });
+            });
+            if (candidates.length > 0) {
+                var targetTower = incTower.game.rnd.pick(candidates);
+                incTower.ammoAttributes[this.ammoType()].support(this, targetTower);
+            }
+            this.fireLastTime = incTower.game.time.now + this.fireTime();
 
-            } else {
-                var enemiesInRange = [];
+        } else {
+            var range = this.trueRange();
+            var shortestDistance = -1;
+            if (!this.lastTarget || !this.lastTarget.alive || incTower.game.physics.arcade.distanceBetween(this.lastTarget, this) > range) {
+                this.lastTarget = false;
                 for (var i = 0; i < incTower.enemys.children.length; i++) {
                     if (!incTower.enemys.children[i].alive) {
                         continue;
@@ -938,39 +1017,48 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     if (incTower.enemys.children[i].x < 0 || incTower.enemys.children[i].y < 0) {
                         continue;
                     }
-                    if (incTower.game.physics.arcade.distanceBetween(incTower.enemys.children[i], this) <= this.trueRange()) {
-                        enemiesInRange.push(incTower.enemys.children[i]);
+                    var distance = incTower.game.physics.arcade.distanceBetween(incTower.enemys.children[i], this);
+                    if (distance <= range) {
+                        this.lastTarget = incTower.enemys.children[i];
+                        break;
                     }
-                }
-                if (enemiesInRange.length > 0) {
-                    var chosenEnemy = enemiesInRange[(Math.random() * enemiesInRange.length) | 0];
-                    var sprite = 'bullet.png';
-                    if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].bulletSprite) {
-                        sprite = incTower.ammoAttributes[this.ammoType()].bulletSprite;
+                    if (shortestDistance < 0 || distance < shortestDistance) {
+                        shortestDistance = distance;
                     }
-
-                    if (!(sprite in incTower.deadBullets)) {
-                        incTower.deadBullets[sprite] = [];
-                    }
-                    var bullet = incTower.deadBullets[sprite].shift();
-                    if (bullet !== undefined) {
-                        bullet.revive();
-                        bullet.reset(this.x, this.y);
-                    } else {
-                        bullet = incTower.bullets.create(this.x, this.y, 'incTower', sprite, true);
-                        incTower.game.physics.enable(bullet, Phaser.Physics.ARCADE);
-                    }
-                    bullet.damage = this.totalDamage();
-                    bullet.tower = this;
-                    bullet.target = chosenEnemy;
-                    this.fireLastTime = incTower.game.time.now + this.fireTime;
-                    incTower.game.physics.arcade.moveToObject(bullet, chosenEnemy, 300);
-                    bullet.fired = incTower.game.time.now;
-                    bullet.ammoType = this.ammoType();
                 }
             }
+            if (this.lastTarget && this.lastTarget.alive && incTower.game.physics.arcade.distanceBetween(this.lastTarget, this) <= range) {
 
+                var sprite = 'bullet.png';
+                if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].bulletSprite) {
+                    sprite = incTower.ammoAttributes[this.ammoType()].bulletSprite;
+                }
+
+                if (!(sprite in incTower.deadBullets)) {
+                    incTower.deadBullets[sprite] = [];
+                }
+                var bullet = incTower.deadBullets[sprite].pop();
+                if (bullet !== undefined) {
+                    bullet.revive();
+                    bullet.reset(this.x, this.y);
+                } else {
+                    bullet = incTower.bullets.create(this.x, this.y, 'incTower', sprite, true);
+                    incTower.game.physics.enable(bullet, Phaser.Physics.ARCADE);
+                }
+                bullet.damage = this.totalDamage();
+                bullet.tower = this;
+                bullet.target = this.lastTarget;
+                this.fireLastTime = incTower.game.time.now + this.fireTime();
+                incTower.game.physics.arcade.moveToObject(bullet, this.lastTarget, 300);
+                bullet.fired = incTower.game.time.now;
+                bullet.ammoType = this.ammoType();
+            } else { //If no one was in range delay the next check based on the shortest distance to an enemy
+                shortestDistance -= range;
+                //console.log("Shortest distance" + shortestDistance);
+                this.fireLastTime = incTower.game.time.now + (shortestDistance * 10);
+            }
         }
+
     };
     Tower.prototype.sell = function () {
         incrementObservable(incTower.gold, this.sellValue());

@@ -1,7 +1,49 @@
 define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lodash', 'lib/ko.observableDictionary', 'lib/jstree', 'incTower/util',  'incTower/tooltips'], function (incTower, ko, BigNumber, moment, _) {
     'use strict';
-
     var humanizeNumber = incTower.humanizeNumber;
+    function SkillCollection() { //Describes a collection of skills at a certain rank.
+        this.collection = {};
+        this.pairs = [];
+        this.add = function (pair) {
+            var skill = pair[0];
+            var level = pair[1];
+            if (this.collection[skill]) {
+                if (level > this.collection[skill]) {
+                    this.collection[skill] = level;
+                    var index = _.findIndex(this.pairs, function (findPair) { return findPair[0] === skill; });
+                    this.pairs[index] = [skill, level];
+                }
+                return;
+            }
+            this.collection[skill] = level;
+            this.pairs.push(pair);
+        };
+        this.merge = function (otherCollection) {
+            var _this = this;
+            _.forEach(otherCollection.pairs, function (otherItem) {
+                _this.add(otherItem);
+            });
+        };
+        this.difference = function (otherCollection) {
+            //Returns a new collection which is all skills in this collection that are not included in the other collection
+            var ret = new SkillCollection();
+            _.forEach(this.pairs, function(pair) {
+               if (!otherCollection.contains(pair[0], pair[1])) {
+                   ret.add(pair);
+               }
+            });
+            return ret;
+        };
+        this.empty = function () {
+            return this.pairs.length === 0;
+        };
+        this.contains = function (skill, level) { // Returns true if we have the skill at a given level, level defaults to 1
+            level = level || 1;
+            if (!this.collection[skill]) { return false; }
+            return this.collection[skill] >= level;
+        };
+
+    };
     incTower.skillAttributes = {
         construction: {
             fullName: 'Construction',
@@ -269,7 +311,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.1,
             maxLevel: 1,
             describeRank: function (rank) {
-                'use strict';
                 return "Attunes yourself with water which allows you to build water towers which slow and freeze enemies.";
             },
 
@@ -296,7 +337,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.266,
             maxLevel: 10,
             describeRank: function (rank) {
-                'use strict';
                 return "Increases the chance that a water tower successfully applies a rune by " + (rank * 5) + '%.';
             },
             grants: {
@@ -309,7 +349,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.15,
             maxLevel: 10,
             describeRank: function (rank) {
-                'use strict';
                 return "When a water tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             }
         },
@@ -320,7 +359,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.1,
             maxLevel: 1,
             describeRank: function (rank) {
-                'use strict';
                 return "Attunes yourself with earth which allows you to build earth towers which drop giant boulders from the sky, causing area of effect damage.";
             },
 
@@ -372,7 +410,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.1,
             maxLevel: 1,
             describeRank: function (rank) {
-                'use strict';
                 return "Attunes yourself with air which allows you to build air towers which will occasionally trap enemies in a whirlwind, knocking them back.";
             },
 
@@ -399,7 +436,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.266,
             maxLevel: 10,
             describeRank: function (rank) {
-                'use strict';
                 return "Increases the chance that an air tower successfully applies a rune by " + (rank * 5) + '%.';
             },
 
@@ -413,7 +449,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             growth: 1.15,
             maxLevel: 10,
             describeRank: function (rank) {
-                'use strict';
                 return "When an air tower successfully applies a rune, there is a " + (rank * 5) + '% chance that it will apply two instead.';
             },
         },
@@ -426,8 +461,21 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             },
             maxLevel: 5,
             grants: {
-                5: ['sensorArrays']
+                5: ['sensorArrays', 'sniperAmmo']
             }
+        },
+        sniperAmmo: {
+            fullName: 'Sniper Ammo',
+            baseCost: 900,
+            growth: 1.2,
+            describeRank: function (rank) {
+                return 'Allows the construction of sensor arrays which periodically increase the range of towers adjacent to them.';
+            },
+            maxLevel: 1,
+            onMax: function () {
+                incTower.addToObsArray(incTower.towerAttributes.kinetic.ammoTypes, 'sniper');
+            }
+
         },
         sensorArrays: {
             fullName: 'Sensor Arrays',
@@ -438,19 +486,57 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             },
             maxLevel: 1,
             onMax: function () {
-                incTower.addToObsArray(incTower.availableTowers, 'sensor');
+                incTower.addToObsArray(incTower.towerAttributes.support.ammoTypes, 'sensor');
+            },
+            additionalPrereqs: [['powerDistribution', 1]]
+        },
+
+
+
+        powerDistribution: {
+            fullName: 'Power Distribution',
+            baseCost: 300,
+            growth: 1.1,
+            maxLevel: 1,
+            describeRank: function () {
+                return "Allows the construction of support towers which grant special effects and damage boosts to towers around them.";
+            },
+            onMax: function () {
+                incTower.addToObsArray(incTower.availableTowers, 'support');
+            },
+            grants: {
+                1: ['batteryLongevity']
             }
+
+        },
+        batteryLongevity: {
+            fullName: 'Battery Longevity',
+            baseCost: 233.485,
+            growth: 1.15,
+            maxLevel: 5,
+            describeRank: function (rank) {
+                return "Increases the duration of support tower buffs by " + (rank * 10) + '%.';
+            },
         }
 
     };
+    //Go through and reverse any grants to list parents
+    _.forOwn(incTower.skillAttributes, function (attribs, name) {
+        if (attribs.grants) {
+            _.forOwn(attribs.grants, function (grantSkills, level) {
+                level = parseInt(level);
+                _.forEach(grantSkills, function (grantSkill) {
+                    incTower.skillAttributes[grantSkill].parent = [name, level];
+                });
+            });
+        }
+    });
+
 
     incTower.skills = ko.observableDictionary({});
     incTower.skillQueue = ko.observableArray([]);
     incTower.clearQueue = function () {
-        'use strict';
-        while (incTower.skillQueue().length > 0) {
-            incTower.skillQueue.shift();
-        }
+        incTower.skillQueue.removeAll();
     };
     incTower.UIselectedSkill = ko.observable(false);
     incTower.activeSkill = ko.pureComputed(function () {
@@ -465,9 +551,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
     });
     incTower.getSkillTreeLabel = function (skillName) {
         var maxLevel = incTower.skillAttributes[skillName].maxLevel;
-        if (maxLevel === undefined) {
-            maxLevel = '&infin;';
-        }
+        if (maxLevel === undefined) { maxLevel = '&infin;'; }
         var currentLevel = '--';
         var stars = '';
         if (incTower.haveSkill(skillName)) {
@@ -506,43 +590,33 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
     incTower.skillHasMax = function (skillName) {
         return incTower.skillAttributes[skillName].maxLevel !== undefined;
     };
-    incTower.skillGetPrereq = function (skillNameToFind) {
-        if (incTower.skillAttributes[skillNameToFind].prereq) {
-            return incTower.skillAttributes[skillNameToFind].prereq;
+    incTower.skillGetPrereqs = function (skillNameToFind) {
+        if (incTower.skillAttributes[skillNameToFind].prereqs) {
+            return incTower.skillAttributes[skillNameToFind].prereqs;
         }
-        if (_.includes(incTower.startingSkills, skillNameToFind)) {
-            incTower.skillAttributes[skillNameToFind].prereq = false;
-            return false;
+        if (!incTower.skillAttributes[skillNameToFind].parent) {
+            incTower.skillAttributes[skillNameToFind].prereqs = new SkillCollection();
+            return incTower.skillAttributes[skillNameToFind].prereqs;
         }
-        var ret;
-        _.forEach(_.keys(incTower.skillAttributes), function (skill) {
-            if (incTower.skillAttributes[skill].grants === undefined) {
-                return;
-            }
-            _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
-                if (_.includes(skills, skillNameToFind)) {
-                    ret = [skill, parseInt(level)];
-                    incTower.skillAttributes[skillNameToFind].prereq = ret;
-                    return false;
-                }
+        var ret = new SkillCollection();
+        ret.add(incTower.skillAttributes[skillNameToFind].parent);
+        ret.merge(incTower.skillGetPrereqs(incTower.skillAttributes[skillNameToFind].parent[0]));
+        if (incTower.skillAttributes[skillNameToFind].additionalPrereqs) {
+            _.forEach(incTower.skillAttributes[skillNameToFind].additionalPrereqs, function (preReq) {
+                ret.add(preReq);
+                ret.merge(incTower.skillGetPrereqs(preReq[0]));
             });
-        });
+        }
+        incTower.skillAttributes[skillNameToFind].prereqs = ret;
         return ret;
     };
     incTower.skillIsMaxed = function (skillName) {
-        if (!skillName) {
-            return false;
-        }
-        if (incTower.skillHasMax(skillName)) {
-            if (incTower.getSkillLevel(skillName) >= incTower.skillAttributes[skillName].maxLevel) {
-                return true;
-            }
-        }
-        return false;
+        if (!skillName) { return false; }
+        var maxLevel = incTower.skillAttributes[skillName].maxLevel;
+        return maxLevel && incTower.getSkillLevel(skillName) >= maxLevel;
     };
 
     incTower.skillRankInQueue = function (skill) {
-        'use strict';
         var minRank = 0;
         _.map(incTower.skillQueue(), function (item) {
             if (item[0] === skill) {
@@ -552,10 +626,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         return minRank;
     };
     incTower.skillMaxedInQueue = function (skill) {
-        'use strict';
-        if (!skill) {
-            return false;
-        }
+        if (!skill) { return false; }
         var minRank = incTower.skillRankInQueue(skill) + 1;
         if (incTower.skillAttributes[skill].maxLevel !== undefined && minRank > incTower.skillAttributes[skill].maxLevel) {
             return true;
@@ -568,66 +639,61 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         }
         //Returns the rank trainable in the skill if it is directly trainable, meaning all prereqs are met in the queue already, otherwise false
         var minRank = Math.max(incTower.getSkillLevel(skill), incTower.skillRankInQueue(skill)) + 1;
-
         if (incTower.skillAttributes[skill].maxLevel !== undefined && minRank > incTower.skillAttributes[skill].maxLevel) {
             return false;
         }
-        if (!incTower.haveSkill(skill)) {
-            var grants = [];
-            _.map(incTower.skillQueue(), function (item) {
-                var skill = item[0];
-                var rank = item[1];
-                if (incTower.skillAttributes[skill].grants !== undefined) {
-                    _.mapValues(incTower.skillAttributes[skill].grants, function (skills, level) {
-                        if (rank >= level) {
-                            grants = grants.concat(skills);
-                        }
-                    });
-                }
-            });
-            if (!_.includes(grants, skill)) {
-                return false;
-            }
-        }
+        var prereqs = incTower.skillGetPrereqs(skill);
+        var diff = prereqs.difference(incTower.getCurrentSkills(true));
+        if (!diff.empty()) { return false; }
         return minRank;
     };
-    incTower.directlyRemovable = function (skill, rank) {
-        'use strict';
-        var removable = true;
-        var possGrants = incTower.possibleGrants(skill, rank);
-        _.forEach(incTower.skillQueue(), function (item) {
-            if (item[0] === skill && item[1] === rank + 1) {
-                removable = false;
-                return false;
-            }
-            if (_.includes(possGrants, item[0])) {
-                removable = false;
-                return false;
-            }
-
-
+    incTower.getCurrentSkills = function (includingQueue) { // Returns a skill collection of currently skills, possibly including current queue
+        var ret = new SkillCollection();
+        _.forEach(incTower.skills.keys(), function (skill) {
+           ret.add([skill, incTower.getSkillLevel(skill)]);
         });
-        return removable;
+        if (includingQueue) {
+            _.forEach(incTower.skillQueue(), function (item) {
+                ret.add(item);
+            });
+        }
+        return ret;
+    };
+    incTower.checkPotentialQueue = function (potentialList) {
+        var skillTally = incTower.getCurrentSkills();
+        var valid = true;
+        _.forEach(potentialList, function (item) {
+            if (!valid) { return false; }
+            var skill = item[0];
+            var rank = item[1];
+            if (rank > 1 && !skillTally.contains(skill, rank - 1)) {
+                valid = false;
+            }
+            var prereqs = incTower.skillGetPrereqs(skill);
+            var diff = prereqs.difference(skillTally);
+            if (!diff.empty()) { valid = false; }
+            if (valid) { skillTally.add(item); }
+        });
+        return valid;
+    };
+    incTower.directlyRemovable = function (skill, rank) {
+        var potentialList = _.clone(incTower.skillQueue());
+        _.remove(potentialList, function (item) {
+            return item[0] === skill && item[1] === rank;
+        });
+        return incTower.checkPotentialQueue(potentialList);
     };
     incTower.enqueueSkill = function (skill) {
-        'use strict';
         var minRank = incTower.directlyQueueable(skill);
-        if (minRank === false) {
-            return false;
-        }
+        if (minRank === false) { return false; }
         incTower.skillQueue.push([skill, minRank]);
     };
     incTower.skillCanTrain = function (skillName) {
-        if (incTower.skillIsMaxed(skillName)) {
-            return false;
-        }
-        if (incTower.activeSkill() === skillName) {
-            return false;
-        } //Can't train the skill you're already training
+        if (incTower.skillIsMaxed(skillName)) { return false; }
+        if (incTower.activeSkill() === skillName) { return false; } //Can't train the skill you're already training
         return true;
     };
     incTower.skillTextProgress = function (skillName) {
-        'use strict';
         if (incTower.skillAttributes[skillName] === undefined) {
             return "";
         }
@@ -642,9 +708,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         return humanizeNumber(skill.get('skillPoints')()) + " / " + humanizeNumber(skill.get('skillPointsCap')());
     };
 
-    incTower.startingSkills = ['kineticTowers', 'construction', 'magicalAffinity', 'sensors', 'investment'];
+    incTower.startingSkills = ['kineticTowers', 'construction', 'magicalAffinity', 'sensors', 'investment', 'powerDistribution'];
     incTower.gainSkill = function (name, opt) {
-        'use strict';
         if (typeof opt === 'undefined') {
             opt = {};
         }
@@ -665,7 +730,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         //incTower.skillTreeUpdateLabel(name);
     };
     incTower.describeSkill = function (name) {
-        if (!(name in incTower.skillAttributes)) {
+        if (!incTower.skillAttributes[name]) {
             return '';
         }
         var currentLevel = incTower.getSkillLevel(name);

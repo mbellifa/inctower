@@ -10,6 +10,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             if (save.length === 0) {
                 throw "Invalid compressed save";
             }
+            // console.log(save);
             save = JSON.parse(save);
         } catch (e) {
             try {
@@ -71,6 +72,9 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 if (towerType === 'fire' || towerType === 'water' || towerType === 'earth' || towerType === 'air') {
                     towerType = 'elemental'; // All of the old elemental towers blueprint points get added into elementals
                 }
+                if (towerType === 'sensor') {
+                    towerType = 'support';
+                }
 
                 if (!_.has(incTower.towerBlueprints, towerType)) {
                     incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
@@ -111,6 +115,10 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 if (tower.towerType === 'water' || tower.towerType === 'fire'  || tower.towerType === 'air'  || tower.towerType === 'earth') {
                     tower.ammoType = tower.towerType + 'Orb';
                     tower.towerType = 'elemental';
+                }
+                //If our save contains sensor towers convert them to support towers, we can't assume they actually have sensor towers so we just change type.
+                if (tower.towerType === 'sensor') {
+                    tower.towerType = 'support';
                 }
                 var index = incTower.core.map.layers[0].data[tileY][tileX].index;
                 if (index >= 0 && index <= 4) {

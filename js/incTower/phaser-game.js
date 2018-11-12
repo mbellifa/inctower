@@ -35,6 +35,26 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         }
         return incTower.core.sounds.musicList()[1];
     });
+    incTower.replaceGraphics = function (graphics, key, group) {
+        var x = graphics.x;
+        var y = graphics.y;
+        var texture = graphics.generateTexture();
+        if (key) {
+            incTower.game.cache.addImage(key, null, texture.baseTexture.source);
+            if (!_.includes(incTower.game.renderer.currentBatchedTextures, key)) {
+                var prioTextures = _.uniqBy(_.concat(incTower.core.prioTextures, key, incTower.game.renderer.currentBatchedTextures));
+                console.log("Batched: " + incTower.game.renderer.setTexturePriority(prioTextures));
+            }
+        } else {
+            key = texture;
+        }
+
+        var ret = incTower.game.add.sprite(Math.max(0, x - texture.width), Math.max(0, y - texture.height), key, group);
+        graphics.destroy();
+        return ret;
+
+
+    };
     function collisionHandler(bullet, enemy) {
 
         bullet.target = undefined;
@@ -45,6 +65,19 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var frame = bullet._frame.name;
         if (!(frame in incTower.deadBullets)) { incTower.deadBullets[frame] = []; }
         incTower.deadBullets[frame].push(bullet);
+        if (enemy.directionalStart) {
+            var angle = incTower.game.math.wrapAngle(incTower.game.physics.arcade.angleBetween(enemy, bullet), true);
+
+            // var mouseAngle = incTower.game.math.wrapAngle(incTower.game.math.angleBetween(enemy.x, enemy.y, incTower.game.input.x, incTower.game.input.y), true);
+            // console.log("Angle: " + angle);
+            // console.log("Mouse Angle: " + mouseAngle);
+            // console.log("Start: " + enemy.directionalStart);
+            // console.log("End: " + enemy.directionalEnd);
+            if (angle >= enemy.directionalStart && angle <= enemy.directionalEnd) {
+                return;
+            }
+        }
+
         if (bullet.ammoType !== false) {
             incTower.ammoAttributes[bullet.ammoType].collision(firingTower, bullet, enemy);
         } else {
@@ -58,7 +91,7 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
 
     function preload() {
         incTower.game.load.tilemap('tower-defense-tiles', 'assets/maps/tower-defense2.json', null, Phaser.Tilemap.TILED_JSON);
-        incTower.game.load.atlas('incTower', 'assets/sprites/main.png', 'assets/sprites/main.json');
+        incTower.game.load.atlasJSONHash('incTower', 'assets/sprites/main.png', 'assets/sprites/main.json');
         incTower.game.load.image('tower-defense-tiles', 'assets/maps/tower-defense-tiles.png');
         incTower.game.load.audio('positive', 'assets/audio/sound-effects/positive.ogg');
     }
@@ -66,10 +99,12 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var lastRealTime = incTower.lastUpdateRealTime;
         incTower.updateRealTime();
         var ticks = ((incTower.lastUpdateRealTime - lastRealTime) / 16) | 0;
+
         var baseTime = incTower.game.time.now;
         for (var i = 0;i < ticks;i++) {
-            incTower.game.update(baseTime + 16 * i);
+            incTower.game.updateLogic(baseTime + 16 * i);
         }
+        incTower.game.update(incTower.lastUpdateRealTime);
     };
     incTower.updateRealTime = function () {
         if (performance !== undefined) {
@@ -79,6 +114,9 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         }
     };
     function create() {
+        incTower.core.prioTextures = ['tower-defense-tiles', 'incTower'];
+        incTower.game.renderer.setTexturePriority(incTower.core.prioTextures);
+        incTower.game.clearBeforeRender = false;
         keybinds.setInputHandlers(incTower.game);
 
         incTower.updateRealTime();
@@ -90,29 +128,33 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
             positive: incTower.game.add.audio('positive')
         };
         incTower.core.layer = incTower.core.map.createLayer('Ground');
+        incTower.core.layer.renderSettings.enableScrollDelta = false; //http://www.thebotanistgame.com/blog/2015/03/04/tuning-phaserjs-performance.html
         incTower.core.layer.resizeWorld();
         path.recalcPath();
         incTower.towers_group = incTower.game.add.group();
         incTower.bullets = incTower.game.add.group();
         incTower.enemys = incTower.game.add.group();
+        incTower.enemyHealthbars = incTower.game.add.group();
+        incTower.enemyNullzones = incTower.game.add.group();
 
-        if (true || Worker === undefined) {
+
+        if (Worker === undefined) {
             setInterval(function () {
                 incTower.convergeUpdate();
             },1000);
-        } else { //TODO: Fully remove this.
+        } else {
             var worker = new Worker('incTower-Worker.js');
             worker.postMessage({'cmd':'start'});
             worker.addEventListener('message', function(e) {
                 if (e.data === "update") {
-                    console.log("RECEIVED UPDATE EVENT");
                     incTower.convergeUpdate();
                 }
             }, false);
         }
         var save = localStorage.getItem("save");
         if (save !== null) {
-            setTimeout(function () {saveManager.loadSave(save);}, 100);
+            //setTimeout(function () {saveManager.loadSave(save);}, 100);
+            saveManager.loadSave(save);
         }
 
         //We need a load function here for this to really make sense
@@ -123,21 +165,25 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var colour = "0x00FF00";
         var tileSquare = 32;
         startZone.beginFill(colour);
-        startZone.lineStyle(5, colour, 1);
+        startZone.lineStyle(3, colour, 1);
         startZone.lineTo(0, tileSquare);
         startZone.moveTo(0, 0);
         startZone.lineTo(tileSquare, 0);
         startZone.endFill();
+        startZone = incTower.replaceGraphics(startZone, 'startZone');
+
+
 
         var endZone = incTower.game.add.graphics(800,608);
         colour = "0xFF0000";
         endZone.beginFill(colour);
-        endZone.lineStyle(5, colour, 1);
+        endZone.lineStyle(3, colour, 1);
         endZone.lineTo(0, -tileSquare);
         endZone.moveTo(0, 0);
         endZone.lineTo(-tileSquare, 0);
         endZone.endFill();
-        incTower.game.world.bringToTop(endZone);
+        var endZoneSprite = incTower.replaceGraphics(endZone, 'endZone');
+        incTower.game.world.bringToTop(endZoneSprite);
 
     }
     function update() {
@@ -213,11 +259,11 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
             incTower.currentlySelectedIndicator.x = selected.x;
             incTower.currentlySelectedIndicator.y = selected.y;
         }
-
         incTower.game.physics.arcade.overlap(incTower.bullets, incTower.enemys, collisionHandler, null, this);
     }
 
-    var mode = Phaser.AUTO;
+    var mode = Phaser.WEBGL_MULTI;
+    // mode = Phaser.AUTO;
     if (navigator.userAgent.match(/Trident.*rv\:11\./) || navigator.userAgent.indexOf("Edge/") > -1 || navigator.userAgent.indexOf("MSIE ") > -1) {
         mode = Phaser.CANVAS; // IE has a memory leak with WebGL for some reason so we force it to use Canvas in this case.
     }

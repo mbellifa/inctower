@@ -28,11 +28,12 @@ define(["incTower/core", 'lib/lodash'], function (incTower, _) {
                     var buffer = 15;
                     var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
                     var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                    var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
                     var left = Math.min(e.pageX + buffer, w - 280);
                     left = Math.max(left, 0);
                     var tooltipHeight = getComputedStyle(tooltips.activeTooltip).height;
                     tooltipHeight = parseInt(tooltipHeight.replace('px',''));
-                    var top = Math.min(e.pageY + buffer, h - tooltipHeight);
+                    var top = Math.min(e.pageY + buffer, h + scrollTop - (tooltipHeight + 15));
                     top = Math.max(top, 0);
                     tooltips.activeTooltip.style.top = top + 'px';
                     tooltips.activeTooltip.style.left = left + 'px';

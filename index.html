@@ -22,7 +22,7 @@
 <body>
 <div class="topnav">
     <span class="header"><a href="http://inctower.reddit.com" target="_blank">Incremental Tower Defense<span
-            class="version">0.2.4</span></a></span>
+            class="version">0.2.5</span></a></span>
     <span class="toplinks">
                 <button data-bind="click: function () { $root.showHelp(); }">Help <span
                         data-bind="if: $root.unreadHelps() > 0"><span data-bind="text: $root.unreadHelps()"
@@ -193,16 +193,11 @@
                 <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
                     <div style="float: right; width: 50%; background-color: lightgrey; padding: 0 0.5em;"
                          data-bind="html: $root.describeTower(currentlySelected())"></div>
-                    <p><b>Currently Selected Tower:</b> <span data-bind="if: currentlySelected().support">
-                                <span data-bind="attr: { 'data-tooltip': $root.towerAttributes[currentlySelected().towerType].describeSupport($root.currentlySelected()) }"
-                                      class="tooltip">
-                                    Support Tower
-                                </span>
-                            </span></p>
+                    <p><b>Currently Selected Tower:</b></p>
                     <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
                     <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
                     <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
-                    <div>Attack Delay: <span data-bind="text: (currentlySelected().fireTime/1000).toFixed(2)"></span>
+                    <div>Attack Delay: <span data-bind="text: (currentlySelected().fireTime()/1000).toFixed(2)"></span>
                     </div>
                     <div data-bind="if: currentlySelected().ammoType() != false">
                         Ammo Type:
@@ -212,7 +207,7 @@
                             optionsText: function (ammo) {
                                 return $root.ammoAttributes[ammo].name;
                             }
-                        "></select>
+                        "></select><button data-bind="click: function () { currentlySelected().updateAllAmmo(); }" class="tooltip" data-tooltip="Set the ammo type for each tower of this type to the currently selected Ammo.">Update Ammo for <span data-bind="text: _.capitalize(currentlySelected().towerType)"></span> Towers</button>
                     </div>
                     <button data-bind="click: function () { currentlySelected().payToUpgrade(); }">Upgrade (<span
                             data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)
@@ -309,10 +304,11 @@
     <p>Music: Sci-Fi from <a href="http://www.bensound.com">BenSound.com</a>, found <a href="https://www.bensound.com/royalty-free-music/track/sci-fi">here</a>.</p>
     <p>Music: We're Leaving Now from Nico Maximilian, found <a href="https://www.jamendo.com/track/1448049/we-re-leaving-now">here</a>.</p>
     <p>Tileset by Leonard Pabin found <a href="https://opengameart.org/content/whispers-of-avalon-grassland-tileset">on OpenGameArt.org</a>.</p>
-
-
-
-
+    <p>Power Lightning icon icon which is used by the support tower and power generator support ammo made by <a
+            href="http://lorcblog.blogspot.com/">Lorc</a> and hosted on <a
+            href="http://game-icons.net/lorc/originals/power-lightning.html">game-icons.net</a>. It has been shrunk down
+        and colorized for my purposes.</p>
+    <p>Spell casting animation by rubberduck found on <a href="https://opengameart.org/content/25-special-effects-rendered-with-blender">OpenGameArt</a>.</p>
 </div>
 <div id="save" title="Saves">
     <p>Copy and paste the text below to backup your save game.<br>
@@ -386,6 +382,37 @@
 <div id="changelog" title="Changelog">
     <p>Changelog:</p>
     <ul>
+        <li>Version 0.2.5:
+            <ul>
+                <li>2018-11-11: Added Battery Longevity skill which increases the duration of support tower buffs.</li>
+                <li>2018-11-11: Added Sniper Ammo skill and Ammo Type which causes heavier damage at a large range in exchange for a slower reload time.</li>
+                <li>2018-11-11: Buffs to towers from support towers will now overwrite weaker buffs of the same type.</li>
+                <li>2018-11-11: Prestiging now properly clears unlocked ammo types. (Thanks DougMcCokkin.GG)</li>
+                <li>2018-11-11: Changed blueprint values to change the base value of towers before exponential growth rather than adding to them afterwards. (Thanks Duguall)</li>
+                <li>2018-11-11: Fixed a bug that caused all clicks to register as selecting a single tower.</li>
+                <li>2018-11-11: Library Updates: Phaser CE to v2.11.1, jsTree to v3.3.7, Easy Star to v0.4.3, jQuery to v3.3.1, Lodash to v4.17.10</li>
+                <li>2018-01-27: Drastically reduced the number of draw calls made when in WebGL, which should vastly improve performance for each browser except for IE and Edge.</li>
+                <li>2018-01-21: Preferred powers are now spread more evenly among different types of enemies, there are now no powers which are not preferred by some kind of enemy and no two enemies have the same set of preferred powers.</li>
+                <li>2018-01-21: Added a boss power called steel skinned which reduces burning/bleeding damage by 50%/100% over two ranks.</li>
+                <li>2018-01-15: Enemy sprites can now have multiple "preferred powers", so for example a sprite can be marked to prefer flying and null-zone instead of just preferring flying.</li>
+                <li>2018-01-14: Enemies health and gold value is now divided based on pack. Meaning that in the case of a mixed pack where one has way more enemies that pack will have lower health values per unit. Previously the health pool was split across all units so one pack with swarm would lower the health values of the other pack.</li>
+                <li>2018-01-14: Added a new enemy power called healer which allows it to intelligently heal an enemy once every 10 seconds, enemies stop when casting a spell.</li>
+                <li>2018-01-13: Relative tower indicators are now based on base damage (before buffs/skills) rather than the relatively more expensive to calculate total damage.</li>
+                <li>2018-01-12: Added the generator ammo type which comes with the skill that unlocks support towers. Generators buff towers around them to allow them to sometimes fire even in effects such as null-zone. Generators are immune from the effects of null-zone themselves as well.</li>
+                <li>2018-01-12: Fixed a bug where support towers damage bonuses were not being applied.</li>
+                <li>2018-01-12: The cost difference from kinetic -> elemental -> support has been vastly reduced. In particular support towers are now 10x cheaper to build.</li>
+                <li>2018-01-12: Sensor arrays are now not a separate type but rather an ammo for the new support type. All blueprint points that were accumulated under sensors will be applied to support towers.</li>
+                <li>2018-01-12: Reworked skill code such that a skill can have additional skill pre-requisites beyond just the parent skills. Sensor Arrays now requires Power Distribution in addition to Sensors because Sensor Array will soon be an "ammo type" for the generic support tower.</li>
+                <li>2018-01-12: Added a new skill called Power Distribution which unlocks the new generic support tower.</li>
+                <li>2018-01-09: There is now a button to update all towers of a given type to its currently selected ammo.</li>
+                <li>2018-01-09: Fixed a bug where tooltips could appear off screen if the browser was not maximized or had reduced height in general.</li>
+                <li>2018-01-07: Added a new boss power called Directional-Shield, enemies spawn a shield 45-270 degrees around them and are immune to tower shots from those angles.</li>
+                <li>2018-01-06: Start zones, end zones, the path, and null zone have been changed to be less intensive to draw. Nullzones are now more transparent.</li>
+                <li>2018-01-06: The game will once again use a worker process to try to stay active in the background. Will now attempt to call render only once instead of on each delta tick.</li>
+                <li>2018-01-06: Optimizations for games with lots of towers: Towers will now remember their last target and retry that target first rather than constantly scanning for enemies in range. Towers will also pause scanning based on the distance to the nearest enemy if there are no targets in range.</li>
+
+            </ul>
+        </li>
         <li>Version 0.2.4:
             <ul>
                 <li>2018-01-05: There should in theory be a favicon for the game now.</li>
@@ -1048,10 +1075,8 @@
     <p>Todo:</p>
     <ul>
         <li>Add skills that impact effects, additional damage to frozen targets etc.</li>
-        <li>Generalize support towers using ammo types.</li>
         <li>Nerf anti-coagulants by adding an element of RNG (20% on bleed tick to increase or similar).</li>
         <li>Add skills that scale on prestige.</li>
-        <li>Allow multiple preferred powers so you can have flying + something else for example.</li>
         <li>Clean up selection area.</li>
         <li>Stream-line tower+block commands.</li>
         <li>Add some sort of system to increase engagement and encourage active engagement.</li>
@@ -1063,7 +1088,6 @@
         <li>Look into traps (don't block pathing)</li>
         <li>Look into spells that affect towers.</li>
         <li>Look into a rebuild/update action for towers which have lagged behind due to tower templates/etc.</li>
-        <li>Look into music and sound effects (particularly for finishing a skill).</li>
         <li>Revisit blueprint formula.</li>
         <li>Speed settings, maybe just after prestige?</li>
         <li>Architect and engineering towers. See <a
@@ -1075,12 +1099,10 @@
         <li>Allow multiple tower selection or rebuild by type</li>
         <li>Investigate a blood pool idea</li>
         <li>Look into saving every minute instead of on wave clear, and backup saves</li>
-        <li>Investigate swarm and health on mixed waves.</li>
-        <li>Add a button to update the ammo type of all of the currently selected towers type to the given ammo.</li>
-        <li>Look into a bleeding/burning immune boss power.</li>
-        <li>Look into a healer boss power.</li>
         <li>Look into a speed boosting aura boss power.</li>
         <li>Look into a life-link boss power.</li>
+        <li>Look into what happens if you kill a boss on farm mode on a boss level</li>
+        <li>Look into what happens if you spam mana burst from full (not increasing mana)</li>
     </ul>
 </div>
 <script data-main="js/loader" src="js/require.min.js"></script>

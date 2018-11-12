@@ -68,7 +68,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
             incTower.emptyObsArray(incTower.availableSpells);
             incTower.emptyObsArray(incTower.availableActions);
             incTower.availableTowers.push('kinetic');
-
+            //Reset Ammo types
+            incTower.towerAttributes.kinetic.ammoTypes(['bullet']);
+            incTower.towerAttributes.elemental.ammoTypes(['arcaneOrb']);
+            incTower.towerAttributes.support.ammoTypes(['generator']);
 
             incTower.towers_group.forEach(function (tower) {
                 if (tower.icon) {

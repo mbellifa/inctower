@@ -24,7 +24,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 return "Regenerates " + (0.5 * mult) + "% of its max health a second.";
             },
             ofNoun: ['Regeneration'],
-            adjective: ['Healing', 'Restorative']
+            adjective: ['Regenerating', 'Restorative']
         },
         healthy: {
             name: 'Healthy',
@@ -41,7 +41,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             },
             requirements: function (entry) {
                 //Don't allow heavy and fast to mix.
-                if (entry.heavy) { return false; }
+                if (entry.heavy) {
+                    return false;
+                }
                 return true;
             },
             ofNoun: ['Alacrity'],
@@ -154,9 +156,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 1,
             requirements: function (entry) {
                 //Don't allow heavy and flying to mix.
-                if (entry.flying) { return false; }
+                if (entry.flying) {
+                    return false;
+                }
                 //Or fast
-                if (entry.fast) { return false; }
+                if (entry.fast) {
+                    return false;
+                }
                 return true;
             },
             ofNoun: ['Substantial Girth'],
@@ -170,12 +176,42 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 1,
             requirements: function (entry) {
                 //Don't allow heavy and flying to mix.
-                if (entry.heavy) { return false; }
-                if (entry.preferredPower !== 'flying') { return false; }
-                return true;
+                if (entry.heavy) {
+                    return false;
+                }
+                return _.includes(entry.preferredPowers,'flying'); //Don't allow this power if it's not preferred.
             },
             ofNoun: ['Flight'],
             adjective: ['Floating', 'Aerial', 'Soaring']
+        },
+        directionalShield: {
+            name: 'Directional-Shield',
+            describe: function (mult) {
+                return "Summons an impervious shield which blocks projectiles in a " + (45 * mult) + " degree radius around it.";
+            },
+            maxLevel: 6,
+            ofNoun: ['Blocking'],
+            adjective: ['Oriented']
+        },
+        healer: {
+            name: 'Healer',
+            describe: function (mult) {
+                return "Once every 10 seconds this unit can heal itself for " + (2.5 * mult) + "% or another unit for " + (5 * mult) + "% of its max health. Casting requires it to stop moving.";
+            },
+            ofNoun: ['Curing'],
+            adjective: ['Healing', 'Therapeutic']
+        },
+        steelSkin: {
+            name: 'Steel-Skinned',
+            describe: function (mult) {
+                if (mult < 2) {
+                    return "Takes " + (mult * 50) + "% less damage from damage over time effects such as bleeding and burning.";
+                }
+                return "Immune to damage over time effects such as bleeding and burning.";
+            },
+            maxLevel: 2,
+            ofNoun: ['the Iron-Clad'],
+            adjective: ['Steel-Skinned']
         }
     };
     incTower.seenPowers = {};
@@ -198,20 +234,29 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         if (startCount !== undefined) {
             baseEntry.count = startCount;
         }
-        var preferredPower = incTower.enemyTypes[baseEntry.name].power;
-        baseEntry.preferredPower = preferredPower;
-        if (incTower.bossPowers[preferredPower].requirements && !incTower.bossPowers[preferredPower].requirements(baseEntry)) {
-            //If the preferred power of this sprite doesn't meet the requirements, select a new one.
-            return incTower.generateBasePack(normal, numPowers);
-        }
+        var preferredPowers = incTower.enemyTypes[baseEntry.name].power;
+        if (!_.isArray(preferredPowers)) { preferredPowers = [preferredPowers]; }
+        baseEntry.preferredPowers = preferredPowers;
+        var valid = true;
+
+        _.forEach(preferredPowers, function (preferredPower) {
+            if (valid && incTower.bossPowers[preferredPower].requirements && !incTower.bossPowers[preferredPower].requirements(baseEntry)) {
+                console.log("Marked invalid for " + preferredPower);
+                valid = false;
+            }
+        });
+        //If the preferred power of this sprite doesn't meet the requirements, select a new one.
+        if (!valid) { return incTower.generateBasePack(normal, numPowers, startCount); }
+
+
 
         baseEntry.length = incTower.enemyTypes[baseEntry.name].animation.length;
 
         var eligiblePowers = _.clone(bossPowers);
 
-        var randomizeChance = .5;
+        var randomizeChance = 0.5;
         //console.log("Preferred Power: " + preferredPower);
-        var find_power_seen_before = function (power) {
+        var findPowerSeenBefore = function (power) {
             //console.log(power);
             var seenBefore = (incTower.seenPowers[power] || 0) + 1;
             var currentPowerLevel = baseEntry.powers[power] || 0;
@@ -226,7 +271,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
             return true;
         };
-        var find_power_not_seen = function (power) {
+        var findPowerNotSeen = function (power) {
             var currentPowerLevel = baseEntry.powers[power] || 0;
             if (currentPowerLevel >= incTower.bossPowers[power].maxLevel) {
                 return false;
@@ -236,30 +281,23 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
             return true;
         };
+        var preferredPowerFunc = function (preferredPower) { return baseEntry.powers[preferredPower] || 0; };
         for (var i = 0; i < numPowers; ++i) {
-
-            var currentPreferredLevel = baseEntry.powers[preferredPower] || 0;
+            var currentPreferredLevel = _.max(_.map(preferredPowers, preferredPowerFunc));
             var maximumPowerLevel = Math.max(_.max(_.values(baseEntry.powers)) || 0, 0);
             //console.log("Preferred Power: " + preferredPower + " : " + currentPreferredLevel + " <= " + maximumPowerLevel);
+            if (incTower.game.rnd.frac() < randomizeChance) { incTower.shuffle(eligiblePowers); }
             if (currentPreferredLevel < maximumPowerLevel || maximumPowerLevel === 0) {
+                _.pullAll(eligiblePowers, preferredPowers);
+                eligiblePowers = _.concat(preferredPowers, eligiblePowers);
+            }
 
-                _.pull(eligiblePowers, preferredPower);
-                if (incTower.game.rnd.frac() < randomizeChance) {
-                    incTower.shuffle(eligiblePowers);
-                }
-                eligiblePowers.unshift(preferredPower);
-            } else {
-                if (incTower.game.rnd.frac() < randomizeChance) {
-                    incTower.shuffle(eligiblePowers);
-                }
+            var power = false;
+            if (power === false) {
+                power = _.find(eligiblePowers, findPowerSeenBefore);
             }
-//            console.log(eligiblePowers);
-            var power = undefined;
-            if (power === undefined) {
-                power = _.find(eligiblePowers, find_power_seen_before);
-            }
-            if (power === undefined) {
-                power = _.find(eligiblePowers, find_power_not_seen);
+            if (power === false) {
+                power = _.find(eligiblePowers, findPowerNotSeen);
             }
 
             if (power === 'swarm') {
@@ -283,6 +321,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             } else if (power === 'flying') {
                 baseEntry.flying = 1;
                 baseEntry.bonusHealthPercentage -= 40;
+            } else if (power === 'directionalShield') {
+                baseEntry.directionalShieldOffset = incTower.game.rnd.integerInRange(-180, 180);
+                baseEntry[power] = (baseEntry[power] || 0) + 1;
             } else {
                 baseEntry[power] = (baseEntry[power] || 0) + 1;
             }
@@ -303,10 +344,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
     };
 
+
     incTower.generatePack = function (normal) {
 
         var totalPowers = Math.floor((incTower.wave() / 25) + 1);
-        if (normal) { totalPowers = Math.floor(totalPowers / 2); }
+        if (normal) {
+            totalPowers = Math.floor(totalPowers * 0.5);
+        }
 
         var ret = [];
         if (!normal) {
@@ -318,7 +362,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 ret.push(baseEntry);
             }
         } else {
-            ret.push(incTower.generateBasePack(normal, totalPowers, incTower.game.rnd.integerInRange(3,7)));
+            ret.push(incTower.generateBasePack(normal, totalPowers, incTower.game.rnd.integerInRange(3, 7)));
         }
         //console.log(ret);
         return ret;
@@ -340,7 +384,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             ],
             nounSingle: ['Penguin'],
             nounPlural: ['Penguins'],
-            power: 'swarm'
+            power: ['swarm', 'earth-resistant']
         },
         panda: {
             animation: [
@@ -348,7 +392,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'panda02.png',
                 'panda03.png'
             ],
-            power: 'shielding',
+            power: ['shielding', 'healthy'],
             nounSingle: ['Panda'],
             nounPlural: ['Pandas']
         },
@@ -372,7 +416,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'penguin03.png',
                 'penguin04.png'
             ],
-            power: 'healthy',
+            power: ['healthy', 'fire-resistant'],
             nounSingle: ['Penguin'],
             nounPlural: ['Penguins']
         },
@@ -382,7 +426,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'goblin02.png',
                 'goblin03.png'
             ],
-            power: 'regenerating',
+            power: ['regenerating', 'fast'],
             nounSingle: ['Goblin'],
             nounPlural: ['Goblins']
         },
@@ -392,8 +436,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'skeleton02.png',
                 'skeleton03.png'
             ],
-            //power: 'bleed-resist'
-            power: 'teleport',
+            power: ['steelSkin'],
             nounSingle: ['Skeleton'],
             nounPlural: ['Skeletons']
         },
@@ -403,7 +446,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'zombie02.png',
                 'zombie03.png'
             ],
-            power: 'teleport',
+            power: ['teleport', 'shielding'],
             nounSingle: ['Zombie'],
             nounPlural: ['Zombies']
         },
@@ -415,7 +458,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'icebeetle-04.png',
                 'icebeetle-05.png'
             ],
-            power: 'water-resistant',
+            power: ['water-resistant', 'armored'],
             nounSingle: ['Ice Beetle'],
             nounPlural: ['Ice Beetles']
         },
@@ -427,7 +470,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'firebeetle-04.png',
                 'firebeetle-05.png'
             ],
-            power: 'fire-resistant',
+            power: ['fire-resistant', 'steelSkin'],
             nounSingle: ['Fire Beetle'],
             nounPlural: ['Fire Beetles']
         },
@@ -439,7 +482,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'blackbeetle-04.png',
                 'blackbeetle-05.png'
             ],
-            power: 'armored',
+            power: ['armored', 'arcane-resistant'],
             nounSingle: ['Black Beetle'],
             nounPlural: ['Black Beetles']
 
@@ -452,7 +495,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'greenbeetle-04.png',
                 'greenbeetle-05.png'
             ],
-            power: 'regenerating',
+            power: ['regenerating', 'healer'],
             nounSingle: ['Green Beetle'],
             nounPlural: ['Green Beetles']
 
@@ -464,7 +507,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'chicken-03.png',
                 'chicken-04.png'
             ],
-            power: 'regenerating',
+            power: ['swarm', 'fast'],
             nounSingle: ['Chicken'],
             nounPlural: ['Chickens']
 
@@ -476,7 +519,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'cow-03.png',
                 'cow-04.png'
             ],
-            power: 'heavy',
+            power: ['heavy', 'air-resistant'],
             nounSingle: ['Cow'],
             nounPlural: ['Cows']
 
@@ -500,7 +543,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'pig-03.png',
                 'pig-04.png'
             ],
-            power: 'teleport',
+            power: ['teleport', 'heavy'],
             nounSingle: ['Pig'],
             nounPlural: ['Pigs']
 
@@ -512,7 +555,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'sheep-03.png',
                 'sheep-04.png'
             ],
-            power: 'teleport',
+            power: ['healer', 'directionalShield'],
             nounSingle: ['Sheep'],
             nounPlural: ['Sheep']
 
@@ -540,7 +583,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'greenfairy-05.png',
                 'greenfairy-06.png'
             ],
-            power: 'flying',
+            power: ['flying', 'healer'],
             nounSingle: ['Green Fairy'],
             nounPlural: ['Green Fairies']
 
@@ -551,7 +594,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'blackgolem-02.png',
                 'blackgolem-03.png'
             ],
-            power: 'heavy',
+            power: ['heavy', 'armored'],
             nounSingle: ['Black Golem'],
             nounPlural: ['Black Golems']
 
@@ -563,7 +606,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'icegolem-02.png',
                 'icegolem-03.png'
             ],
-            power: 'water-resistant',
+            power: ['water-resistant', 'directionalShield'],
             nounSingle: ['Ice Golem'],
             nounPlural: ['Ice Golems']
 
@@ -577,7 +620,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             power: 'nullzone',
             nounSingle: ['Dark Wizard'],
             nounPlural: ['Dark Wizards']
-
         },
         redwizard: {
             animation: [
@@ -585,7 +627,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'redwizard-02.png',
                 'redwizard-03.png'
             ],
-            power: 'nullzone',
+            power: ['nullzone', 'arcane-resistant'],
             nounSingle: ['Red Wizard'],
             nounPlural: ['Red Wizards']
         },
@@ -595,7 +637,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 'skull-02.png',
                 'skull-03.png'
             ],
-            power: 'nullzone',
+            power: ['nullzone', 'earth-resistant'],
             nounSingle: ['Floating Skull'],
             nounPlural: ['Floating Skulls']
 
@@ -611,8 +653,36 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             nounPlural: ['Turtles']
 
         }
-
     };
+    var totalPowers = [];
+    _.forEach(_.shuffle(_.keys(incTower.enemyTypes)), function (firstEnemy) {
+        var firstPowers = incTower.enemyTypes[firstEnemy].power;
+        if (!_.isArray(firstPowers)) { firstPowers = [firstPowers]; }
+        totalPowers = _.concat(totalPowers, firstPowers);
+        var invalidPower = _.find(firstPowers, function (val) { return incTower.bossPowers[val] === undefined; });
+        if (invalidPower) {
+            console.log("INVALID: " + invalidPower + ' on ' + firstEnemy);
+        }
+
+        _.forEach(_.keys(incTower.enemyTypes), function (secondEnemy) {
+            if (firstEnemy === secondEnemy) { return; }
+            var secondPowers = incTower.enemyTypes[secondEnemy].power;
+            if (!_.isArray(secondPowers)) { secondPowers = [secondPowers]; }
+            if (firstPowers.length === secondPowers.length && _.difference(firstPowers, secondPowers).length === 0) {
+                console.log(firstEnemy + " - " + secondEnemy);
+            }
+
+
+        });
+    });
+    var powerCounts = _.countBy(totalPowers);
+    _.forEach(_.keys(incTower.bossPowers), function (power) {
+        if (!powerCounts[power]) { powerCounts[power] = 0; }
+    });
+    powerCounts = _.sortBy(_.toPairs(powerCounts), function (val) { return val[1]; });
+    //console.log(powerCounts);
+
+
     incTower.getPackName = function (pack) {
         var formatStrings = [
             '%possessiveTitle% %noun% %ofPower%',
@@ -621,7 +691,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         var currentFormat = incTower.game.rnd.pick(formatStrings);
         var powerList = [];
         _.forOwn(pack.powers, function (rank, power) {
-           powerList.push({'level': rank, 'power': power});
+            powerList.push({'level': rank, 'power': power});
         });
         var packPowers = _.orderBy(powerList, ['level'], ['desc']);
         packPowers.push({'power': 'generic', 'level': 1});
@@ -654,7 +724,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     var power = incTower.game.rnd.weightedPick(packPowers);
                     _.pull(packPowers, power);
                     packPowers.push(power);
-                    power = power.power
+                    power = power.power;
                     if (power === 'generic') {
                         return incTower.game.rnd.pick(['of the %genericAdj% %genericNounSingular%']);
                     }
@@ -752,64 +822,47 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
     incTower.generateEnemy = function (difficulty) {
         //var i = 0;
+        //console.log("Difficulty: " + incTower.humanizeNumber(difficulty));
         incTower.generatingEnemies = true;
         var totalWaveGold = incTower.goldPerWave(incTower.wave());
         //Get our random pack type
         var basePack;
-        if (incTower.wave() % 5 === 1) {
-            incTower.selectedBossPack = false;
-        }
+        if (incTower.maxWave() % 5 === 1) { incTower.selectedBossPack = false; } // Clear the boss pack when we've cleared one
         if (incTower.wave() % 5 > 0) {
-            //basePack = incTower.normalEnemyPacks[(Math.random() * incTower.normalEnemyPacks.length) | 0];
             basePack = incTower.generatePack(true);
         } else {
             if (!incTower.selectedBossPack) {
                 incTower.selectedBossPack = incTower.generatePack(false);
-                /*incTower.bossEnemyPacks[(Math.random() * incTower.bossEnemyPacks.length) | 0];*/
             }
             basePack = incTower.selectedBossPack;
         }
         //Expand it out
         var pack = [];
-        var remainingHealthMultiplier = 1; //By default we split the health pool evenly across all the mobs
-        var unspecifiedHealthWeights = 0;
         var title = "";
+        var difficultyPerPack = difficulty.div(basePack.length);
+  //      console.log("Difficulty (per pack): " + incTower.humanizeNumber(difficultyPerPack));
+        var goldPerPack = totalWaveGold.div(basePack.length);
+        //console.log("Gold (per pack): " + incTower.humanizeNumber(goldPerPack));
         basePack.forEach(function (packEntry) {
-            var count = 1;
-            if ("count" in packEntry) {
-                count = packEntry.count;
-            }
+            var count = packEntry.count || 1;
+            //console.log("Count: " + count);
             if (title.length > 0) { title += "\n"; }
             title += packEntry.title;
+            var packHealth = BigNumber.max(1, difficultyPerPack.div(count));
+            var packGold = BigNumber.max(1, goldPerPack.div(count)).ceil();
+//            console.log("Pack health: " + incTower.humanizeNumber(packHealth));
+            //console.log("Pack gold: " + incTower.humanizeNumber(packGold));
             for (var j = 0; j < count; j++) {
-                var tempPack = {};
-                if ("healthWeight" in packEntry) { //We have a specific health weight set so we subtract from our remaining
-                    remainingHealthMultiplier -= packEntry.healthWeight;
-                } else { //If we don't ahve a weight set we add to the count
-                    unspecifiedHealthWeights++;
+                var tempPack = _.clone(packEntry);
+                tempPack.count = undefined;
+                tempPack.health = packHealth;
+                if (tempPack.bonusHealthPercentage) {
+                    tempPack.health = tempPack.health.times(1 + (tempPack.bonusHealthPercentage * 0.01));
                 }
-                for (var key in packEntry) {
-                    if (packEntry.hasOwnProperty(key)) {
-                        if (key === "count") {
-                            continue;
-                        }
-                        tempPack[key] = packEntry[key];
-                    }
-                }
+                tempPack.goldValue = packGold;
                 pack.push(tempPack);
             }
         });
-        var remainingHealthWeight = remainingHealthMultiplier / unspecifiedHealthWeights;
-        for (var j = 0; j < pack.length; j++) {
-            if (!("healthWeight" in pack[j])) {
-                pack[j].healthWeight = remainingHealthWeight;
-            }
-            pack[j].health = BigNumber.max(1, difficulty.times(pack[j].healthWeight));
-            if ('bonusHealthPercentage' in pack[j]) {
-                pack[j].health = pack[j].health.times(1 + (pack[j].bonusHealthPercentage * 0.01));
-            }
-            pack[j].goldValue = BigNumber.max(totalWaveGold.times(Math.min(1, pack[j].healthWeight).toPrecision(15)), 1).ceil();
-        }
         var offset = 0;
         for (var i = 0; i < pack.length; ++i) {
             var packEntry = pack[i];
@@ -838,6 +891,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         incTower.generatingEnemies = false;
 
     };
+
     function EnemyInputDown(sprite, pointer) {
         incTower.currentlySelected(sprite);
     }
@@ -883,11 +937,21 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     this.nullzoneGraphic.destroy();
                     this.nullzoneGraphic = null;
                 }
+                if (this.directionalShieldGraphic) {
+                    this.directionalShieldGraphic.destroy();
+                    this.directionalShieldGraphic = null;
+                }
                 if (this.burningSprite) {
                     this.burningSprite.animations.destroy();
                     this.burningSprite.destroy();
                     this.burningSprite = null;
                 }
+                if (this.spellCastSprite) {
+                    this.spellCastSprite.destroy();
+                    this.spellCastSprite = null;
+
+                }
+                this.cleanup();
             } catch (e) {
 
             }
@@ -899,14 +963,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     incTower.currentlySelected(null);
                 }
                 this.removeChildren();
-                this.healthbar.destroy();
-//                console.log("onDestroy");
-//                console.log(typeof this.nullzoneGraphic);
                 if (this.nullzoneGraphic !== undefined) {
                     this.nullzoneGraphic.destroy();
                 }
-
-                this.healthbar = undefined;
+                if (this.directionalShieldGraphic) {
+                    this.directionalShieldGraphic.destroy();
+                    this.directionalShieldGraphic = null;
+                }
                 //This appears to have been causing a memory leak.
                 this.animations.destroy();
                 // this.events.onKilled.dispose();
@@ -916,11 +979,18 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     this.burningSprite.animations.destroy();
                     this.burningSprite.destroy();
                 }
+                if (this.spellCastSprite) {
+                    this.spellCastSprite.destroy();
+                    this.spellCastSprite = null;
+
+                }
+
 
                 this.burningSprite = undefined;
                 this.floatText = undefined;
                 //this.statusEffects = undefined;
                 this.realSpeed = undefined;
+                this.cleanup();
             } catch (e) {
 
             }
@@ -969,8 +1039,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
         }, this);
         this.goldValue = ko.observable(opts.goldValue);
-        this.healthbar = incTower.game.add.graphics(0, 0);
-        this.addChild(this.healthbar);
+        //this.healthbar = incTower.game.add.graphics(0, 0, incTower.enemyHealthbars);
+        this.healthbar = incTower.game.add.sprite(0, 0, 'incTower', 'white.png');
+        //this.addChild(this.healthbar);
 
 
         this.curTile = -1;
@@ -980,8 +1051,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     //this.scale.set( opts[opt], opts[opt]);
                     this.scale.x = opts[opt];
                     this.scale.y = opts[opt];
-                    this.healthbar.scale.x = opts[opt];
-                    this.healthbar.scale.y = opts[opt];
                 } else if (opt === "speed") {
                     this.speed = opts[opt];
                 } else if (!(opt in this)) {
@@ -990,11 +1059,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                         var powers = opts[opt];
                         var ret = [];
                         _.forEach(_.keys(powers), function (power) {
-                            var preferred = opt.preferredPower === power ? 1 : 0;
+                            var preferred = _.includes(opts.preferredPowers, power) ? 1 : 0;
                             ret.push({'power': power, 'level': powers[power], 'preferred': preferred});
                         });
                         this.sortedPowers = _.orderBy(ret, ['preferred', 'level'], ['desc', 'desc']);
-
                     }
                 }
             }
@@ -1008,15 +1076,45 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             this.addChild(this.shieldSprite);
         }
         if (this.nullzone > 0) {
-            this.nullzoneGraphic = incTower.game.add.graphics(0, 0);
-            //this.addChild(this.nullzoneGraphic);
-            this.nullzoneGraphic.beginFill(0x000000,0.5);
-            this.nullzoneGraphic.alpha = 0.5;
-            this.nullzoneGraphic.lineStyle(1,0x000000,2);
+            var nullZoneKey = "nullzone" + this.nullzone;
             var nullzoneDiameter = 64 + (32 * this.nullzone - 1);
-            this.nullzoneGraphic.drawCircle(0,0,nullzoneDiameter);
-            this.nullzoneCircle = new Phaser.Circle(0, 0, nullzoneDiameter + 16);
+            if (!incTower.game.cache.checkImageKey(nullZoneKey)) {
+                this.nullzoneGraphic = incTower.game.add.graphics(0, 0);
+                //this.addChild(this.nullzoneGraphic);
+                this.nullzoneGraphic.beginFill(0x000000, 0.5);
+                this.nullzoneGraphic.lineStyle(1, 0x000000, 2);
+                this.nullzoneGraphic.drawCircle(0, 0, nullzoneDiameter);
+                this.nullzoneGraphic = incTower.replaceGraphics(this.nullzoneGraphic, nullZoneKey, incTower.enemyNullzones);
 
+            } else {
+                this.nullzoneGraphic = incTower.game.add.sprite(0, 0, nullZoneKey, incTower.enemyNullzones);
+            }
+            this.nullzoneGraphic.anchor.set(0.5);
+            this.nullzoneGraphic.alpha = 0.3;
+            this.nullzoneCircle = new Phaser.Circle(0, 0, nullzoneDiameter + 16);
+        }
+        if (this.directionalShield > 0) {
+            this.directionalShieldGraphic = incTower.game.add.graphics(0, 0);
+            this.directionalShieldGraphic.lineStyle(2, 0x000000, 2);
+            this.directionalShieldOffset = 270;
+            this.directionalStart = incTower.game.math.degToRad(0 + this.directionalShieldOffset);
+            this.directionalEnd = incTower.game.math.degToRad(45 * this.directionalShield + this.directionalShieldOffset);
+            this.directionalShieldGraphic.arc(0, 0, 25, this.directionalStart, this.directionalEnd);
+            //Wrap both values to be between -PI and +PI
+            while (this.directionalStart < -Math.PI || this.directionalEnd < -Math.PI) {
+                this.directionalStart += Math.PI * 2;
+                this.directionalEnd += Math.PI * 2;
+            }
+            while (this.directionalStart > Math.PI || this.directionalEnd > Math.PI) {
+                this.directionalStart -= Math.PI * 2;
+                this.directionalEnd -= Math.PI * 2;
+            }
+            if (this.directionalStart > this.directionalEnd) {
+                var tmp = this.directionalEnd;
+                this.directionalEnd = this.directionalStart;
+                this.directionalStart = tmp;
+            }
+            this.directionalShieldGraphic.cacheAsBitmap = true;
         }
         incTower.enemys.add(this);
         this.inputEnabled = true;
@@ -1024,24 +1122,40 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         this.health = ko.observable();
 
         this.healthSubscription = this.health.subscribe(function (newHealth) {
-            this.healthbar.clear();
+            if (!this.healthbar) { return; }
+            //this.healthbar.clear();
             var per = newHealth.div(this.maxHealth);
             var x = (per) * 100;
             var colour = incTower.rgbToHex((x > 50 ? 1 - 2 * (x - 50) / 100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2 * x / 100.0) * 255, 0);
-            this.healthbar.beginFill(colour);
+            /*this.healthbar.beginFill(colour);
             this.healthbar.lineStyle(5, colour, 1);
             this.healthbar.moveTo(-16, -21);
             this.healthbar.lineTo(32 * per - 16, -21);
-            this.healthbar.endFill();
+            this.healthbar.endFill();*/
+            this.healthbar.tint = colour;
+            this.healthbar.scale.setTo(32 * per, 5);
+
             incTower.game.world.bringToTop(this.healthbar);
         }, this);
         this.maxHealth = opts.health;
         this.health(new BigNumber(opts.health));
+        //console.log("Health" + incTower.humanizeNumber(this.health()));
         this.elementalInstability = ko.observable(new BigNumber(0));
         this.elementalRunes = [];
         this.elementalRuneCounts = {};
         this.elementalRuneDiminishing = {};
+        this.recentlyCast = ko.observable(false);
+        this.recentlyCast.subscribe(function (newVal) {
+            this.animations.paused = newVal || false;
+            if (!this.animations.paused && this.spellCastSprite) {
+                this.spellCastSprite.destroy();
+                this.spellCastSprite = null;
+            }
+        }, this);
         this.realSpeed = ko.computed(function () {
+            if (this.recentlyCast()) {
+                return 0;
+            }
             var speed = this.speed;
             if (!this.heavy || this.statusEffects.chilled() < 100) { //Heavy enemies are only impacted by chill when they are fully frozen.
                 speed -= speed * (this.statusEffects.chilled() * 0.01);
@@ -1060,7 +1174,54 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
     Enemy.prototype = Object.create(Phaser.Sprite.prototype);
     Enemy.prototype.constructor = Enemy;
+    Enemy.prototype.cleanup = function () {
+        if (this.healthbar) {
+            this.healthbar.destroy();
+            this.healthbar = undefined;
+        }
+    };
 
+    Enemy.prototype.castSpell = function (spellName) {
+        this.recentlyCast(true);
+
+        this.spellCastSprite = incTower.game.add.sprite(0, -4, 'incTower', "spell-cast-01.png");
+        this.spellCastSprite.anchor.setTo(0.5, 0);
+        this.addChild(this.spellCastSprite);
+        this.spellCastSprite.animations.add('spell-cast', [
+            "spell-cast-01.png",
+            "spell-cast-02.png",
+            "spell-cast-03.png",
+            "spell-cast-04.png",
+            "spell-cast-05.png",
+            "spell-cast-06.png",
+            "spell-cast-07.png",
+            "spell-cast-08.png",
+            "spell-cast-09.png",
+            "spell-cast-10.png",
+            "spell-cast-11.png",
+            "spell-cast-12.png",
+            "spell-cast-13.png",
+            "spell-cast-14.png",
+            "spell-cast-15.png",
+            "spell-cast-16.png",
+            "spell-cast-17.png",
+            "spell-cast-18.png",
+            "spell-cast-19.png",
+            "spell-cast-20.png",
+            "spell-cast-21.png",
+            "spell-cast-22.png",
+            "spell-cast-23.png",
+            "spell-cast-24.png",
+            "spell-cast-25.png",
+            "spell-cast-26.png",
+            "spell-cast-27.png",
+            "spell-cast-28.png",
+            "spell-cast-29.png",
+            "spell-cast-30.png",
+        ], 10, false, true);
+        this.spellCastSprite.animations.play('spell-cast');
+        incTower.createFloatingText({'color':'purple', 'around':this, 'text':"Casting " + spellName + "!", 'type':'spell-cast'});
+    };
     Enemy.prototype.assignDamage = function (damage, type) {
         var incrementObservable = incTower.incrementObservable;
         if (damage.times === undefined) {
@@ -1101,7 +1262,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         } else if (type === 'normal' || type === 'kinetic') {
             damage = damage.times(1 - 0.2 * (this.armored || 0));
         }
-
 
 
         if (this.shielded) {
@@ -1195,6 +1355,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         }
 
         this.moveElmt();
+        if (this.healthbar) {
+            this.healthbar.x = this.x - 16;
+            this.healthbar.y = Math.max(0, this.y - 22);
+        }
         if (this.shielding > 0) {
             if (this.lastShieldTime === undefined || this.lastShieldTime + (4000 / this.shielding) < incTower.game.time.now) {
                 this.shielded = true;
@@ -1202,6 +1366,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 this.shieldSprite.visible = true;
             }
         }
+
         if (this.nullzone > 0 && this.nullzoneGraphic) {
             this.nullzoneGraphic.x = this.x;
             this.nullzoneGraphic.y = this.y;
@@ -1215,6 +1380,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     }
                 }
             });
+        }
+        if (this.directionalShield > 0 && this.directionalShieldGraphic) {
+            this.directionalShieldGraphic.x = this.x;
+            this.directionalShieldGraphic.y = this.y;
         }
     };
     Enemy.prototype.addElementalRune = function (runeType) {
@@ -1245,7 +1414,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             //console.log("Base Chance: " + chance);
             chance *= Math.pow(0.95, this.elementalRuneDiminishing[runeType] || 0);
             //console.log("After diminish: " + chance);
-            chance *=  1 - (0.2 * (this[runeType + '-resistant'] || 0));
+            chance *= 1 - (0.2 * (this[runeType + '-resistant'] || 0));
             //console.log("After resistant: " + chance);
             chance *= Math.pow(0.7, this.elementalRuneCounts[runeType] || 0);
             //console.log("After counts: " + chance);

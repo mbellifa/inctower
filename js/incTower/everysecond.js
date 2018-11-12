@@ -21,6 +21,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
         while (incTower.activeSkill() && incTower.skillPoints().gt(0)) {
             var skillName = incTower.activeSkill();
             var skill = incTower.skills.get(skillName)();
+            if (!skill) { break; }
             var transferAmount = BigNumber.min(skill.get('skillPointsCap')(), incTower.skillPoints());
             incrementObservable(incTower.skillPoints, transferAmount.neg());
             skill.get('skillPoints')(skill.get('skillPoints')().add(transferAmount));
@@ -43,6 +44,31 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
             incTower.playSoundEffect('positive');
         }
         incTower.enemys.forEachAlive(function(enemy) {
+            if (enemy.recentlyCast()) {
+                enemy.recentlyCast(false);
+            }
+            if (enemy.healer > 0 && incTower.game.time.now - (enemy.lastHeal || 0) > 10000) {
+                var candidate = false;
+                var maxRemainingHealth = new BigNumber(0);
+                var maxPercentage = 0;
+                var healAmount = enemy.maxHealth.times(enemy.healer * 0.05);
+                incTower.enemys.forEachAlive(function(otherEnemy) {
+                    var remainingHealth = otherEnemy.maxHealth.minus(otherEnemy.health());
+                    if (enemy === otherEnemy) { remainingHealth = remainingHealth.div(2); } //Heal half as much if we are healing ourselves
+                    if (remainingHealth.gt(maxRemainingHealth)) {
+                        maxRemainingHealth = remainingHealth;
+                        maxPercentage = remainingHealth.div(otherEnemy.maxHealth).toNumber();
+                        candidate = otherEnemy;
+                    }
+                });
+                if (candidate && (maxRemainingHealth.gt(healAmount) || maxPercentage > 0.25)) {
+                    healAmount = BigNumber.min(healAmount, maxRemainingHealth);
+                    incTower.createFloatingText({'color':'green', 'around':candidate,'amount':healAmount, 'type':'heal'});
+                    incrementObservable(candidate.health,healAmount);
+                    enemy.castSpell("Heal");
+                    enemy.lastHeal = incTower.game.time.now;
+                }
+            }
             if (enemy.regenerating > 0 && enemy.statusEffects.chilled().lt(100)) {
                 var curHealth = enemy.health();
                 var healAmount = enemy.maxHealth.times(enemy.regenerating * 0.01);
@@ -91,6 +117,9 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
             _.mapValues(enemy.statusEffects, function (effect, effectName) {
                 if (effect().gt(0)) {
                     var reduction = 0.8;
+                    if ((enemy.steelSkin || 0) > 0 && (effectName === 'bleeding' || effectName === 'burning')) {
+                        effect(effect().times(1 - (0.5 * enemy.steelSkin)));
+                    }
                     if (effectName === 'bleeding') {
                         reduction = 0.5 + (0.0125 * incTower.getEffectiveSkillLevel('anticoagulants'));
                     }
