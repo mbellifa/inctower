@@ -12,10 +12,6 @@ requirejs.config({
             deps: [],
             exports: 'ko'
         },
-        // 'lib/ko.observableDictionary': {
-        //     deps: ['knockout']
-        //   //  exports: 'ko.observableDictionary'
-        // },
         'lib/jquery': {
             deps: [],
             exports: 'jQuery'
@@ -28,24 +24,17 @@ requirejs.config({
             deps: [],
             exports: 'moment'
         },
-        // 'lib/EasyStar': {
-        //     deps: [],
-        //     exports: 'EasyStar'
-        // },
-//         'lib/PathFinderPlugin': {
-//             deps: ['EasyStar'],
-// //            exports: 'Phaser.Plugin.PathFinderPlugin'
-//         },
+
         'lib/jquery-ui': {
             deps: ['lib/jquery']
         },
         'lib/jstree': {
             deps: ['lib/jquery']
-        },
+        }
     }
 });
 
-requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incTower/tooltips', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave'],
+requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incTower/tooltips', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave', 'require.min'],
     function(incTower, $, BigNumber, ko, tooltips) {
     $(document).ready(function () {
         'use strict';
@@ -123,6 +112,16 @@ requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incT
         incTower.incTower = incTower;
 //        console.log(incTower);
         ko.options.deferUpdates = true;
+        ko.components.register('panel', {
+            template: { element: 'panel-template' },
+            viewModel: function(params) {
+                this.header = params.header;
+                var expanded = true;
+                if (params.expanded !== undefined) { expanded = params.expanded; }
+                this.expanded = ko.observable(expanded);
+            }
+        });
+
 
         ko.applyBindings(incTower);
     });

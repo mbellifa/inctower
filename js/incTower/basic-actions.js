@@ -7,6 +7,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
     incTower.gainGold = function (amount, floatAround) {
         //amount = amount.times(1 + 0.1 * incTower.prestigePoints());
         incrementObservable(incTower.gold, amount);
+        incTower.goldLastSecond = incTower.goldLastSecond.add(amount);
         if (floatAround !== undefined) {
             incTower.createFloatingText({
                 'color': '#C9960C',
@@ -26,6 +27,12 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             incTower.maxWave(val);
         }
     });
+    incTower.damageLastSecond = new BigNumber(0);
+    incTower.highestDPS = ko.observable(new BigNumber(0));
+    incTower.goldLastSecond = new BigNumber(0);
+    incTower.avgDPS = ko.observable(new BigNumber(0));
+    incTower.avgGPS = ko.observable(new BigNumber(0));
+
     incTower.buyBlock = function () {
          var curCursor = incTower.cursor();
         //If our cursor already holds this spell then cancel it.
@@ -152,12 +159,12 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 return;
             }
             var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-            if (tileIndex < 5 && pathModule.tileForbidden[tileX][tileY]) {
+            if (tileIndex < 5 && pathModule.tileForbidden[tileX][tileY]()) {
                 //Don't allow selling at one tower
                 if (incTower.numTowers() === 1) {
                     return false;
                 }
-                _.forEach(incTower.towers_group.children, function (tower) {
+                _.forEach(incTower.towersGroup.children, function (tower) {
                     if (tower.tileX === tileX && tower.tileY === tileY) {
                         tower.sell();
                         return false;
@@ -165,7 +172,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 });
                 return;
             }
-            if (tileIndex > 0 && tileIndex < 5 && !pathModule.tileForbidden[tileX][tileY]) {
+            if (tileIndex > 0 && tileIndex < 5 && !pathModule.tileForbidden[tileX][tileY]()) {
                 pathModule.mutateTile(tileX, tileY);
                 incrementObservable(incTower.gold, incTower.prevBlockCost());
                 for (var i = 0; i < incTower.blocks().length; i++) {
@@ -216,7 +223,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                     }
                     this.textIndicator.alpha = 1;
                     var cost;
-                    if (pathModule.tileForbidden[tileX][tileY]) {
+                    if (pathModule.tileForbidden[tileX][tileY]()) {
+
                         _.forEach(incTower.towers.children, function (tower) {
                             if (tower.tileX === tileX && tower.tileY === tileY) {
                                 cost = tower.sellValue();

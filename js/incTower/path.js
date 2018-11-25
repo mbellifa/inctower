@@ -1,19 +1,23 @@
-define(['incTower/core', 'lib/EasyStar', 'lib/lodash', 'lib/csp'], function (incTower, EasyStar, _, csp) {
+define(['incTower/core', 'lib/EasyStar', 'lib/lodash', 'lib/csp', 'lib/knockout'], function (incTower, EasyStar, _, csp, ko) {
     'use strict';
     var pathModule = {};
 
-    pathModule.createCoordArray = function (fillVal) { // Creates an array that's 25x18 filled with fillval
+    pathModule.createCoordArray = function (fillVal, observable) { // Creates an array that's 25x18 filled with fillval
         var arr = new Array(25);
         for (var i = 0; i < 25; ++i) {
             arr[i] = new Array(19);
             for (var j = 0; j < 19; j++) {
-                arr[i][j] = fillVal;
+                if (observable) {
+                    arr[i][j] = ko.observable(fillVal);
+                } else {
+                    arr[i][j] = fillVal;
+                }
             }
         }
         return arr;
     };
 
-    pathModule.tileForbidden = pathModule.createCoordArray(false);
+    pathModule.tileForbidden = pathModule.createCoordArray(false, true);
     pathModule.path = [{"x":0,"y":0},{"x":1,"y":0},{"x":2,"y":0},{"x":3,"y":0},{"x":4,"y":0},{"x":5,"y":0},{"x":6,"y":0},
         {"x":7,"y":0},{"x":7,"y":1},{"x":8,"y":1},{"x":9,"y":1},{"x":10,"y":1},{"x":11,"y":1},{"x":11,"y":2},
         {"x":11,"y":3},{"x":11,"y":4},{"x":12,"y":4},{"x":12,"y":5},{"x":12,"y":6},{"x":12,"y":7},{"x":12,"y":8},

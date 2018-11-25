@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="css/jstree-themes/proton/style.min.css">
-    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="shortcut icon" href="favicon.ico"/>
     <title>Incremental Tower Defense</title>
     <script type="text/html" id="skillTemplate">
         <li>
@@ -18,11 +18,22 @@
                 </span>
         </li>
     </script>
+    <script type="text/html" id="panel-template">
+        <div class="panel" data-bind="css: { expanded: $component.expanded, collapsed: !$component.expanded() }">
+            <div class="header" data-bind="click: function () { $component.expanded(!expanded()) }"><span
+                    class="arrow"></span><span data-bind="text: header"></span></div>
+            <div class="content" data-bind="if: $component.expanded()">
+                <div data-bind="template: { nodes: $componentTemplateNodes, data: $root }" class="inner-content"></div>
+            </div>
+
+        </div>
+
+    </script>
 </head>
 <body>
 <div class="topnav">
     <span class="header"><a href="http://inctower.reddit.com" target="_blank">Incremental Tower Defense<span
-            class="version">0.2.5</span></a></span>
+            class="version" data-bind="text: version"></span></a></span>
     <span class="toplinks">
                 <button data-bind="click: function () { $root.showHelp(); }">Help <span
                         data-bind="if: $root.unreadHelps() > 0"><span data-bind="text: $root.unreadHelps()"
@@ -40,135 +51,6 @@
 </div>
 <div id="right_container">
     <div id="right">
-        <div>
-            <div>
-                <div><b>Wave:</b> <span data-bind="text: wave"></span></div>
-                <div>
-                    <span data-bind="if: incTower.wave() > 1"><button
-                            data-bind="click: function () { incTower.prevWave(); }" class="tooltip"
-                            data-tooltip="Go back to the previous wave.">&#9194;</button></span>
-                    <span data-bind="if: incTower.paused()"><button class="tooltip"
-                                                                    data-bind="click: function () { incTower.resumeGame(); }"
-                                                                    data-tooltip="Resume the game.">&#9205;</button></span>
-                    <span data-bind="if: !incTower.paused()"><button
-                            data-bind="click: function () { incTower.pauseGame(); }" class="tooltip"
-                            data-tooltip="Pause the game.">&#9208;</button></span>
-                    <span data-bind="if: incTower.wave() < incTower.maxWave()"><button
-                            data-bind="click: function () { incTower.toMaxWave(); }" class="tooltip"
-                            data-tooltip="Go back to the highest wave you've previously reached.">&#9193;</button></span>
-
-                </div>
-
-                <div>Currently in
-                    <span data-bind="if: incTower.farmMode()"><b>Farm Mode</b> <button
-                            data-bind="click: function () { incTower.farmMode(false); }">Enter Progress Mode</button></span>
-                    <span data-bind="if: !incTower.farmMode()"><b>Progress Mode</b> <button
-                            data-bind="click: function () { incTower.farmMode(true); }">Enter Farm Mode</button></span>
-                </div>
-                <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
-                <div data-bind="if: prestigePoints() > 0 || prestigePointsNext() > 0"><b>Prestige</b>: <span
-                        data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }"
-                        class="tooltip"></span> <span
-                        data-bind="if: prestigePointsNext() > 0"><b>(Next Reset:</b> +<span
-                        data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }"
-                        class="tooltip"></span><b>)</b><br>
-                <button data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></span>
-                </div>
-
-            </div>
-            <span data-bind="if: incTower.activeSkill()">
-                <b>Currently Training:</b> <span
-                    data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }"
-                    class="tooltip"></span>.
-                <div class="progressBar">
-                    <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span
-                            class="text">Skill up <span
-                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
-                    <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span
-                            class="text">Skill up <span
-                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
-                </div>
-            </span>
-            <span data-bind="if: !incTower.activeSkill()">
-                <b>Skill Points:</b> <span
-                    data-bind="text: humanizeNumber(skillPoints())"
-                    class="tooltip" data-tooltip="Skill points naturally accrue over time may also be gained through other means. Points can be spent on skills and when there are items in the skill queue all skill points will go directly to those skills instead of accruing."></span>.
-
-            </span>
-
-            <div class="progressBar tooltip"
-                 data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }">
-                <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span
-                        class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
-                        data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-                <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span
-                        class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
-                        data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
-            </div>
-
-        </div>
-        <div id="icons">
-            <div>
-                <div class="icon-header"><b>Build:</b></div>
-                <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn"
-                        data-tooltip="Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
-                    <div class="keybind">Q</div>
-                    <div style="width: 32px; height: 32px; background: url(img/block.png);"></div>
-                    <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
-                </button>
-                <!-- ko foreach: availableTowers -->
-                <button data-bind="click: function () { $root.buyTower($data); }, attr: { 'data-tooltip': $root.towerAttributes[$data].describe() }"
-                        class="tooltip icon-btn">
-                    <div class="keybind" data-bind="text: $root.towerKeybindLetter($index())"></div>
-                    <div style="width: 32px; height: 32px;"
-                         data-bind="style: { background: $root.towerIconCSS($data) }"></div>
-                    <span data-bind="text: $root.humanizeNumber($root.towerCost($data))"></span>g
-                </button>
-                <!-- /ko -->
-            </div>
-            <div>
-                <div class="icon-header"><b>Actions:</b></div>
-                <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn"
-                        data-tooltip="Sell towers and blocks.">
-                    <div class="keybind">S</div>
-                    <div style="width: 32px; height: 32px; background: url(img/sell.png);"></div>
-                </button>
-                <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }"
-                        class="tooltip icon-btn">
-                    <div class="keybind">L</div>
-                    <div style="width: 32px; height: 32px; background: url(img/upgrade-least.png);"></div>
-                </button>
-                <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip"
-                        data-tooltip="Upgrade all towers using ALL gold.">
-                    <div style="width: 32px; height: 32px; background: url(img/upgrade-all.png);"></div>
-                </button>
-                <!-- ko foreach: availableActions -->
-                <button data-bind="click: function () { $root.castAction($data); }, attr: { 'data-tooltip': $root.actionAttributes[$data].describe() }"
-                        class="tooltip icon-btn">
-                    <div class="keybind" data-bind="text: $root.actionAttributes[$data].keybind"></div>
-                    <div style="width: 32px; height: 32px;"
-                         data-bind="style: { background: $root.actionIconCSS($data) }"></div>
-                </button>
-                <!-- /ko -->
-            </div>
-            <div data-bind="if: availableSpells().length > 0">
-                <p class="icon-header"><b>Spells:</b> (Spell Level: <span
-                        data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }"
-                        class="tooltip"></span>)</p>
-                <!-- ko foreach: availableSpells -->
-
-                <button data-bind="click: function () { $root.castSpell($data); }, attr: { 'data-tooltip': $root.spellAttributes[$data].describe() }"
-                        class="tooltip icon-btn">
-                    <div class="keybind" data-bind="text: $root.spellKeybindLetter($index())"></div>
-                    <div style="width: 32px; height: 32px; border: 1px solid black;"
-                         data-bind="style: { background: $root.spellIconCSS($data) }"></div>
-                    <span data-bind="text: $root.humanizeNumber($root.spellAttributes[$data].trueManaCost())"></span>
-                    Mana
-                </button>
-                <!-- /ko -->
-
-            </div>
-        </div>
         <div id="buyBlockActive"
              data-bind="visible: cursor() !== false && cursor().type === 'buy' && cursor().param === 'block'">
             <p>Click on the map to place your block.</p>
@@ -187,13 +69,146 @@
             <p>Hover over the map to see the area of effect of your spell, click to cast.</p>
             <button data-bind="click: function () { incTower.clearCursor(); }">Cancel</button>
         </div>
+        <panel params="header: 'Basic'">
+            <div><b>Wave:</b> <span data-bind="text: wave"></span> <span data-bind="if: incTower.wave() > 1"><button
+                    data-bind="click: function () { incTower.prevWave(); }" class="tooltip"
+                    data-tooltip="Go back to the previous wave.">&#9194;</button></span>
+                <span data-bind="if: incTower.paused()"><button class="tooltip"
+                                                                data-bind="click: function () { incTower.resumeGame(); }"
+                                                                data-tooltip="Resume the game.">&#9205;</button></span>
+                <span data-bind="if: !incTower.paused()"><button
+                        data-bind="click: function () { incTower.pauseGame(); }" class="tooltip"
+                        data-tooltip="Pause the game.">&#9208;</button></span>
+                <span data-bind="if: incTower.wave() < incTower.maxWave()"><button
+                        data-bind="click: function () { incTower.toMaxWave(); }" class="tooltip"
+                        data-tooltip="Go back to the highest wave you've previously reached.">&#9193;</button></span>
+            </div>
+
+            <div><button
+                    data-bind="click: function () { incTower.farmMode(!incTower.farmMode()); }" class="tooltip" data-tooltip="Progress mode is the default, it automatically advances to the next wave when you have killed all enemies. Farm mode allows you to stay on the same wave even after having killed all enemies. Note: Farm mode is ignored on your highest wave (you will always advance).">
+                <span data-bind="if: incTower.farmMode()">Farming: Switch to Progress</span>
+                <span data-bind="if: !incTower.farmMode()">Progress: Switch to Farming</span>
+            </button>
+            </div>
+
+
+            <div id="goldText"><b>Gold:</b> <span data-bind="text: humanizeNumber(gold())"></span></div>
+            <div data-bind="if: prestigePoints() > 0 || prestigePointsNext() > 0"><b>Prestige</b>: <span
+                    data-bind="text: prestigePoints(), attr: {'data-tooltip': incTower.describePrestige(prestigePoints(), false) }"
+                    class="tooltip"></span> <span
+                    data-bind="if: prestigePointsNext() > 0"><b>(Next Reset:</b> +<span
+                    data-bind="text: prestigePointsNext(), attr: {'data-tooltip': incTower.describePrestige(prestigePointsNext(), true) }"
+                    class="tooltip"></span><b>)</b> <button
+                    data-bind="click: function () { incTower.prestigeReset(); }">Prestige Reset</button></span>
+
+            </div>
+
+            <span data-bind="if: incTower.activeSkill()">
+                <b>Currently Training:</b> <span
+                    data-bind="text: getActiveSkillName(), attr: {'data-tooltip': incTower.describeSkill(incTower.activeSkill()) }"
+                    class="tooltip"></span>.
+                <div class="progressBar">
+                    <div class="bar positive" data-bind="style: {width: percentageUntilSkillUp() + '%' }"><span
+                            class="text">Skill up <span
+                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                    <div class="bar negative" data-bind="style: {width: (100 - percentageUntilSkillUp()) + '%' }"><span
+                            class="text">Skill up <span
+                            data-bind="text: timeUntilSkillUp(incTower.secondsUntilSkillUp())"></span></span></div>
+                </div>
+            </span>
+            <span data-bind="if: !incTower.activeSkill()">
+                <b>Skill Points:</b> <span
+                    data-bind="text: humanizeNumber(skillPoints())"
+                    class="tooltip"
+                    data-tooltip="Skill points naturally accrue over time may also be gained through other means. Points can be spent on skills and when there are items in the skill queue all skill points will go directly to those skills instead of accruing."></span>.
+
+            </span>
+        </panel>
+
+
+        <panel params="header: 'Actions'">
+            <button data-bind="click: function () { incTower.buyBlock(); }" class="tooltip icon-btn"
+                    data-tooltip="Build a Block. Blocks allow you to control the flow of monsters through the map, a block is also a required platform for building towers.">
+                <div class="keybind">Q</div>
+                <div class="icon" style="background: url(img/block.png);"></div>
+                <span data-bind="text: humanizeNumber(incTower.blockCost())"></span>g
+            </button>
+            <!-- ko foreach: availableTowers -->
+            <button data-bind="click: function () { $root.buyTower($data); }, attr: { 'data-tooltip': $root.towerAttributes[$data].describe() }"
+                    class="tooltip icon-btn">
+                <div class="keybind" data-bind="text: $root.towerKeybindLetter($index())"></div>
+                <div class="icon"
+                     data-bind="style: { background: $root.towerIconCSS($data) }"></div>
+                <span data-bind="text: $root.humanizeNumber($root.towerCost($data))"></span>g
+            </button>
+            <!-- /ko -->
+
+            <button data-bind="click: function () { incTower.sellTool(); }" class="tooltip icon-btn"
+                    data-tooltip="Sell towers and blocks.">
+                <div class="keybind">S</div>
+                <div class="icon" style="background: url(img/sell.png);"></div>
+            </button>
+            <button data-bind="click: function () { cheapestUpgrade();  }, attr: { 'data-tooltip': incTower.tooltipUpgradeLeast() }"
+                    class="tooltip icon-btn">
+                <div class="keybind">L</div>
+                <div class="icon" style="background: url(img/upgrade-least.png);"></div>
+            </button>
+            <button data-bind="click: function () { cheapestUpgradeAll();  }" class="tooltip icon-btn"
+                    data-tooltip="Upgrade all towers using ALL gold.">
+                <div class="icon" style="background: url(img/upgrade-all.png);"></div>
+            </button>
+            <!-- ko foreach: availableActions -->
+            <button data-bind="click: function () { $root.castAction($data); }, attr: { 'data-tooltip': $root.actionAttributes[$data].describe() }"
+                    class="tooltip icon-btn">
+                <div class="keybind" data-bind="text: $root.actionAttributes[$data].keybind"></div>
+                <div class="icon"
+                     data-bind="style: { background: $root.actionIconCSS($data) }"></div>
+            </button>
+            <!-- /ko -->
+
+        </panel>
+        <div data-bind="if: incTower.maxMana().gt(0)">
+            <panel params="header: 'Magic'">
+
+                <div class="progressBar tooltip"
+                     data-bind="visible: incTower.maxMana().gt(0), attr: { 'data-tooltip': incTower.describeManaRegeneration() }"
+                     style="display: inline-block;">
+                    <div class="mana bar positive" data-bind="style: {width: percentageMaxMana() + '%' }"><span
+                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                    <div class="mana bar negative" data-bind="style: {width: (100 - percentageMaxMana()) + '%' }"><span
+                            class="text">Mana: <span data-bind="text: humanizeNumber(incTower.mana())"></span> / <span
+                            data-bind="text: humanizeNumber(incTower.maxMana())"></span></span></div>
+                </div>
+
+                <div>Spell Level: <span
+                        data-bind="text: incTower.spellLevel, attr: {'data-tooltip': incTower.describeSpellLevel() }"
+                        class="tooltip"></span>
+                </div>
+                <div data-bind="if: availableSpells().length > 0" class="flex" style="width: 100%;">
+                    <!-- ko foreach: availableSpells -->
+
+                    <button data-bind="click: function () { $root.castSpell($data); }, attr: { 'data-tooltip': $root.spellAttributes[$data].describe() }"
+                            class="tooltip icon-btn">
+                        <div class="keybind" data-bind="text: $root.spellKeybindLetter($index())"></div>
+                        <div class="icon" style="border: 1px solid black;"
+                             data-bind="style: { background: $root.spellIconCSS($data) }"></div>
+                        <span data-bind="text: $root.humanizeNumber($root.spellAttributes[$data].trueManaCost())"></span>
+                        Mana
+                    </button>
+                    <!-- /ko -->
+
+                </div>
+            </panel>
+        </div>
+
 
         <div data-bind="if: currentlySelected()">
-            <div>
+            <panel params="header: 'Currently Selected'">
                 <div id="selectedTower" data-bind="if: currentlySelected() && currentlySelected().tower">
                     <div style="float: right; width: 50%; background-color: lightgrey; padding: 0 0.5em;"
                          data-bind="html: $root.describeTower(currentlySelected())"></div>
-                    <p><b>Currently Selected Tower:</b></p>
+                    <!--<p><b>Currently Selected Tower:</b></p>-->
                     <div>Level: <span data-bind="text: currentlySelected().level()"></span></div>
                     <div>Damage: <span data-bind="text: humanizeNumber(currentlySelected().totalDamage())"></span></div>
                     <div>Range: <span data-bind="text: humanizeNumber(currentlySelected().trueRange())"></span></div>
@@ -207,7 +222,12 @@
                             optionsText: function (ammo) {
                                 return $root.ammoAttributes[ammo].name;
                             }
-                        "></select><button data-bind="click: function () { currentlySelected().updateAllAmmo(); }" class="tooltip" data-tooltip="Set the ammo type for each tower of this type to the currently selected Ammo.">Update Ammo for <span data-bind="text: _.capitalize(currentlySelected().towerType)"></span> Towers</button>
+                        "></select>
+                        <button data-bind="click: function () { currentlySelected().updateAllAmmo(); }" class="tooltip"
+                                data-tooltip="Set the ammo type for each tower of this type to the currently selected Ammo.">
+                            Update Ammo for <span data-bind="text: _.capitalize(currentlySelected().towerType)"></span>
+                            Towers
+                        </button>
                     </div>
                     <button data-bind="click: function () { currentlySelected().payToUpgrade(); }">Upgrade (<span
                             data-bind="text: humanizeNumber(currentlySelected().upgradeCost())"></span>g)
@@ -225,7 +245,7 @@
                     </div>
                 </div>
                 <div id="selectedEnemy" data-bind="if: currentlySelected() && currentlySelected().enemy">
-                    <p><b>Currently Selected Enemy:</b></p>
+                    <!--<p><b>Currently Selected Enemy:</b></p>-->
                     <div>Health: <span data-bind="text: humanizeNumber(currentlySelected().health())"></span> / <span
                             data-bind="text: humanizeNumber(currentlySelected().maxHealth)"></span></div>
                     <div>Gold Value: <span data-bind="text: humanizeNumber(currentlySelected().goldValue())"></span>
@@ -242,8 +262,15 @@
                             data-tooltip="Elemental Instability accrues from a portion of elemental tower hits, when elemental rune reactions occur any damage portion is normally calculated from its instability."></span>
                     </div>
                 </div>
-            </div>
+            </panel>
         </div>
+
+        <panel params="header: 'Adv. Stats'">
+            <div>Average DPS (5 min rolling): <span data-bind="text: humanizeNumber($root.avgDPS())"></span></div>
+            <div>Highest DPS: <span data-bind="text: humanizeNumber($root.highestDPS())"></span></div>
+            <div>Average GPS (5 min rolling): <span data-bind="text: humanizeNumber($root.avgGPS())"></span></div>
+
+        </panel>
     </div>
 </div>
 <div id="credits" title="Credits">
@@ -289,26 +316,42 @@
                 href="http://opengameart.org/content/a-load-of-overworld-34-rpg-sprites">here</a>.</p>
     <p>Proton theme for jstree from <a href="https://github.com/orangehill/jstree-bootstrap-theme">Orange Hill
         Development</a>.</p>
-    <p>Arcane Orb icon and bullet from <a href="http://www.amon.co">Amon</a> on <a href="https://opengameart.org/content/magic-orbs">OpenGameArt</a>.</p>
-    <p>Blood icon (used by shrapnel towers) created by Sémhur can be found <a href="https://commons.wikimedia.org/wiki/File:Blood_drop.svg">here</a>.</p>
-    <p>Positive sound (used on skill up) from Lokif, found <a href="https://opengameart.org/content/gui-sound-effects">here</a></p>
-    <p>Music: Dark, Earth Is All We Have, Heaven Sings, High Stakes, Low Chances, and Theme Crystalized written and produced by Ove Melaa (Omsofware@hotmail.com). Found <a href="https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated">here</a>.</a></p>
-    <p>Music: Crystal Cave by cynicmusic found <a href="https://opengameart.org/content/crystal-cave-song18">here</a>.</p>
+    <p>Arcane Orb icon and bullet from <a href="http://www.amon.co">Amon</a> on <a
+            href="https://opengameart.org/content/magic-orbs">OpenGameArt</a>.</p>
+    <p>Blood icon (used by shrapnel towers) created by Sémhur can be found <a
+            href="https://commons.wikimedia.org/wiki/File:Blood_drop.svg">here</a>.</p>
+    <p>Positive sound (used on skill up) from Lokif, found <a href="https://opengameart.org/content/gui-sound-effects">here</a>
+    </p>
+    <p>Music: Dark, Earth Is All We Have, Heaven Sings, High Stakes, Low Chances, and Theme Crystalized written and
+        produced by Ove Melaa (Omsofware@hotmail.com). Found <a
+                href="https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated">here</a>.</a>
+    </p>
+    <p>Music: Crystal Cave by cynicmusic found <a href="https://opengameart.org/content/crystal-cave-song18">here</a>.
+    </p>
     <p>Music: Battle Theme A by cynicmusic found <a href="https://opengameart.org/content/battle-theme-a">here</a>.</p>
-    <p>Music: Observing the Star by yd found <a href="https://opengameart.org/content/another-space-background-track">here</a>.</p>
-    <p>Music: Mystical Theme by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>) found <a href="https://opengameart.org/content/mystical-theme">here</a>.</p>
-    <p>Music: Heroic Minority by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>) found <a href="https://opengameart.org/content/heroic-minority">here</a>.</p>
-    <p>Music: Winds Of Stories by HorrorPen found <a href="https://opengameart.org/content/winds-of-stories">here</a>.</p>
+    <p>Music: Observing the Star by yd found <a href="https://opengameart.org/content/another-space-background-track">here</a>.
+    </p>
+    <p>Music: Mystical Theme by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>)
+        found <a href="https://opengameart.org/content/mystical-theme">here</a>.</p>
+    <p>Music: Heroic Minority by Alexandr Zhelanov (<a href="https://soundcloud.com/alexandr-zhelanov">SoundCloud</a>)
+        found <a href="https://opengameart.org/content/heroic-minority">here</a>.</p>
+    <p>Music: Winds Of Stories by HorrorPen found <a href="https://opengameart.org/content/winds-of-stories">here</a>.
+    </p>
     <p>Music: No More Magic by HorrorPen found <a href="https://opengameart.org/content/no-more-magic">here</a>.</p>
-    <p>Music: Cyberpunk Moonlight Sonata by Jotn found <a href="https://opengameart.org/content/cyberpunk-moonlight-sonata">here</a>.</p>
-    <p>Music: Sci-Fi from <a href="http://www.bensound.com">BenSound.com</a>, found <a href="https://www.bensound.com/royalty-free-music/track/sci-fi">here</a>.</p>
-    <p>Music: We're Leaving Now from Nico Maximilian, found <a href="https://www.jamendo.com/track/1448049/we-re-leaving-now">here</a>.</p>
-    <p>Tileset by Leonard Pabin found <a href="https://opengameart.org/content/whispers-of-avalon-grassland-tileset">on OpenGameArt.org</a>.</p>
+    <p>Music: Cyberpunk Moonlight Sonata by Jotn found <a
+            href="https://opengameart.org/content/cyberpunk-moonlight-sonata">here</a>.</p>
+    <p>Music: Sci-Fi from <a href="http://www.bensound.com">BenSound.com</a>, found <a
+            href="https://www.bensound.com/royalty-free-music/track/sci-fi">here</a>.</p>
+    <p>Music: We're Leaving Now from Nico Maximilian, found <a
+            href="https://www.jamendo.com/track/1448049/we-re-leaving-now">here</a>.</p>
+    <p>Tileset by Leonard Pabin found <a href="https://opengameart.org/content/whispers-of-avalon-grassland-tileset">on
+        OpenGameArt.org</a>.</p>
     <p>Power Lightning icon icon which is used by the support tower and power generator support ammo made by <a
             href="http://lorcblog.blogspot.com/">Lorc</a> and hosted on <a
             href="http://game-icons.net/lorc/originals/power-lightning.html">game-icons.net</a>. It has been shrunk down
         and colorized for my purposes.</p>
-    <p>Spell casting animation by rubberduck found on <a href="https://opengameart.org/content/25-special-effects-rendered-with-blender">OpenGameArt</a>.</p>
+    <p>Spell casting animation by rubberduck found on <a
+            href="https://opengameart.org/content/25-special-effects-rendered-with-blender">OpenGameArt</a>.</p>
 </div>
 <div id="save" title="Saves">
     <p>Copy and paste the text below to backup your save game.<br>
@@ -367,11 +410,47 @@
 
 <div id="options" title="Options">
     <p><b>Sound:</b></p>
-    Master Volume: <select data-bind="value: $root.masterVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+    Master Volume: <select data-bind="value: $root.masterVolume">
+    <option>10</option>
+    <option>9</option>
+    <option>8</option>
+    <option>7</option>
+    <option>6</option>
+    <option>5</option>
+    <option>4</option>
+    <option>3</option>
+    <option>2</option>
+    <option>1</option>
+    <option>0</option>
+</select><br>
 
-    Sound Effect Volume: <select data-bind="value: $root.sfxVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+    Sound Effect Volume: <select data-bind="value: $root.sfxVolume">
+    <option>10</option>
+    <option>9</option>
+    <option>8</option>
+    <option>7</option>
+    <option>6</option>
+    <option>5</option>
+    <option>4</option>
+    <option>3</option>
+    <option>2</option>
+    <option>1</option>
+    <option>0</option>
+</select><br>
 
-    Music Volume: <select data-bind="value: $root.musicVolume"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select><br>
+    Music Volume: <select data-bind="value: $root.musicVolume">
+    <option>10</option>
+    <option>9</option>
+    <option>8</option>
+    <option>7</option>
+    <option>6</option>
+    <option>5</option>
+    <option>4</option>
+    <option>3</option>
+    <option>2</option>
+    <option>1</option>
+    <option>0</option>
+</select><br>
 
     Current Music: <span data-bind="text: currentMusic"></span><br>
 
@@ -382,34 +461,104 @@
 <div id="changelog" title="Changelog">
     <p>Changelog:</p>
     <ul>
+        <li>Version 0.2.6:
+            <ul>
+                <li>2018-11-24: Backend change: I've switched to concatenating all of the game's code again. This should prevent weirdnesses where caching causes parts of new code and parts of old code to load together. Similarly the version number is now in code so you can tell if you've loaded new code based on version number.</li>
+                <li>2018-11-24: Added tooltip to explain farm/progress modes.</li>
+                <li>2018-11-24: Farm mode will now automatically be switched off, and you will advance the wave, if you are already on your maximum achieved wave and you kill all the enemies.</li>
+                <li>2018-11-24: Changed the accounting for alive enemies to hopefully make that logic cheaper to calculate.</li>
+                <li>2018-11-24: Various speed improvements to reduce recalculation of tower damage.</li>
+                <li>2018-11-23: Added Power Grid skill which increases damage of towers based on how many neighboring support towers.</li>
+                <li>2018-11-17: Added Mana-Bond boss power which causes mana damage as the enemy takes damage.</li>
+                <li>2018-11-17: Added Arcane Mastery infinite skill which increases arcane damage based on current mana.</li>
+                <li>2018-11-15: Spell damage is now based on average DPS and 1% of max DPS instead of being based on the
+                    sum of all tower damage.
+                </li>
+                <li>2018-11-15: Added an advanced stats panel with avg gold/dps (5 minute rolling averages) and max
+                    DPS.
+                </li>
+                <li>2018-11-14: Reworked right-hand UI into collapsible panels.</li>
+                <li>2018-11-13: Adaptive Upgrades can now cause towers to upgrade more than once on a hit.</li>
+                <li>2018-11-12: Fixed directional shields to randomize their starting angle.</li>
+            </ul>
+        </li>
         <li>Version 0.2.5:
             <ul>
                 <li>2018-11-11: Added Battery Longevity skill which increases the duration of support tower buffs.</li>
-                <li>2018-11-11: Added Sniper Ammo skill and Ammo Type which causes heavier damage at a large range in exchange for a slower reload time.</li>
-                <li>2018-11-11: Buffs to towers from support towers will now overwrite weaker buffs of the same type.</li>
+                <li>2018-11-11: Added Sniper Ammo skill and Ammo Type which causes heavier damage at a large range in
+                    exchange for a slower reload time.
+                </li>
+                <li>2018-11-11: Buffs to towers from support towers will now overwrite weaker buffs of the same type.
+                </li>
                 <li>2018-11-11: Prestiging now properly clears unlocked ammo types. (Thanks DougMcCokkin.GG)</li>
-                <li>2018-11-11: Changed blueprint values to change the base value of towers before exponential growth rather than adding to them afterwards. (Thanks Duguall)</li>
+                <li>2018-11-11: Changed blueprint values to change the base value of towers before exponential growth
+                    rather than adding to them afterwards. (Thanks Duguall)
+                </li>
                 <li>2018-11-11: Fixed a bug that caused all clicks to register as selecting a single tower.</li>
-                <li>2018-11-11: Library Updates: Phaser CE to v2.11.1, jsTree to v3.3.7, Easy Star to v0.4.3, jQuery to v3.3.1, Lodash to v4.17.10</li>
-                <li>2018-01-27: Drastically reduced the number of draw calls made when in WebGL, which should vastly improve performance for each browser except for IE and Edge.</li>
-                <li>2018-01-21: Preferred powers are now spread more evenly among different types of enemies, there are now no powers which are not preferred by some kind of enemy and no two enemies have the same set of preferred powers.</li>
-                <li>2018-01-21: Added a boss power called steel skinned which reduces burning/bleeding damage by 50%/100% over two ranks.</li>
-                <li>2018-01-15: Enemy sprites can now have multiple "preferred powers", so for example a sprite can be marked to prefer flying and null-zone instead of just preferring flying.</li>
-                <li>2018-01-14: Enemies health and gold value is now divided based on pack. Meaning that in the case of a mixed pack where one has way more enemies that pack will have lower health values per unit. Previously the health pool was split across all units so one pack with swarm would lower the health values of the other pack.</li>
-                <li>2018-01-14: Added a new enemy power called healer which allows it to intelligently heal an enemy once every 10 seconds, enemies stop when casting a spell.</li>
-                <li>2018-01-13: Relative tower indicators are now based on base damage (before buffs/skills) rather than the relatively more expensive to calculate total damage.</li>
-                <li>2018-01-12: Added the generator ammo type which comes with the skill that unlocks support towers. Generators buff towers around them to allow them to sometimes fire even in effects such as null-zone. Generators are immune from the effects of null-zone themselves as well.</li>
+                <li>2018-11-11: Library Updates: Phaser CE to v2.11.1, jsTree to v3.3.7, Easy Star to v0.4.3, jQuery to
+                    v3.3.1, Lodash to v4.17.10
+                </li>
+                <li>2018-01-27: Drastically reduced the number of draw calls made when in WebGL, which should vastly
+                    improve performance for each browser except for IE and Edge.
+                </li>
+                <li>2018-01-21: Preferred powers are now spread more evenly among different types of enemies, there are
+                    now no powers which are not preferred by some kind of enemy and no two enemies have the same set of
+                    preferred powers.
+                </li>
+                <li>2018-01-21: Added a boss power called steel skinned which reduces burning/bleeding damage by
+                    50%/100% over two ranks.
+                </li>
+                <li>2018-01-15: Enemy sprites can now have multiple "preferred powers", so for example a sprite can be
+                    marked to prefer flying and null-zone instead of just preferring flying.
+                </li>
+                <li>2018-01-14: Enemies health and gold value is now divided based on pack. Meaning that in the case of
+                    a mixed pack where one has way more enemies that pack will have lower health values per unit.
+                    Previously the health pool was split across all units so one pack with swarm would lower the health
+                    values of the other pack.
+                </li>
+                <li>2018-01-14: Added a new enemy power called healer which allows it to intelligently heal an enemy
+                    once every 10 seconds, enemies stop when casting a spell.
+                </li>
+                <li>2018-01-13: Relative tower indicators are now based on base damage (before buffs/skills) rather than
+                    the relatively more expensive to calculate total damage.
+                </li>
+                <li>2018-01-12: Added the generator ammo type which comes with the skill that unlocks support towers.
+                    Generators buff towers around them to allow them to sometimes fire even in effects such as
+                    null-zone. Generators are immune from the effects of null-zone themselves as well.
+                </li>
                 <li>2018-01-12: Fixed a bug where support towers damage bonuses were not being applied.</li>
-                <li>2018-01-12: The cost difference from kinetic -> elemental -> support has been vastly reduced. In particular support towers are now 10x cheaper to build.</li>
-                <li>2018-01-12: Sensor arrays are now not a separate type but rather an ammo for the new support type. All blueprint points that were accumulated under sensors will be applied to support towers.</li>
-                <li>2018-01-12: Reworked skill code such that a skill can have additional skill pre-requisites beyond just the parent skills. Sensor Arrays now requires Power Distribution in addition to Sensors because Sensor Array will soon be an "ammo type" for the generic support tower.</li>
-                <li>2018-01-12: Added a new skill called Power Distribution which unlocks the new generic support tower.</li>
-                <li>2018-01-09: There is now a button to update all towers of a given type to its currently selected ammo.</li>
-                <li>2018-01-09: Fixed a bug where tooltips could appear off screen if the browser was not maximized or had reduced height in general.</li>
-                <li>2018-01-07: Added a new boss power called Directional-Shield, enemies spawn a shield 45-270 degrees around them and are immune to tower shots from those angles.</li>
-                <li>2018-01-06: Start zones, end zones, the path, and null zone have been changed to be less intensive to draw. Nullzones are now more transparent.</li>
-                <li>2018-01-06: The game will once again use a worker process to try to stay active in the background. Will now attempt to call render only once instead of on each delta tick.</li>
-                <li>2018-01-06: Optimizations for games with lots of towers: Towers will now remember their last target and retry that target first rather than constantly scanning for enemies in range. Towers will also pause scanning based on the distance to the nearest enemy if there are no targets in range.</li>
+                <li>2018-01-12: The cost difference from kinetic -> elemental -> support has been vastly reduced. In
+                    particular support towers are now 10x cheaper to build.
+                </li>
+                <li>2018-01-12: Sensor arrays are now not a separate type but rather an ammo for the new support type.
+                    All blueprint points that were accumulated under sensors will be applied to support towers.
+                </li>
+                <li>2018-01-12: Reworked skill code such that a skill can have additional skill pre-requisites beyond
+                    just the parent skills. Sensor Arrays now requires Power Distribution in addition to Sensors because
+                    Sensor Array will soon be an "ammo type" for the generic support tower.
+                </li>
+                <li>2018-01-12: Added a new skill called Power Distribution which unlocks the new generic support
+                    tower.
+                </li>
+                <li>2018-01-09: There is now a button to update all towers of a given type to its currently selected
+                    ammo.
+                </li>
+                <li>2018-01-09: Fixed a bug where tooltips could appear off screen if the browser was not maximized or
+                    had reduced height in general.
+                </li>
+                <li>2018-01-07: Added a new boss power called Directional-Shield, enemies spawn a shield 45-270 degrees
+                    around them and are immune to tower shots from those angles.
+                </li>
+                <li>2018-01-06: Start zones, end zones, the path, and null zone have been changed to be less intensive
+                    to draw. Nullzones are now more transparent.
+                </li>
+                <li>2018-01-06: The game will once again use a worker process to try to stay active in the background.
+                    Will now attempt to call render only once instead of on each delta tick.
+                </li>
+                <li>2018-01-06: Optimizations for games with lots of towers: Towers will now remember their last target
+                    and retry that target first rather than constantly scanning for enemies in range. Towers will also
+                    pause scanning based on the distance to the nearest enemy if there are no targets in range.
+                </li>
 
             </ul>
         </li>
@@ -418,41 +567,81 @@
                 <li>2018-01-05: There should in theory be a favicon for the game now.</li>
                 <li>2018-01-05: Shrapnel towers now have a blood icon.</li>
                 <li>2018-01-05: Saves now trigger when an enemy hits the edge of the map.</li>
-                <li>2018-01-05: Saves now store a backup locally when triggered although currently there isn't a way to access this backup save through the UI.</li>
-                <li>2018-01-05: Closing the options menu now triggers a save (so it will remember volume settings on reload without having to kill a wave).</li>
-                <li>2018-01-02: Added a constraint solving engine called csp.js by PrajitR to assist in efficiently calculating map changes.</li>
-                <li>2017-12-30: The game now uses a new tileset by Leonard Pabin. Over time the walking tiles will shift from grass to desert as an aesthetic effect, note that these changes will be lost on reload.</li>
-                <li>2017-12-30: You now start with two blocks, one in the center as usual and another closer to the default pathing at the start of the game.</li>
-                <li>2017-12-29: Added a display of the current playing song to options, you all can let me know which tracks you like/dislike.</li>
-                <li>2017-12-28: Added in a background sounds checkbox to options, by default sounds will not play in the background.</li>
-                <li>2017-12-28: Added in a master volume control that impacts both special effects sounds and music.</li>
+                <li>2018-01-05: Saves now store a backup locally when triggered although currently there isn't a way to
+                    access this backup save through the UI.
+                </li>
+                <li>2018-01-05: Closing the options menu now triggers a save (so it will remember volume settings on
+                    reload without having to kill a wave).
+                </li>
+                <li>2018-01-02: Added a constraint solving engine called csp.js by PrajitR to assist in efficiently
+                    calculating map changes.
+                </li>
+                <li>2017-12-30: The game now uses a new tileset by Leonard Pabin. Over time the walking tiles will shift
+                    from grass to desert as an aesthetic effect, note that these changes will be lost on reload.
+                </li>
+                <li>2017-12-30: You now start with two blocks, one in the center as usual and another closer to the
+                    default pathing at the start of the game.
+                </li>
+                <li>2017-12-29: Added a display of the current playing song to options, you all can let me know which
+                    tracks you like/dislike.
+                </li>
+                <li>2017-12-28: Added in a background sounds checkbox to options, by default sounds will not play in the
+                    background.
+                </li>
+                <li>2017-12-28: Added in a master volume control that impacts both special effects sounds and music.
+                </li>
                 <li>2017-12-28: Added in music with it's own volume control.</li>
-                <li>2017-12-28: There is now a sound effect when you learn a skill. There is now an options screen where you can control the sound effect volume, including turning it to 0.</li>
-                <li>2017-12-28: Shrapnel ammo now respects effects that reduce damage, like armored and shielded. The amount of bleeding done is now based on how much direct kinetic damage was done.</li>
-                <li>2017-12-28: Save games are now compressed. A save that would've previously taken about 43k characters now takes 12k characters. There's definitely room for improvement but this should be a solid start.</li>
+                <li>2017-12-28: There is now a sound effect when you learn a skill. There is now an options screen where
+                    you can control the sound effect volume, including turning it to 0.
+                </li>
+                <li>2017-12-28: Shrapnel ammo now respects effects that reduce damage, like armored and shielded. The
+                    amount of bleeding done is now based on how much direct kinetic damage was done.
+                </li>
+                <li>2017-12-28: Save games are now compressed. A save that would've previously taken about 43k
+                    characters now takes 12k characters. There's definitely room for improvement but this should be a
+                    solid start.
+                </li>
 
 
             </ul>
         </li>
         <li>Version 0.2.3:
             <ul>
-                <li>2017-12-26: Prestige points are now awarded at a curve starting at 1 instead of 4. In addition to encourage deep runs there is an overall multiplier added every 100 waves. E.g. 2x prestige at Wave 201 and above, 3x prestige at 301 and above.</li>
-                <li>2017-12-26: Fixed a bug with the previous wave button that decremented two waves instead of one when in farm mode (Github Issue #8). Thanks desci!</li>
-                <li>2017-12-26: Clicking a button or keybind for a tower will now clear the cursor if you do not have a sufficient amount of gold for that type of tower (Github Issue #8). Thanks desci!</li>
+                <li>2017-12-26: Prestige points are now awarded at a curve starting at 1 instead of 4. In addition to
+                    encourage deep runs there is an overall multiplier added every 100 waves. E.g. 2x prestige at Wave
+                    201 and above, 3x prestige at 301 and above.
+                </li>
+                <li>2017-12-26: Fixed a bug with the previous wave button that decremented two waves instead of one when
+                    in farm mode (Github Issue #8). Thanks desci!
+                </li>
+                <li>2017-12-26: Clicking a button or keybind for a tower will now clear the cursor if you do not have a
+                    sufficient amount of gold for that type of tower (Github Issue #8). Thanks desci!
+                </li>
                 <li>2017-12-26: There are now white level indicators overlayed on all towers.</li>
                 <li>2017-12-26: Added Market Connections as a new secondary skill under investment.</li>
                 <li>2017-12-26: Added a new starting skill and branch called Investment.</li>
-                <li>2017-12-26: As part of rebalancing skill times anti-coagulants was massively reduced in skill points cost. The effect has been reduced accordingly from 5% / rank to 1.25% / rank. Meaning that it now requires level 20 to halt bleeding reduction instead of rank 10, however the skill point cost has been massively reduced.</li>
-                <li>2017-12-21: Fixed a bug preventing stored skill points from being applied to new skill training.</li>
-                <li>2017-12-21: Related to the entry below, added the ability for ammo types to have their own bullet sprites.</li>
+                <li>2017-12-26: As part of rebalancing skill times anti-coagulants was massively reduced in skill points
+                    cost. The effect has been reduced accordingly from 5% / rank to 1.25% / rank. Meaning that it now
+                    requires level 20 to halt bleeding reduction instead of rank 10, however the skill point cost has
+                    been massively reduced.
+                </li>
+                <li>2017-12-21: Fixed a bug preventing stored skill points from being applied to new skill training.
+                </li>
+                <li>2017-12-21: Related to the entry below, added the ability for ammo types to have their own bullet
+                    sprites.
+                </li>
                 <li>2017-12-21: Added Arcane icon for Arcane Orb ammo on magic towers.</li>
                 <li>2017-12-21: Upgraded Phaser.js to 2.9.4 (community edition).</li>
                 <li>2017-08-20: Changed the mana regeneration display to prettify in the numbers.</li>
-                <li>2017-08-20: Implemented the arcane orb ammo type which grants +1 mana on hit and causes arcane damage.</li>
+                <li>2017-08-20: Implemented the arcane orb ammo type which grants +1 mana on hit and causes arcane
+                    damage.
+                </li>
                 <li>2017-04-29: Upgraded Knockout.js to 3.4.2, BigNumber.js
                     to 4.0, EasyStar.js to 0.4.1, jsTree to 3.3.3, and moment.js to 2.17.1.
                 </li>
-                <li>2017-03-20: It is now possible to not be actively learning a skill, doing so accrues skillpoints which can then be spent on a skill.</li>
+                <li>2017-03-20: It is now possible to not be actively learning a skill, doing so accrues skillpoints
+                    which can then be spent on a skill.
+                </li>
                 <li>2017-03-11: The bug where nullzoned enemies were leaving behind their nullzones appears to be
                     quashed.
                 </li>
@@ -1066,16 +1255,22 @@
         <li>http://opengameart.org/content/running-caveman-spritesheet</li>
         <li>http://opengameart.org/content/castle-platformer (bat)</li>
         <li>http://opengameart.org/content/lpc-wolf-animation</li>
-        <li>http://opengameart.org/content/giant-spider-32x32</li>
         <li>http://opengameart.org/content/lpc-imp-2</li>
         <li>http://opengameart.org/content/lpc-children-walk-animation</li>
         <li>http://opengameart.org/content/necromancer-0</li>
         <li>http://opengameart.org/content/denzis-32x32-orthogonal-tilesets</li>
+        <li>https://opengameart.org/content/skeletons-rework</li>
+        <li>https://opengameart.org/content/djinn</li>
+        <li>https://opengameart.org/content/kobolds-dog-soldier-rework</li>
+        <li>https://opengameart.org/content/stendhal-animals</li>
+        <li>https://opengameart.org/content/pumpkin-monster</li>
+        <li>https://opengameart.org/content/kung-fu-dragon</li>
+        <li>https://opengameart.org/content/fox-wolf-pack-rework</li>
+        <li>https://opengameart.org/content/arachne</li>
     </ul>
     <p>Todo:</p>
     <ul>
         <li>Add skills that impact effects, additional damage to frozen targets etc.</li>
-        <li>Nerf anti-coagulants by adding an element of RNG (20% on bleed tick to increase or similar).</li>
         <li>Add skills that scale on prestige.</li>
         <li>Clean up selection area.</li>
         <li>Stream-line tower+block commands.</li>
@@ -1101,10 +1296,9 @@
         <li>Look into saving every minute instead of on wave clear, and backup saves</li>
         <li>Look into a speed boosting aura boss power.</li>
         <li>Look into a life-link boss power.</li>
-        <li>Look into what happens if you kill a boss on farm mode on a boss level</li>
-        <li>Look into what happens if you spam mana burst from full (not increasing mana)</li>
     </ul>
 </div>
-<script data-main="js/loader" src="js/require.min.js"></script>
+<!---<script data-main="js/loader" src="js/require.min.js"></script>--->
+<script src="build/js/main.js"></script>
 </body>
 </html>

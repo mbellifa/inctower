@@ -40,7 +40,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 var towerType = incTower.cursor().param;
                 var cost = incTower.towerCost(towerType);
                 var tileIndex = incTower.core.map.layers[0].data[tileY][tileX].index;
-                if (!path.tileForbidden[tileX][tileY] && incTower.gold().gte(cost) && tileIndex >= 1 && tileIndex <= 4) {
+                if (!path.tileForbidden[tileX][tileY]() && incTower.gold().gte(cost) && tileIndex >= 1 && tileIndex <= 4) {
                     var opt = {};
                     opt.towerType = towerType;
                     opt.cost = cost;
@@ -64,7 +64,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                         valid = false;
                     }
                 }
-                if (path.tileForbidden[tileX][tileY]) {
+                if (path.tileForbidden[tileX][tileY]()) {
                     valid = false;
                 }
                 if (valid !== this.currentIndicatorStatus || tileX !== this.lastTileX || tileY !== this.lastTileY) {
@@ -109,20 +109,20 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         var tally = new BigNumber(0);
         var towerLength = incTower.numTowers();
         for (var i = 0; i < towerLength; ++i) {
-            var tower = incTower.towers_group.getAt(i);
+            var tower = incTower.towersGroup.getAt(i);
             tally = tally.plus(tower.totalDamage());
         }
+//        tally = tally.round(3, BigNumber.ROUND_UP);
+        //console.log(tally);
         return tally;
-    }).extend({ deferred: true });
-    incTower.averageDamage = ko.pureComputed(function () {
-        var tally = new BigNumber(0);
-        var towerLength = incTower.numTowers();
-        for (var i = 0; i < towerLength; ++i) {
-            var tower = incTower.towers_group.getAt(i);
-            tally = tally.plus(tower.totalDamage());
-        }
-        return tally.div(incTower.numTowers());
     });
+    // incTower.averageDamage = ko.pureComputed(function () {
+    //     var tally = incTower.totalTowerDamage();
+    //     return tally.div(incTower.numTowers());
+    // });
+    // incTower.averageDamage.subscribe(function (newdamage) {
+    //     console.log("New AveraGE! " + newdamage.toJSON());
+    // });
     incTower.cheapestUpgradeCostTower = ko.pureComputed(function () {
         var cheapest = -1;
         var retTower;
@@ -158,7 +158,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             return memoize[key];
         };
         var towerUpgradeCache = {};
-        incTower.towers_group.forEach(function (tower) {
+        incTower.towersGroup.forEach(function (tower) {
             if (towerUpgradeCache[tower.towerType] === undefined) {
                 towerUpgradeCache[tower.towerType] = {}
             }
@@ -551,7 +551,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         }
     };
     _.forEach(_.keys(incTower.towerAttributes), function (towerType) {
-        incTower.towerAttributes[towerType].blueprintPoints = ko.computed(function () {
+        incTower.towerAttributes[towerType].blueprintPoints = ko.pureComputed(function () {
             if (!_.has(incTower.towerBlueprints, towerType)) {
                 incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
             }
@@ -607,7 +607,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             }
         }
 
-        path.tileForbidden[tower.tileX][tower.tileY] = false;
+        path.tileForbidden[tower.tileX][tower.tileY](false);
         if (tower.icon) {
             tower.icon.destroy();
         }
@@ -647,7 +647,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         var tileY = opt.tileY;
         var tile = opt.tile;
 
-        if (!path.tileForbidden[tileX][tileY]) {
+        if (!path.tileForbidden[tileX][tileY]()) {
             Phaser.Sprite.call(this, incTower.game, worldX + 16, worldY + 16, 'incTower', 'Tower-32.png');
 
             //this.tower = game.add.sprite(worldX+tileSquare/2, worldY+tileSquare/2, 'incTower', 'Tower-32.png');
@@ -670,7 +670,6 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.tileX = tileX;
             this.tileY = tileY;
             this.tower = true;
-            this.support = 'support' in incTower.towerAttributes[this.towerType] && incTower.towerAttributes[this.towerType].support;
             this.disabledFrames = ko.observable(0); //If this is non-zero the tower is disabled.
 
 
@@ -685,6 +684,29 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
 
             }
             this.buffs = ko.observableArray([]);
+            this.neighbors = ko.pureComputed(function () {
+               var result = [];
+               var coordMods = [
+                   [-1, -1],
+                   [-1, 0],
+                   [-1, 1],
+                   [0, -1],
+                   [0, 1],
+                   [1, -1],
+                   [1, 0],
+                   [1, 1]
+               ];
+               var tileX = this.tileX;
+               var tileY = this.tileY;
+               _.each(coordMods, function (mods) {
+                   var newX = tileX + mods[0];
+                   var newY = tileY + mods[1];
+                   if (newX < 0 || newY < 0 || newX > 24 || newY > 18) { return; }
+                   var neighbor = path.tileForbidden[newX][newY]();
+                   if (neighbor) { result.push(neighbor); }
+               });
+               return result;
+            }, this);
             this.totalDamage = ko.pureComputed(function () {
                 var ret = this.damage();
                 if (this.towerType === 'kinetic') {
@@ -694,6 +716,13 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 if (this.ammoType() !== false && incTower.ammoAttributes[this.ammoType()].damageModifier) {
                     ret = ret.times(incTower.ammoAttributes[this.ammoType()].damageModifier);
                 }
+                var powerGrid = incTower.getEffectiveSkillLevel('powerGrid');
+                if (powerGrid > 0) {
+                    var neighbors = this.neighbors();
+                    var supportNeighbors = _.filter(neighbors, function (tower) { return tower.towerType === 'support'; });
+                    ret = ret.times(1 + (0.05 * supportNeighbors.length * powerGrid));
+                }
+
                 var damageBuffs = this.getBuffAmountByType('damage');
                 if (damageBuffs) {
                     ret = ret.plus(damageBuffs);
@@ -709,12 +738,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.damage.subscribe(damageSubscription, this);
 
 
-            this.relativeTowerPower = ko.computed(function () {
-                if (this.damage() === undefined) {
-                    return;
-                }
-                var per = this.damage().div(incTower.towerMaxDamage[this.towerType]()) * 1.0;
-                return per;
+            this.relativeTowerPower = ko.pureComputed(function () {
+                if (this.damage() === undefined) { return; }
+                return this.damage().div(incTower.towerMaxDamage[this.towerType]()) * 1.0;
             }, this);
 
             damageSubscription.call(this, this.damage());
@@ -836,10 +862,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     this.upgrade();
                 }
             }, this);
-            incTower.towers_group.add(this);
+            incTower.towersGroup.add(this);
             incTower.towers.push(this);
             //Store a reference to ourselves in the tileForbidden array so we can find neighbors.
-            path.tileForbidden[tileX][tileY] = this;
+            path.tileForbidden[tileX][tileY](this);
             this.events.onDestroy.add(this.cleanup, this);
             this.events.onKilled.add(this.cleanup, this);
             this.updateIcon();
@@ -934,9 +960,15 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     };
     Tower.prototype.checkBuffs = function () {
         //Removes expired buffs
-        this.buffs(_.reject(this.buffs(), function (buff) {
+        var oldBuffs = this.buffs();
+        if (oldBuffs.length === 0) { return; }
+        var newBuffs = _.reject(this.buffs(), function (buff) {
             return incTower.game.time.now > buff.expiration;
-        }));
+        });
+        if (newBuffs.length !== oldBuffs.length) {
+            this.buffs(newBuffs);
+        }
+
     };
     Tower.prototype.addBuff = function (type, source, duration, amount) {
         this.checkBuffs();
@@ -993,10 +1025,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                     if (newTileX < 0 || newTileY < 0 || newTileX > 24 || newTileY > 18) {
                         return;
                     }
-                    if (!path.tileForbidden[tileX + xMod][tileY + yMod] || path.tileForbidden[tileX + xMod][tileY + yMod].towerType === 'support') {
+                    if (!path.tileForbidden[tileX + xMod][tileY + yMod]() || path.tileForbidden[tileX + xMod][tileY + yMod]().towerType === 'support') {
                         return;
                     }
-                    candidates.push(path.tileForbidden[tileX + xMod][tileY + yMod]);
+                    candidates.push(path.tileForbidden[tileX + xMod][tileY + yMod]());
                 });
             });
             if (candidates.length > 0) {
@@ -1083,7 +1115,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         this.level(curLevel);
         this.damage(damage);
         incTower.checkHelp('towerUpgrades');
-        this.remainingUpgradeCost(calculateTowerUpgradeCost(this.towerType, curLevel));
+        incrementObservable(this.remainingUpgradeCost, calculateTowerUpgradeCost(this.towerType, curLevel));
     };
     Tower.prototype.payToUpgrade = function (byLevel, cost) {
         if (byLevel === undefined) {

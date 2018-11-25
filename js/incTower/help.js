@@ -3,7 +3,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber'], function (incTower, k
     incTower.availableHelp = ko.observableArray([]); //Stores help files that are available for viewing
     incTower.readHelp = ko.observableArray([]);  //Stores help files that have been read by
     incTower.selectedHelp = ko.observable('none');
-    incTower.unreadHelps = ko.computed(function () {
+    incTower.unreadHelps = ko.pureComputed(function () {
         var unread = 0;
         ko.utils.arrayForEach(this.availableHelp(), function(topic) {
             if (incTower.readHelp.indexOf(topic) < 0) {
@@ -23,10 +23,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber'], function (incTower, k
         }
     };
     incTower.haveReadHelpTopic = function (topic) {
-        if (incTower.readHelp.indexOf(topic) < 0) {
-            return false;
-        }
-        return true;
+        return incTower.readHelp.indexOf(topic) >= 0;
+        // if (incTower.readHelp.indexOf(topic) < 0) {
+        //     return false;
+        // }
+        // return true;
     };
 
     incTower.helpTopics = {

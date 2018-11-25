@@ -131,7 +131,7 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         incTower.core.layer.renderSettings.enableScrollDelta = false; //http://www.thebotanistgame.com/blog/2015/03/04/tuning-phaserjs-performance.html
         incTower.core.layer.resizeWorld();
         path.recalcPath();
-        incTower.towers_group = incTower.game.add.group();
+        incTower.towersGroup = incTower.game.add.group();
         incTower.bullets = incTower.game.add.group();
         incTower.enemys = incTower.game.add.group();
         incTower.enemyHealthbars = incTower.game.add.group();
@@ -159,7 +159,9 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
 
         //We need a load function here for this to really make sense
         incTower.checkHelp('welcome');
-        this.time.events.loop(Phaser.Timer.SECOND, incTower.everySecond, this);
+        // console.log(this);
+        // console.log(incTower.game.time.events);
+        incTower.game.time.events.loop(Phaser.Timer.SECOND, incTower.everySecond, incTower.game);
         //this.add.plugin(Phaser.Plugin.Debug);
         var startZone = incTower.game.add.graphics(0,0);
         var colour = "0x00FF00";
@@ -190,7 +192,7 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         var currentTime = incTower.game.time.now;
         incTower.updateRealTime();
 
-        if ((!incTower.generatingEnemies) && (incTower.enemys.countLiving() === 0)) {
+        if (incTower.remainingEnemies <= 0) {
             if (incTower.wave() > 0) {
                 //Save state
                 saveManager.triggerSave();

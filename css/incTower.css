@@ -254,7 +254,7 @@ body {
 }
 .icon-btn {
     position: relative;
-    padding: 0px 3px 0px 20px;
+    padding: 3px;
 }
 .icon-btn .keybind {
     position: absolute;
@@ -265,10 +265,19 @@ body {
     padding: 2px;
     background-color: purple;
 }
+.keybind ~ .icon {
+    margin-left: 15px;
+}
+.icon-btn .icon {
+    width: 32px;
+    height: 32px;
+
+}
 .icon-header {
     clear: right;
     margin: 0.5em 0 0.25em 0;
 }
+
 .unread {
     background-color: rgba(50,50,170,0.6);
     border: 2px #bbb solid;
@@ -294,4 +303,49 @@ body {
     background-color: #505050;
     border-color: #303030;
     color: #f3f3f3;
+}
+
+
+/* Panels */
+.panel {
+    border: black 1px solid;
+    margin-bottom: 0.5em;
+}
+.panel .header {
+    padding: 0.5em;
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+.panel .content {
+    padding: 0.5em;
+}
+.panel .content .inner-content, .flex {
+    /*display: grid;*/
+    /*grid-template-columns: repeat( auto-fit, minmax(200px, 1fr) );*/
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.panel .content .inner-content > *, .flex > * {
+    margin: 0.25em;
+}
+.panel.collapsed .content {
+    display: none;
+}
+
+.arrow {
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+    margin-right: 0.25em;
+}
+.panel.expanded .arrow {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+.panel.collapsed .arrow {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
 }

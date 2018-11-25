@@ -4,31 +4,76 @@ var gulp = require('gulp');
 
 var dest = 'build/';
 // Include plugins
-var concat = require('gulp-concat');
+// var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var minifyCSS = require('gulp-minify-css');
 var concatCss = require('gulp-concat-css');
+var sourcemaps = require('gulp-sourcemaps');
+var babel = require('gulp-babel');
+var plumber = require('gulp-plumber');
+var rjs = require('gulp-requirejs');
+
+var shims = {
+    'lib/phaser': {
+        deps: [],
+        exports: 'Phaser'
+    },
+    'lib/lodash': {
+        deps: [],
+        exports: '_'
+    },
+    'lib/knockout': {
+        deps: [],
+        exports: 'ko'
+    },
+    'lib/jquery': {
+        deps: [],
+        exports: 'jQuery'
+    },
+    'lib/bignumber': {
+        deps: [],
+        //exports: 'BigNumber'
+    },
+    'lib/moment': {
+        deps: [],
+        exports: 'moment'
+    },
+
+    'lib/jquery-ui': {
+        deps: ['lib/jquery']
+    },
+    'lib/jstree': {
+        deps: ['lib/jquery']
+    }
+};
+
 
 // Concatenate & Minify JS
 gulp.task('scripts', function() {
-    return gulp.src([
-        "js/knockout-3.3.0.js",
-        "js/ko.observableDictionary.js",
-        "js/jquery-1.11.2.min.js",
-        "js/jquery.qtip.min.js",
-        "js/bignumber.min.js",
-        "js/moment.js",
-        "js/easystar-0.2.1.min.js",
-        "js/PathFinderPlugin.js",
-        "js/jquery-ui.min.js",
-        "inc_tower.js",
-        "js/Tower.class.js",
-        "js/Enemy.class.js"
-    ]).pipe(concat('incTower.js'))
-      .pipe(rename({suffix: '.min'}))
+    return gulp.src(
+        "js/lib/*.js"
+    ).pipe(plumber())
+        .pipe(sourcemaps.init())
+        // .pipe(concat('incTower.js'))
+      // .pipe(rename({suffix: '.min'}))
+        .pipe(babel({"compact": false}))
       .pipe(uglify())
-      .pipe(gulp.dest(dest + 'js'));
+        .pipe(sourcemaps.write('maps'))
+      .pipe(gulp.dest(dest + 'js/'));
+});
+gulp.task('rjs', function () {
+   return rjs({
+       name: "loader",
+     baseUrl: 'js',
+     out: 'main.js',
+       shim: shims,
+       optimize: 'uglify',
+       generateSourceMaps: true
+   }).pipe(plumber())
+       .pipe(sourcemaps.init({loadMaps: true}))
+       .pipe(sourcemaps.write('maps'))
+       .pipe(gulp.dest(dest + 'js/'));
 });
 gulp.task('css', function() {
     return gulp.src([

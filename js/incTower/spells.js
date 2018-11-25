@@ -39,12 +39,15 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
         return (1 + incTower.getEffectiveSkillLevel('manaRegeneration')) * (1 + 0.05 * incTower.getEffectiveSkillLevel('manaRegenerationAdvanced'));
     });
     incTower.spellLevel = ko.observable(new BigNumber(0));
+    incTower.baseSpellDamage = ko.pureComputed(function () {
+        //return incTower.averageDamage().plus();
+        return incTower.avgDPS().times(incTower.spellLevelDamageFactor()).plus(incTower.highestDPS().div(100));
+    });
     incTower.spellLevelDamageFactor = ko.pureComputed(function () {
         return Math.pow(2, incTower.spellLevel());
     });
     incTower.availableSpells = ko.observableArray([]);
     incTower.castSpell = function (spell) {
-        'use strict';
         var manaCost = incTower.spellAttributes[spell].trueManaCost();
         if (incTower.mana().lt(manaCost)) {
             return;
@@ -65,9 +68,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
         }));
     };
     incTower.describeSpellLevel = ko.pureComputed(function () {
-        'use strict';
         return "Increases the damage of all spells by " + incTower.spellLevelDamageFactor() + "X and increases their mana costs by " + (incTower.spellLevel() * 50) + "%.";
     });
+
     incTower.spellAttributes = {
         manaBurst: new Spell({
             fullName: 'Mana Burst',
@@ -75,7 +78,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 100,
             diameter: 200,
             describe: function () {
-                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage();
                 var fullManaDamage = damage.times(10);
 
                 return 'Deals ' + incTower.humanizeNumber(damage) + ' arcane damage in an area. When cast at over 90% of max mana, it will deal ' + incTower.humanizeNumber(fullManaDamage) + ' instead.<br><br>When cast at less than one-third mana there is a chance that you will increase your maximum mana pool by ' + incTower.humanizeNumber(0.25 * this.trueManaCost()) + '. This chance starts at 5% and increases to 100% depending on how low your mana pool is.'
@@ -84,7 +87,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area = new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage();
                 if (incTower.mana().div(incTower.maxMana()).gte(0.9)) {
                     damage = damage.times(10);
                 }
@@ -109,14 +112,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 1000,
             diameter: 64,
             describe: function () {
-                var damage = incTower.totalTowerDamage().times(100).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().times(100);
                 return 'Deals ' + incTower.humanizeNumber(damage) + ' arcane damage in a small area. If an enemy is killed they will be sacrificed, increasing the damage of all spells by 100% and increasing the mana cost of all spells by 50%.'
             },
             perform: function (pointer, spellName) {
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area = new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().times(100).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().times(100);
                 var livingBefore = incTower.enemys.countLiving();
                 incTower.enemys.forEachAlive(function (enemy) {
                     if (area.contains(enemy.x, enemy.y)) {
@@ -139,7 +142,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 200,
             diameter: 150,
             describe: function () {
-                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().div(2);
                 var frozenDamage = damage.times(5);
                 return 'Deals ' + incTower.humanizeNumber(damage) + ' water damage in an area, adding up to three water runes to each enemy that is not already frozen. If an enemy is frozen it takes ' + incTower.humanizeNumber(frozenDamage) + ' damage and gains up to one water rune instead.<br><br>If all enemies in the area are frozen 50% of the mana cost is refunded.';
             },
@@ -147,7 +150,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 var cursor = incTower.cursor();
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area = new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().div(2);
                 var frozenDamage = damage.times(5);
                 var allFrozen = true;
 
@@ -174,14 +177,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 200,
             diameter: 150,
             describe: function () {
-                var damage = incTower.totalTowerDamage().div(2);
+                var damage = incTower.baseSpellDamage().div(2);
                 var burnDamage = damage.times(4);
                 return 'Deals ' + incTower.humanizeNumber(damage) + ' fire damage in an area, adding up to three fire runes to each enemy that is not already burning. If an enemy is burning its burn amount is increased by ' + incTower.humanizeNumber(burnDamage) + ' damage and gains up to one fire rune instead.<br><br>Each already burning enemy hit will restore ' + incTower.humanizeNumber(0.15 * this.trueManaCost()) + ' mana.';
             },
             perform: function (pointer, spellName) {
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area = new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().div(2).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().div(2);
                 var burnDamage = damage.times(4);
                 var alreadyBurning = 0;
 
@@ -209,14 +212,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 200,
             diameter: 50,
             describe: function () {
-                var damage = incTower.totalTowerDamage().div(3).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().div(3);
                 var soloDamage = damage.times(7);
                 return 'Deals ' + incTower.humanizeNumber(damage) + ' air damage in a focused area, adding up to three air runes to each enemy. If only one enemy is is under this spells effect it deals ' + incTower.humanizeNumber(soloDamage) + ' damage and gains six air runes instead.<br><br>Gain 20 mana for each air rune that was already attached to affected enemies.';
             },
             perform: function (pointer, spellName) {
                 var diameter = incTower.spellAttributes[spellName].diameter;
                 var area = new Phaser.Circle(pointer.worldX, pointer.worldY, diameter);
-                var damage = incTower.totalTowerDamage().div(3).times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage().div(3);
                 var soloDamage = damage.times(7);
                 var airRunes = 0;
                 var impactedEnemies = [];
@@ -249,11 +252,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             manaCost: 300,
             diameter: 16,
             describe: function () {
-                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage();
                 return 'Ruptures form in the earth at your cursor and stalk your enemies. Each rupture deals ' + incTower.humanizeNumber(damage) + ' which is increased by 3% per tile-width the rupture travels. In addition to damage when a rupture strikes an enemy up to one earth rune will be attached. Ruptures can form smaller ruptures that target the same enemy, these will do less damage but have a higher chance to attach an earth rune.<br><br>If you cast Seismic Rupture while the ground is shaking half of the mana cost is refunded.';
             },
             perform: function (pointer, spellName) {
-                var damage = incTower.totalTowerDamage().times(incTower.spellLevelDamageFactor());
+                var damage = incTower.baseSpellDamage();
                 if (incTower.shakeWorld > 0) {
                     incTower.incrementObservable(incTower.mana, 0.5 * this.trueManaCost());
                 }

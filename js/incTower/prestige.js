@@ -73,14 +73,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
             incTower.towerAttributes.elemental.ammoTypes(['arcaneOrb']);
             incTower.towerAttributes.support.ammoTypes(['generator']);
 
-            incTower.towers_group.forEach(function (tower) {
+            incTower.towersGroup.forEach(function (tower) {
                 if (tower.icon) {
                     tower.icon.destroy();
                 }
                 tower.kill();
             });
-            incTower.towers_group.removeAll(true);
-            pathModule.tileForbidden = pathModule.createCoordArray(false);
+            incTower.towersGroup.removeAll(true);
+            pathModule.tileForbidden = pathModule.createCoordArray(false, true);
             _.forEach(incTower.blocks(), function (block) {
                 pathModule.mutateTile(block.x, block.y);
             });

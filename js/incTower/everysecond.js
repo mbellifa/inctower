@@ -143,5 +143,15 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
                 return dim * 0.95;
             });
         });
+        incrementObservable(incTower.avgDPS, incTower.avgDPS().div(300).neg());
+        incrementObservable(incTower.avgDPS, incTower.damageLastSecond.div(300));
+        incrementObservable(incTower.avgGPS, incTower.avgGPS().div(300).neg());
+        incrementObservable(incTower.avgGPS, incTower.goldLastSecond.div(300));
+        if (incTower.damageLastSecond.gt(incTower.highestDPS())) {
+            incTower.highestDPS(incTower.damageLastSecond);
+        }
+        incTower.damageLastSecond = new BigNumber(0);
+        incTower.goldLastSecond = new BigNumber(0);
+
     };
 });

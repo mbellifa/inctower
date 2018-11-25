@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'lib/lz-string', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber, lzString) {
+define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'lib/lz-string', 'lib/moment', 'lib/jquery', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber, lzString, moment, $) {
     'use strict';
     var saveModule = {};
     saveModule.loadSave = function (save) {
@@ -128,6 +128,17 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 }
             });
         }
+        // Check for off-line gains
+        if (save.saveTime !== undefined) {
+            var difference = Math.floor(Date.now() / 1000) - save.saveTime;
+            if (difference > 0) {
+                var goldGain = incTower.avgGPS().times(difference);
+                incTower.incrementObservable(incTower.gold, goldGain); // We don't use gainGold here because otherwise it'll count for average GPS calculations
+                var skillGain = new BigNumber(incTower.skillRate()).times(difference);
+                incTower.incrementObservable(incTower.skillPoints, skillGain);
+                $('<div  title="Welcome Back">You were gone for '+ moment().add(difference, 'seconds').fromNow().replace('in ', '') +'. You have gained '+incTower.humanizeNumber(goldGain)+' gold and '+incTower.humanizeNumber(skillGain)+' skill points.</div>').dialog({ width: 400, height: 200, close: function( event, ui ) {  $(this).remove();  }   });
+            }
+        }
     };
     saveModule.createSaveObj = function (obj) {
         var save = {};
@@ -145,7 +156,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             'deadBullets',
             'frame',
             'enemyTypes',
-            'generatingEnemies',
+            'remainingEnemies',
             'towerAttributes',
             'floatingTexts',
             'availableTowers',
@@ -247,6 +258,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
         if (Object.keys(save).length === 0 && save.constructor === Object) {
             return false;
         }
+        save.saveTime = Math.floor(Date.now() / 1000);
         return save;
     };
     saveModule.createPackagedSave = function (obj) { //If localStore is true it will rotate the localStorage

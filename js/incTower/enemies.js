@@ -2,10 +2,11 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
     'use strict';
     var tileSquare = 32;
 
-    incTower.generatingEnemies = false;
+    incTower.remainingEnemies = 0;
     incTower.nukeEnemies = function () {
         incTower.game.tweens.removeFrom(incTower.enemys);
         incTower.enemys.removeAll(true);
+        incTower.remainingEnemies = 0;
     };
 
     incTower.bossPowers = {
@@ -212,7 +213,18 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             maxLevel: 2,
             ofNoun: ['the Iron-Clad'],
             adjective: ['Steel-Skinned']
-        }
+        },
+        'mana-bond': {
+            name: 'Mana-Bond',
+            describe: function (mult) {
+                return "Each 10% damage taken by this unit deals " + incTower.humanizeNumber(mult) + "% mana damage to you.";
+            },
+            requirements: function () {
+                return incTower.getSkillLevel('magicalAffinity') > 0;
+            },
+            ofNoun: ['Mana Bonding'],
+            adjective: ['Mana-Shackled']
+        },
     };
     incTower.seenPowers = {};
     incTower.generateBasePack = function (normal, numPowers, startCount) {
@@ -236,6 +248,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         }
         var preferredPowers = incTower.enemyTypes[baseEntry.name].power;
         if (!_.isArray(preferredPowers)) { preferredPowers = [preferredPowers]; }
+        //preferredPowers = ['mana-bond'];
         baseEntry.preferredPowers = preferredPowers;
         var valid = true;
 
@@ -372,228 +385,124 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
     incTower.enemyTypes = {
         duck: {
-            animation: [
-                'duck01.png',
-                'duck02.png',
-                'duck03.png',
-                'duck04.png',
-                'duck05.png',
-                'duck06.png',
-                'duck07.png',
-                'duck08.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('duck', 1, 8, '.png', 2),
             nounSingle: ['Penguin'],
             nounPlural: ['Penguins'],
             power: ['swarm', 'earth-resistant']
         },
         panda: {
-            animation: [
-                'panda01.png',
-                'panda02.png',
-                'panda03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('panda', 1, 3, '.png', 2),
             power: ['shielding', 'healthy'],
             nounSingle: ['Panda'],
             nounPlural: ['Pandas']
         },
         dog: {
-            animation: [
-                'dog01.png',
-                'dog02.png',
-                'dog03.png',
-                'dog04.png',
-                'dog05.png',
-                'dog06.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('dog', 1, 6, '.png', 2),
             power: 'fast',
             nounSingle: ['Hound', 'Dog', 'Doggo', 'Pupper'],
             nounPlural: ['Hounds', 'Dogs', 'Doggos', 'Puppers']
         },
         penguin: {
-            animation: [
-                'penguin01.png',
-                'penguin02.png',
-                'penguin03.png',
-                'penguin04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('penguin', 1, 4, '.png', 2),
             power: ['healthy', 'fire-resistant'],
             nounSingle: ['Penguin'],
             nounPlural: ['Penguins']
         },
         goblin: {
-            animation: [
-                'goblin01.png',
-                'goblin02.png',
-                'goblin03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('goblin', 1, 3, '.png', 2),
             power: ['regenerating', 'fast'],
             nounSingle: ['Goblin'],
             nounPlural: ['Goblins']
         },
         skeleton: {
-            animation: [
-                'skeleton01.png',
-                'skeleton02.png',
-                'skeleton03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('skeleton', 1, 3, '.png', 2),
             power: ['steelSkin'],
             nounSingle: ['Skeleton'],
             nounPlural: ['Skeletons']
         },
         zombie: {
-            animation: [
-                'zombie01.png',
-                'zombie02.png',
-                'zombie03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('zombie', 1, 3, '.png', 2),
             power: ['teleport', 'shielding'],
             nounSingle: ['Zombie'],
             nounPlural: ['Zombies']
         },
         icebeetle: {
-            animation: [
-                'icebeetle-01.png',
-                'icebeetle-02.png',
-                'icebeetle-03.png',
-                'icebeetle-04.png',
-                'icebeetle-05.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('icebeetle-', 1, 5, '.png', 2),
             power: ['water-resistant', 'armored'],
             nounSingle: ['Ice Beetle'],
             nounPlural: ['Ice Beetles']
         },
         firebeetle: {
-            animation: [
-                'firebeetle-01.png',
-                'firebeetle-02.png',
-                'firebeetle-03.png',
-                'firebeetle-04.png',
-                'firebeetle-05.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('firebeetle-', 1, 5, '.png', 2),
             power: ['fire-resistant', 'steelSkin'],
             nounSingle: ['Fire Beetle'],
             nounPlural: ['Fire Beetles']
         },
         blackbeetle: {
-            animation: [
-                'blackbeetle-01.png',
-                'blackbeetle-02.png',
-                'blackbeetle-03.png',
-                'blackbeetle-04.png',
-                'blackbeetle-05.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('blackbeetle-', 1, 5, '.png', 2),
             power: ['armored', 'arcane-resistant'],
             nounSingle: ['Black Beetle'],
             nounPlural: ['Black Beetles']
 
         },
         greenbeetle: {
-            animation: [
-                'greenbeetle-01.png',
-                'greenbeetle-02.png',
-                'greenbeetle-03.png',
-                'greenbeetle-04.png',
-                'greenbeetle-05.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('greenbeetle-', 1, 5, '.png', 2),
             power: ['regenerating', 'healer'],
             nounSingle: ['Green Beetle'],
             nounPlural: ['Green Beetles']
 
         },
         chicken: {
-            animation: [
-                'chicken-01.png',
-                'chicken-02.png',
-                'chicken-03.png',
-                'chicken-04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('chicken-', 1, 4, '.png', 2),
             power: ['swarm', 'fast'],
             nounSingle: ['Chicken'],
             nounPlural: ['Chickens']
 
         },
         cow: {
-            animation: [
-                'cow-01.png',
-                'cow-02.png',
-                'cow-03.png',
-                'cow-04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('cow-', 1, 4, '.png', 2),
             power: ['heavy', 'air-resistant'],
             nounSingle: ['Cow'],
             nounPlural: ['Cows']
 
         },
         llama: {
-            animation: [
-                'llama-01.png',
-                'llama-02.png',
-                'llama-03.png',
-                'llama-04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('llama-', 1, 4, '.png', 2),
             power: 'teleport',
             nounSingle: ['Llama'],
             nounPlural: ['Llamas']
 
         },
         pig: {
-            animation: [
-                'pig-01.png',
-                'pig-02.png',
-                'pig-03.png',
-                'pig-04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('pig-', 1, 4, '.png', 2),
             power: ['teleport', 'heavy'],
             nounSingle: ['Pig'],
             nounPlural: ['Pigs']
 
         },
         sheep: {
-            animation: [
-                'sheep-01.png',
-                'sheep-02.png',
-                'sheep-03.png',
-                'sheep-04.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('sheep-', 1, 4, '.png', 2),
             power: ['healer', 'directionalShield'],
             nounSingle: ['Sheep'],
             nounPlural: ['Sheep']
 
         },
         redfairy: {
-            animation: [
-                'redfairy-01.png',
-                'redfairy-02.png',
-                'redfairy-03.png',
-                'redfairy-04.png',
-                'redfairy-05.png',
-                'redfairy-06.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('redfairy-', 1, 6, '.png', 2),
             power: 'flying',
             nounSingle: ['Red Fairy'],
             nounPlural: ['Red Fairies']
 
         },
         greenfairy: {
-            animation: [
-                'greenfairy-01.png',
-                'greenfairy-02.png',
-                'greenfairy-03.png',
-                'greenfairy-04.png',
-                'greenfairy-05.png',
-                'greenfairy-06.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('greenfairy-', 1, 6, '.png', 2),
             power: ['flying', 'healer'],
             nounSingle: ['Green Fairy'],
             nounPlural: ['Green Fairies']
 
         },
         blackgolem: {
-            animation: [
-                'blackgolem-01.png',
-                'blackgolem-02.png',
-                'blackgolem-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('blackgolem-', 1, 3, '.png', 2),
             power: ['heavy', 'armored'],
             nounSingle: ['Black Golem'],
             nounPlural: ['Black Golems']
@@ -601,53 +510,33 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         },
 
         icegolem: {
-            animation: [
-                'icegolem-01.png',
-                'icegolem-02.png',
-                'icegolem-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('icegolem-', 1, 3, '.png', 2),
             power: ['water-resistant', 'directionalShield'],
             nounSingle: ['Ice Golem'],
             nounPlural: ['Ice Golems']
 
         },
         darkwizard: {
-            animation: [
-                'darkwizard-01.png',
-                'darkwizard-02.png',
-                'darkwizard-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('darkwizard-', 1, 3, '.png', 2),
             power: 'nullzone',
             nounSingle: ['Dark Wizard'],
             nounPlural: ['Dark Wizards']
         },
         redwizard: {
-            animation: [
-                'redwizard-01.png',
-                'redwizard-02.png',
-                'redwizard-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('redwizard-', 1, 3, '.png', 2),
             power: ['nullzone', 'arcane-resistant'],
             nounSingle: ['Red Wizard'],
             nounPlural: ['Red Wizards']
         },
         skull: {
-            animation: [
-                'skull-01.png',
-                'skull-02.png',
-                'skull-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('skull-', 1, 3, '.png', 2),
             power: ['nullzone', 'earth-resistant'],
             nounSingle: ['Floating Skull'],
             nounPlural: ['Floating Skulls']
 
         },
         turtle: {
-            animation: [
-                'turtle-01.png',
-                'turtle-02.png',
-                'turtle-03.png'
-            ],
+            animation: Phaser.Animation.generateFrameNames('turtle-', 1, 3, '.png', 2),
             power: 'shielding',
             nounSingle: ['Turtle'],
             nounPlural: ['Turtles']
@@ -823,7 +712,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
     incTower.generateEnemy = function (difficulty) {
         //var i = 0;
         //console.log("Difficulty: " + incTower.humanizeNumber(difficulty));
-        incTower.generatingEnemies = true;
         var totalWaveGold = incTower.goldPerWave(incTower.wave());
         //Get our random pack type
         var basePack;
@@ -888,7 +776,6 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             duration: 1000,
             text: title
         });
-        incTower.generatingEnemies = false;
 
     };
 
@@ -909,6 +796,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
     }
 
     var Enemy = function (x, y, opts) {
+        incTower.remainingEnemies++;
         var incrementObservable = incTower.incrementObservable;
         var anim = incTower.enemyTypes[opts.name].animation;
         Phaser.Sprite.call(this, incTower.game, x, y, 'incTower', anim[0]);
@@ -928,6 +816,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         };
         this.events.onKilled.add(function () {
             try {
+                incTower.remainingEnemies--;
+                if (incTower.remainingEnemies <= 0) {
+                    if (incTower.wave() === incTower.maxWave() && incTower.farmMode()) { //Turn off farm mode if we kill a boss on the max wave
+                        incTower.farmMode(false);
+                    }
+                }
+
                 if (incTower.currentlySelected() === this || incTower.currentlySelected() !== null && incTower.currentlySelected().enemy && !incTower.currentlySelected().alive) {
                     incTower.currentlySelected(null);
                 }
@@ -1006,28 +901,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                     this.burningSprite.scale.y = 0.5;
                     this.burningSprite.angle = 270;
                     this.addChild(this.burningSprite);
-                    this.burningSprite.animations.add('burn', [
-                        "smokefire-0001.png",
-                        "smokefire-0002.png",
-                        "smokefire-0003.png",
-                        "smokefire-0004.png",
-                        "smokefire-0005.png",
-                        "smokefire-0006.png",
-                        "smokefire-0007.png",
-                        "smokefire-0008.png",
-                        "smokefire-0009.png",
-                        "smokefire-0010.png",
-                        "smokefire-0011.png",
-                        "smokefire-0012.png",
-                        "smokefire-0013.png",
-                        "smokefire-0014.png",
-                        "smokefire-0015.png",
-                        "smokefire-0016.png",
-                        "smokefire-0017.png",
-                        "smokefire-0018.png",
-                        "smokefire-0019.png",
-                        "smokefire-0020.png"
-                    ], 10, true, false);
+                    this.burningSprite.animations.add('burn', Phaser.Animation.generateFrameNames('smokefire-', 1, 20, '.png', 4), 10, true, false);
                     this.burningSprite.animations.play('burn');
                 } else {
                     this.burningSprite.visible = true;
@@ -1096,7 +970,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         if (this.directionalShield > 0) {
             this.directionalShieldGraphic = incTower.game.add.graphics(0, 0);
             this.directionalShieldGraphic.lineStyle(2, 0x000000, 2);
-            this.directionalShieldOffset = 270;
+            //this.directionalShieldOffset = 270;
             this.directionalStart = incTower.game.math.degToRad(0 + this.directionalShieldOffset);
             this.directionalEnd = incTower.game.math.degToRad(45 * this.directionalShield + this.directionalShieldOffset);
             this.directionalShieldGraphic.arc(0, 0, 25, this.directionalStart, this.directionalEnd);
@@ -1152,7 +1026,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
                 this.spellCastSprite = null;
             }
         }, this);
-        this.realSpeed = ko.computed(function () {
+        this.realSpeed = ko.pureComputed(function () {
             if (this.recentlyCast()) {
                 return 0;
             }
@@ -1185,40 +1059,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         this.recentlyCast(true);
 
         this.spellCastSprite = incTower.game.add.sprite(0, -4, 'incTower', "spell-cast-01.png");
-        this.spellCastSprite.anchor.setTo(0.5, 0);
+        this.spellCastSprite.anchor.setTo(0.5, 0.25);
         this.addChild(this.spellCastSprite);
-        this.spellCastSprite.animations.add('spell-cast', [
-            "spell-cast-01.png",
-            "spell-cast-02.png",
-            "spell-cast-03.png",
-            "spell-cast-04.png",
-            "spell-cast-05.png",
-            "spell-cast-06.png",
-            "spell-cast-07.png",
-            "spell-cast-08.png",
-            "spell-cast-09.png",
-            "spell-cast-10.png",
-            "spell-cast-11.png",
-            "spell-cast-12.png",
-            "spell-cast-13.png",
-            "spell-cast-14.png",
-            "spell-cast-15.png",
-            "spell-cast-16.png",
-            "spell-cast-17.png",
-            "spell-cast-18.png",
-            "spell-cast-19.png",
-            "spell-cast-20.png",
-            "spell-cast-21.png",
-            "spell-cast-22.png",
-            "spell-cast-23.png",
-            "spell-cast-24.png",
-            "spell-cast-25.png",
-            "spell-cast-26.png",
-            "spell-cast-27.png",
-            "spell-cast-28.png",
-            "spell-cast-29.png",
-            "spell-cast-30.png",
-        ], 10, false, true);
+
+        this.spellCastSprite.animations.add('spell-cast', Phaser.Animation.generateFrameNames('spell-cast-', 1, 30, '.png', 2), 10, false, true);
         this.spellCastSprite.animations.play('spell-cast');
         incTower.createFloatingText({'color':'purple', 'around':this, 'text':"Casting " + spellName + "!", 'type':'spell-cast'});
     };
@@ -1258,6 +1102,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             damage = damage.times(1 - 0.2 * (this['earth-resistant'] || 0));
         } else if (type === 'arcane') {
             damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('wizardry'));
+            damage = damage.times(1 + 0.01 * incTower.mana().div(100).times(incTower.getEffectiveSkillLevel('arcaneMastery')));
             damage = damage.times(1 - 0.2 * (this['arcane-resistant'] || 0));
         } else if (type === 'normal' || type === 'kinetic') {
             damage = damage.times(1 - 0.2 * (this.armored || 0));
@@ -1269,6 +1114,12 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             this.shieldSprite.visible = false;
             this.shielded = false;
         }
+        if (this['mana-bond']) {
+            var manaFactor = damage.div(this.maxHealth).div(10).times(this['mana-bond']); //Fractional percentage of mana to damage
+            var manaDamage = BigNumber.min(incTower.maxMana().times(manaFactor), incTower.mana());
+            incTower.incrementObservable(incTower.mana, manaDamage.neg());
+        }
+        incTower.damageLastSecond = incTower.damageLastSecond.add(damage);
         incTower.incrementObservable(this.health, damage.negated());
         incTower.createFloatingText({'scatter': 0, 'around': this, 'amount': damage.negated(), 'type': 'damage'});
         if (this.health().lte(0)) {
@@ -1373,7 +1224,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             this.nullzoneCircle.x = this.x;
             this.nullzoneCircle.y = this.y;
             var nullzoneCircle = this.nullzoneCircle;
-            incTower.towers_group.forEachAlive(function (tower) {
+            incTower.towersGroup.forEachAlive(function (tower) {
                 if (nullzoneCircle.contains(tower.x, tower.y)) {
                     if (tower.disabledFrames() < 3) {
                         tower.disabledFrames(3);
