@@ -34,11 +34,11 @@ requirejs.config({
     }
 });
 
-requirejs(["incTower/core", 'lib/jquery', 'lib/bignumber', 'lib/knockout', 'incTower/tooltips', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave', 'require.min'],
-    function(incTower, $, BigNumber, ko, tooltips) {
+requirejs(["incTower/core", 'lib/jquery', 'lib/break_infinity', 'lib/knockout', 'incTower/tooltips', 'lib/jquery-ui', 'incTower/actions', 'incTower/basic-actions', 'incTower/blocks', 'incTower/cursor', 'incTower/enemies', 'incTower/help', 'incTower/keybinds-cursors', 'incTower/prestige', 'incTower/save', 'incTower/skills', 'incTower/spells', 'incTower/towers', 'incTower/ui', 'incTower/phaser-game', 'incTower/wave', 'require.min'],
+    function(incTower, $, Decimal, ko, tooltips) {
     $(document).ready(function () {
         'use strict';
-        BigNumber.config({ ERRORS: false });
+        //BigNumber.config({ ERRORS: false });
         tooltips.init();
 
         $('#skills').on('click','#skill_queue_button', function (e) {

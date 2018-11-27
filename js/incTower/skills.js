@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lodash', 'lib/ko.observableDictionary', 'lib/jstree', 'incTower/util',  'incTower/tooltips'], function (incTower, ko, BigNumber, moment, _) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'lib/moment', 'lib/lodash', 'lib/ko.observableDictionary', 'lib/jstree', 'incTower/util',  'incTower/tooltips'], function (incTower, ko, Decimal, moment, _) {
     'use strict';
     var humanizeNumber = incTower.humanizeNumber;
     function SkillCollection() { //Describes a collection of skills at a certain rank.
@@ -205,7 +205,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
             },
             onMax: function () {
                 if (incTower.rawMaxMana().eq(0)) {
-                    incTower.rawMaxMana(new BigNumber(1000));
+                    incTower.rawMaxMana(new Decimal(1000));
                     incTower.mana(incTower.maxMana());
                 }
                 incTower.addToObsArray(incTower.availableTowers, 'elemental');
@@ -734,7 +734,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         /*if (incTower.getSkillLevel(name) !== -1) { return; } //We already know the skill*/
         //Either gains a new skill at level 1 or loads in a previously saved skill
         var skillLevel = opt.skillLevel || 0;
-        var skillPoints = new BigNumber(opt.skillPoints || 0);
+        var skillPoints = new Decimal(opt.skillPoints || 0);
         var skillPointsCap = incTower.costCalc(incTower.skillAttributes[name].baseCost, skillLevel, incTower.skillAttributes[name].growth);
         incTower.skills.push(name, ko.observableDictionary({
             skillLevel: skillLevel,
@@ -833,7 +833,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         }
         return '';
     };
-    incTower.skillPoints = ko.observable(new BigNumber(0));
+    incTower.skillPoints = ko.observable(new Decimal(0));
     incTower.skillRate = function () {
         return 1 + 0.01 * incTower.prestigePointsEffective();
     };
@@ -862,7 +862,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
         }
     };
     incTower.calcSkillRaw = function(base, growth, toLevel) {
-        var tally = new BigNumber(0);
+        var tally = new Decimal(0);
         for (var i = 0; i < toLevel;i++) {
             tally = tally.plus(incTower.costCalc(base,i,growth));
         }
@@ -874,7 +874,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
     };
     incTower.calcSkillGrowth = function (skill,toLevel,targetTime) {
         var toggle = 1;
-        targetTime = new BigNumber(targetTime);
+        targetTime = new Decimal(targetTime);
         while (1) {
             var baseGrowth = incTower.skillAttributes[skill].growth;
             var posGrowth = baseGrowth + toggle;
@@ -909,13 +909,13 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
 
         ];
         var baseToggle = 1;
-        var targetTime = new BigNumber(maxedTierTimes[tier]);
+        var targetTime = new Decimal(maxedTierTimes[tier]);
         var baseGrowth = incTower.skillAttributes[skill].growth;
         var baseCost = incTower.skillAttributes[skill].baseCost;
         var targetLevel = 20;
         if (incTower.skillAttributes[skill].maxLevel) {
             targetLevel = incTower.skillAttributes[skill].maxLevel;
-            targetTime = new BigNumber(maxedTierTimes[tier - 1]);
+            targetTime = new Decimal(maxedTierTimes[tier - 1]);
         }
         var zeroval;
 
@@ -992,7 +992,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/moment', 'lib/lod
     },incTower);
     incTower.secondsUntilQueueExhausted = ko.pureComputed(function () {
         if (this.skillQueue().length === 0) { return 0; }
-        var tally = new BigNumber(0);
+        var tally = new Decimal(0);
         _.forEach(this.skillQueue(), function (item) {
             var skill = item[0];
             var rank = item[1];

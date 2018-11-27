@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, BigNumber, pathModule) {
+define(['incTower/core', 'lib/break_infinity', 'incTower/path'], function (incTower, Decimal, pathModule) {
     'use strict';
     incTower.everySecond = function() {
         //Check paused
@@ -11,7 +11,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
         }
         //Training skills
         var incrementObservable = incTower.incrementObservable;
-        incTower.mana(BigNumber.min(incTower.maxMana(), incTower.mana().plus(incTower.manaRegeneration())));
+        incTower.mana(Decimal.min(incTower.maxMana(), incTower.mana().plus(incTower.manaRegeneration())));
         incTower.checkQueue();
         incrementObservable(incTower.skillPoints, incTower.skillRate());
         incrementObservable(incTower.gold, incTower.getEffectiveSkillLevel('investment'));
@@ -22,7 +22,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
             var skillName = incTower.activeSkill();
             var skill = incTower.skills.get(skillName)();
             if (!skill) { break; }
-            var transferAmount = BigNumber.min(skill.get('skillPointsCap')(), incTower.skillPoints());
+            var transferAmount = Decimal.min(skill.get('skillPointsCap')(), incTower.skillPoints());
             incrementObservable(incTower.skillPoints, transferAmount.neg());
             skill.get('skillPoints')(skill.get('skillPoints')().add(transferAmount));
 
@@ -49,7 +49,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
             }
             if (enemy.healer > 0 && incTower.game.time.now - (enemy.lastHeal || 0) > 10000) {
                 var candidate = false;
-                var maxRemainingHealth = new BigNumber(0);
+                var maxRemainingHealth = new Decimal(0);
                 var maxPercentage = 0;
                 var healAmount = enemy.maxHealth.times(enemy.healer * 0.05);
                 incTower.enemys.forEachAlive(function(otherEnemy) {
@@ -62,8 +62,8 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
                     }
                 });
                 if (candidate && (maxRemainingHealth.gt(healAmount) || maxPercentage > 0.25)) {
-                    healAmount = BigNumber.min(healAmount, maxRemainingHealth);
-                    incTower.createFloatingText({'color':'green', 'around':candidate,'amount':healAmount, 'type':'heal'});
+                    healAmount = Decimal.min(healAmount, maxRemainingHealth);
+                    incTower.createFloatingText({'color':0x00c400, 'around':candidate,'amount':healAmount, 'type':'heal'}); //#008000 = Green
                     incrementObservable(candidate.health,healAmount);
                     enemy.castSpell("Heal");
                     enemy.lastHeal = incTower.game.time.now;
@@ -76,7 +76,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
                 if (enemy.statusEffects.burning() > 0) {
                     enemy.statusEffects.burning(enemy.statusEffects.burning().times(0.8)); //Reduces the burning instead of allowing a full regen tick
                 } else if (healAmount > 0) {
-                    incTower.createFloatingText({'color':'green', 'around':enemy,'amount':healAmount, 'type':'regenerating'});
+                    incTower.createFloatingText({'color':0x00c400, 'around':enemy,'amount':healAmount, 'type':'regenerating'}); //008000 = Green
                     incrementObservable(enemy.health,healAmount);
                 }
             }
@@ -131,7 +131,7 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
                         enemy.assignDamage(effect(),'bleed');
                     }
                     if (effect().lt(3)) {
-                        effect(new BigNumber(0));
+                        effect(new Decimal(0));
                         if (effectName === 'burning') {
                             enemy.burningSprite.visible = false;
                         }
@@ -150,8 +150,8 @@ define(['incTower/core', 'lib/bignumber', 'incTower/path'], function (incTower, 
         if (incTower.damageLastSecond.gt(incTower.highestDPS())) {
             incTower.highestDPS(incTower.damageLastSecond);
         }
-        incTower.damageLastSecond = new BigNumber(0);
-        incTower.goldLastSecond = new BigNumber(0);
+        incTower.damageLastSecond = new Decimal(0);
+        incTower.goldLastSecond = new Decimal(0);
 
     };
 });

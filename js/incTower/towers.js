@@ -1,9 +1,9 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor', 'incTower/util'], function (incTower, ko, BigNumber, Phaser, path, _, Cursor) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'lib/phaser', 'incTower/path', 'lib/lodash', 'incTower/cursor', 'incTower/util'], function (incTower, ko, Decimal, Phaser, path, _, Cursor) {
     'use strict';
-    BigNumber.config({
-        ERRORS: false,
-        POW_PRECISION: 100
-    });
+    // Decimal.config({
+    //     ERRORS: false,
+    //     POW_PRECISION: 100
+    // });
     var tileSquare = 32;
     var incrementObservable = incTower.incrementObservable;
     incTower.availableTowers = ko.observableArray(['kinetic']);
@@ -106,13 +106,13 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         }
     };
     incTower.totalTowerDamage = ko.pureComputed(function () {
-        var tally = new BigNumber(0);
+        var tally = new Decimal(0);
         var towerLength = incTower.numTowers();
         for (var i = 0; i < towerLength; ++i) {
             var tower = incTower.towersGroup.getAt(i);
             tally = tally.plus(tower.totalDamage());
         }
-//        tally = tally.round(3, BigNumber.ROUND_UP);
+//        tally = tally.round(3, Decimal.ROUND_UP);
         //console.log(tally);
         return tally;
     });
@@ -143,12 +143,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         return 0;
     });
     incTower.cheapestUpgradeAll = function () {
-        'use strict';
         var start = performance.now();
 
         var gold = incTower.gold();
-        var gold_share = gold.div(incTower.numTowers());
-        console.log("Gold share: " + incTower.humanizeNumber(gold_share));
+        var goldShare = gold.div(incTower.numTowers());
+        console.log("Gold share: " + incTower.humanizeNumber(goldShare));
         var memoize = {};
         var memoizedUpgradeCost = function (type, level) {
             var key = type + ":" + level;
@@ -160,7 +159,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
         var towerUpgradeCache = {};
         incTower.towersGroup.forEach(function (tower) {
             if (towerUpgradeCache[tower.towerType] === undefined) {
-                towerUpgradeCache[tower.towerType] = {}
+                towerUpgradeCache[tower.towerType] = {};
             }
             var byLevel = 1;
             var cost = tower.remainingUpgradeCost();
@@ -169,11 +168,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 byLevel = towerUpgradeCache[tower.towerType][prosLevel].byLevel;
                 cost = cost.plus(towerUpgradeCache[tower.towerType][prosLevel].cost);
             }
-            while (cost.lte(gold_share)) {
+            while (cost.lte(goldShare)) {
                 byLevel++;
                 cost = cost.plus(memoizedUpgradeCost(tower.towerType, prosLevel + byLevel - 1));
             }
-            while (cost.gt(gold_share)) {
+            while (cost.gt(goldShare)) {
                 cost = cost.minus(memoizedUpgradeCost(tower.towerType, prosLevel + byLevel - 1));
                 byLevel--;
                 if (byLevel < 1) {
@@ -440,7 +439,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 incrementObservable(enemy.statusEffects.chilled, 50 * waterRunes);
                 if (enemy.statusEffects.chilled().gte(100)) {
                     incTower.createFloatingText({
-                        'color': '#0000CC',
+                        'color': 0x4286f4,
                         'duration': 2000,
                         'around': enemy,
                         'text': 'Frozen!',
@@ -466,7 +465,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             support: function (supportTower, targetTower) {
                 var duration = incTower.supportTowerDuration();
                 incTower.createFloatingText({
-                    'color': 'blue',
+                    'color': 0x4286f4,
                     'duration': duration,
                     'around': targetTower,
                     'text': 'Energized!',
@@ -489,7 +488,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             support: function (supportTower, targetTower) {
                 var duration = incTower.supportTowerDuration();
                 incTower.createFloatingText({
-                    'color': 'purple',
+                    'color': 0x800080, // Purple
                     'duration': duration,
                     'around': targetTower,
                     'text': 'Range Buff!',
@@ -553,13 +552,13 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     _.forEach(_.keys(incTower.towerAttributes), function (towerType) {
         incTower.towerAttributes[towerType].blueprintPoints = ko.pureComputed(function () {
             if (!_.has(incTower.towerBlueprints, towerType)) {
-                incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
+                incTower.towerBlueprints[towerType] = ko.observable(new Decimal(0));
             }
             return incTower.towerBlueprints[towerType]();
         });
     });
     incTower.towerCost = function (type) {
-        var base = BigNumber(incTower.towerAttributes[type].baseCost);
+        var base = new Decimal(incTower.towerAttributes[type].baseCost);
         base = base.plus(incTower.towerAttributes[type].blueprintPoints().times(5));
         var amount = incTower.costCalc(base, incTower.numTowers(), 1.4);
         amount = amount.times(1 - (incTower.getEffectiveSkillLevel('construction') * 0.01));
@@ -653,7 +652,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             //this.tower = game.add.sprite(worldX+tileSquare/2, worldY+tileSquare/2, 'incTower', 'Tower-32.png');
             this.towerType = opt.towerType;
             if (incTower.towerMaxDamage[this.towerType] === undefined) {
-                incTower.towerMaxDamage[this.towerType] = ko.observable(new BigNumber(0));
+                incTower.towerMaxDamage[this.towerType] = ko.observable(new Decimal(0));
             }
             this.ammoType = ko.observable(false);
             if ('ammoTypes' in incTower.towerAttributes[this.towerType]) {
@@ -664,7 +663,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
                 }
             }
             this.ammoType.subscribe(function () { this.updateIcon(); }, this);
-            this.goldSpent = ko.observable(new BigNumber(opt.goldSpent || opt.cost || 0));
+            this.goldSpent = ko.observable(new Decimal(opt.goldSpent || opt.cost || 0));
             this.worldX = worldX;
             this.worldY = worldY;
             this.tileX = tileX;
@@ -676,7 +675,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             this.anchor.setTo(0.5, 0.5);
             this.tile = tile;
             if (opt.damage) {
-                this.damage = ko.observable(new BigNumber(opt.damage));
+                this.damage = ko.observable(new Decimal(opt.damage));
             } else {
                 var defaultDamage = incTower.towerAttributes[this.towerType].blueprintPoints().plus(5);
                 defaultDamage = defaultDamage.times(1 + 0.05 * incTower.getEffectiveSkillLevel('initialEngineering'));
@@ -746,16 +745,18 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             damageSubscription.call(this, this.damage());
 
             this.level = ko.observable(opt.level || 1);
-            this.levelIndicator = incTower.game.add.text(0, 0, "", {
-                font: "14px Arial",
-                stroke: 'black',
-                strokeThickness: 1,
-                fontWeight: "bold",
-                fill: '#eee',
-                boundsAlignH: "center"
-            });
+            // this.levelIndicator = incTower.game.add.text(0, 0, "", {
+            //     font: "14px Arial",
+            //     stroke: 'black',
+            //     strokeThickness: 1,
+            //     fontWeight: "bold",
+            //     fill: '#eee',
+            //     boundsAlignH: "center"
+            // });
+            this.levelIndicator = incTower.game.add.bitmapText(this.worldX, this.worldY, "PFTempestaSeven", "", 8);
             this.level.subscribe(function (newLevel) { this.updateLevelIndicator(); }, this);
-            this.levelIndicator.setTextBounds(this.worldX, this.worldY - 2, tileSquare, tileSquare);
+
+            //this.levelIndicator.setTextBounds(this.worldX, this.worldY - 2, tileSquare, tileSquare);
             this.updateLevelIndicator();
             //this.fireTime = Math.min(opt.fireTime || defaultFireRate, defaultFireRate); //opt.fireTime ||
             this.fireTime = ko.pureComputed(function () {
@@ -823,7 +824,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
             if (upgradeCost === undefined || isNaN(upgradeCost)) {
                 upgradeCost = incTower.calculateTowerUpgradeCost(this.towerType, this.level());
             } else {
-                upgradeCost = new BigNumber(upgradeCost);
+                upgradeCost = new Decimal(upgradeCost);
             }
             this.sellValue = function () {
                 return this.goldSpent().times(incTower.sellTowerPer());
@@ -881,6 +882,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     };
     Tower.prototype.updateLevelIndicator = function () {
         this.levelIndicator.text = this.level();
+        this.levelIndicator.x = this.worldX + Math.floor((33 - this.levelIndicator.textWidth) / 2);
     };
     Tower.prototype.add = function (pointer) {
         incTower.game.input.onDown.add(Tower.prototype.posit, this);
@@ -916,7 +918,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'lib/phaser', 'incTowe
     Tower.prototype.upgradeCost = function (byLevel) {
 
         if (this.remainingUpgradeCost === undefined) {
-            return new BigNumber(0);
+            return new Decimal(0);
         }
         byLevel = byLevel || 1;
         var cost = this.remainingUpgradeCost();

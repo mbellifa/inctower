@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, BigNumber, _) {
+define(['incTower/core', 'lib/break_infinity', 'lib/lodash'], function (incTower, Decimal, _) {
     'use strict';
     var utilModule = {};
     incTower.numSuffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', //Directly stolen from Swarm Simulator
@@ -13,16 +13,15 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
     ];
     incTower.humanizeBigNumber = function (number, precision) {
         if (precision === undefined) { precision = 1;}
-        if (typeof(number.abs) !== 'function') { number = new BigNumber(number); }
+        if (typeof(number.abs) !== 'function') { number = new Decimal(number); }
         if (number.e < 4) { return number.toFixed(precision).replace('.0',''); }
         var index = Math.floor(number.e / 3) - 1;
-        number = number.div(new BigNumber(10).pow((index+1)*3));
+        number = number.div(new Decimal(10).pow((index+1)*3));
         return number.toFixed(precision).replace('.0','')+incTower.numSuffixes[index];
     };
     utilModule.humanizeBigNumber = incTower.humanizeBigNumber;
 
     incTower.humanizeNumber = function (number, precision) {
-        'use strict';
         if (precision === undefined) { precision = 1;}
         if (!_.isNumber(number)) { return incTower.humanizeBigNumber(number,precision); }
         var thresh = 1000;
@@ -37,7 +36,7 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
     };
     utilModule.humanizeNumber = incTower.humanizeNumber;
     incTower.costCalc = function (base,number,growth) {
-        return new BigNumber(growth).pow(number).times(base);
+        return new Decimal(growth).pow(number).times(base);
         //return base * Math.pow(growth,number) | 0;
     };
     utilModule.costCalc = incTower.costCalc;
@@ -124,9 +123,9 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
         }
 
         var floatText;
-        var amount = new BigNumber(0);
+        var amount = new Decimal(0);
         if ('amount' in opt) {
-            amount = new BigNumber(opt.amount);
+            amount = new Decimal(opt.amount);
         }
         if (opt.around !== undefined) {
             x = opt.around.x;
@@ -145,14 +144,15 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
 
 
         if (floatText === undefined && unusedIndex === undefined) {
-            floatText = incTower.game.add.text(0, 0, "", {
-                font: "14px Arial",
-                stroke: 'white',
-                strokeThickness: 1,
-                fontWeight: "bold",
-                fill: "#ff0033",
-                align: "center"
-            });
+            // floatText = incTower.game.add.text(0, 0, "", {
+            //     font: "14px Arial",
+            //     stroke: 'white',
+            //     strokeThickness: 1,
+            //     fontWeight: "bold",
+            //     fill: "#ff0033",
+            //     align: "center"
+            // });
+            floatText = incTower.game.add.bitmapText(this.worldX, this.worldY, "PFTempestaSeven", "", 32);
             incTower.floatingTexts.push(floatText);
             floatText.anchor.set(0.5);
         }
@@ -180,22 +180,24 @@ define(['incTower/core', 'lib/bignumber', 'lib/lodash'], function (incTower, Big
             floatText.x = x;
             floatText.y = y;
         }
-        var color = opt.color || "#ff0033";
+        var color = opt.color || 0xff2244;
         var duration = opt.duration || 1000;
 
         var tweenTo = {alpha: 0};
         if (opt.noFloat !== true) {
             tweenTo.y = floatText.y - 30;
         }
-        floatText.fill = color;
-        floatText.font = opt.font || "Arial";
-        floatText.fontSize = opt.fontSize || "14px";
-        floatText.strokeThickness = opt.strokeThickness || 1;
-        floatText.setShadow();
-        if (opt.shadowed) {
-            floatText.setShadow(3, 3);
-        }
-        floatText.stroke = opt.stroke || "white";
+        floatText.tint = color;
+        floatText.fontSize = opt.size || 10;
+        // floatText.fill = color;
+        // floatText.font = opt.font || "Arial";
+        // floatText.fontSize = opt.fontSize || "14px";
+        // floatText.strokeThickness = opt.strokeThickness || 1;
+        // floatText.setShadow();
+        // if (opt.shadowed) {
+        //     floatText.setShadow(3, 3);
+        // }
+        //floatText.stroke = opt.stroke || "white";
         floatText.alpha = 1;
         floatText.text = text;
         var delay = opt.delay || 0;

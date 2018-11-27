@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/bignumber', 'lib/lz-string', 'lib/moment', 'lib/jquery', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, BigNumber, lzString, moment, $) {
+define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/break_infinity', 'lib/lz-string', 'lib/moment', 'lib/jquery', 'incTower/blocks', 'incTower/skills', 'incTower/util', 'incTower/spells', 'incTower/towers', 'incTower/actions', 'incTower/help', 'incTower/prestige'], function (incTower, _, ko, path, Decimal, lzString, moment, $) {
     'use strict';
     var saveModule = {};
     saveModule.loadSave = function (save) {
@@ -59,7 +59,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                         // console.log(save[prop]);
                         // console.log(curVal);
                         //should be a big number if we're getting here.
-                        incTower[prop](new BigNumber(save[prop]));
+                        incTower[prop](new Decimal(save[prop]));
                     }
                     continue;
                 }
@@ -77,9 +77,9 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
                 }
 
                 if (!_.has(incTower.towerBlueprints, towerType)) {
-                    incTower.towerBlueprints[towerType] = ko.observable(new BigNumber(0));
+                    incTower.towerBlueprints[towerType] = ko.observable(new Decimal(0));
                 }
-                incTower.towerBlueprints[towerType](incTower.towerBlueprints[towerType]().plus(new BigNumber(blueprintPoints)));
+                incTower.towerBlueprints[towerType](incTower.towerBlueprints[towerType]().plus(new Decimal(blueprintPoints)));
             });
         }
         if ('blocks' in save) {
@@ -134,7 +134,7 @@ define(['incTower/core', 'lib/lodash', 'lib/knockout', 'incTower/path', 'lib/big
             if (difference > 0) {
                 var goldGain = incTower.avgGPS().times(difference);
                 incTower.incrementObservable(incTower.gold, goldGain); // We don't use gainGold here because otherwise it'll count for average GPS calculations
-                var skillGain = new BigNumber(incTower.skillRate()).times(difference);
+                var skillGain = new Decimal(incTower.skillRate()).times(difference);
                 incTower.incrementObservable(incTower.skillPoints, skillGain);
                 $('<div  title="Welcome Back">You were gone for '+ moment().add(difference, 'seconds').fromNow().replace('in ', '') +'. You have gained '+incTower.humanizeNumber(goldGain)+' gold and '+incTower.humanizeNumber(skillGain)+' skill points.</div>').dialog({ width: 400, height: 200, close: function( event, ui ) {  $(this).remove();  }   });
             }

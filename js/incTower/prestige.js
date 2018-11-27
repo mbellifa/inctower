@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incTower/basic-actions'], function (incTower, ko, BigNumber, pathModule) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'incTower/path', 'incTower/basic-actions'], function (incTower, ko, Decimal, pathModule) {
     'use strict';
     //Stolen from http://lostsouls.org/grimoire_diminishing_returns
     function diminishingReturns(val, scale) {
@@ -44,12 +44,12 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
     });
     incTower.prestigeReset = function () {
             incTower.incrementObservable(incTower.prestigePoints, incTower.prestigePointsNext());
-            incTower.gold(new BigNumber(150));
+            incTower.gold(new Decimal(150));
             incTower.wave(0);
             incTower.maxWave(0);
-            incTower.spellLevel(new BigNumber(0));
+            incTower.spellLevel(new Decimal(0));
             incTower.farmMode(false);
-            incTower.skillPoints(new BigNumber(0));
+            incTower.skillPoints(new Decimal(0));
             _.forEach(incTower.skills.keys(), function (skill) {
                 incTower.skills.remove(skill);
                 incTower.skillTreeUpdateLabel(skill);
@@ -61,8 +61,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
             });
             incTower.clearQueue();
             incTower.UIselectedSkill(false);
-            incTower.rawMaxMana(new BigNumber(0));
-            incTower.mana(new BigNumber(0));
+            incTower.rawMaxMana(new Decimal(0));
+            incTower.mana(new Decimal(0));
             incTower.currentlySelected(false);
             incTower.emptyObsArray(incTower.availableTowers);
             incTower.emptyObsArray(incTower.availableSpells);
@@ -94,7 +94,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
             incTower.towers([]);
             incTower.selectedBossPack = false;
             _.mapValues(incTower.towerBlueprints, function (val) {
-                val(new BigNumber(0));
+                val(new Decimal(0));
+                var blah = new Decimal(0);
             });
             //incTower.towerBlueprints = {};
             pathModule.recalcPath();

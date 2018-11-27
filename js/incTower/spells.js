@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'incTower/skills'], function (incTower, ko, BigNumber, Cursor) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'incTower/cursor', 'incTower/skills'], function (incTower, ko, Decimal, Cursor) {
     'use strict';
     function Spell(opts) {
         this.fullName = opts.fullName;
@@ -7,7 +7,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             if (incTower === undefined) {
                 return 0;
             }
-            var base_mana_cost = new BigNumber(this.manaCost);
+            var base_mana_cost = new Decimal(this.manaCost);
             return base_mana_cost.plus(base_mana_cost.times(0.5 * incTower.spellLevel()));
         }, this);
         this.raw_describe = opts.describe;
@@ -23,7 +23,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
     incTower.maxMana = ko.pureComputed(function () {
         return this.rawMaxMana().times(1 + 0.05 * incTower.getEffectiveSkillLevel('arcaneKnowledge'));
     }, incTower);
-    incTower.rawMaxMana = ko.observable(new BigNumber(0));
+    incTower.rawMaxMana = ko.observable(new Decimal(0));
     incTower.percentageMaxMana = ko.computed(function () {
         if (this.maxMana().eq(0)) {
             return 0;
@@ -31,14 +31,14 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
         return this.mana().div(this.maxMana()).times(100);
     }, incTower);
 
-    incTower.mana = ko.observable(new BigNumber(0));
+    incTower.mana = ko.observable(new Decimal(0));
     incTower.describeManaRegeneration = ko.pureComputed(function () {
         return 'Regenerating ' + incTower.humanizeNumber(incTower.manaRegeneration()) + ' mana per second.';
     });
     incTower.manaRegeneration = ko.pureComputed(function () {
         return (1 + incTower.getEffectiveSkillLevel('manaRegeneration')) * (1 + 0.05 * incTower.getEffectiveSkillLevel('manaRegenerationAdvanced'));
     });
-    incTower.spellLevel = ko.observable(new BigNumber(0));
+    incTower.spellLevel = ko.observable(new Decimal(0));
     incTower.baseSpellDamage = ko.pureComputed(function () {
         //return incTower.averageDamage().plus();
         return incTower.avgDPS().times(incTower.spellLevelDamageFactor()).plus(incTower.highestDPS().div(100));

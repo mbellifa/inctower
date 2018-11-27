@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/phaser', 'incTower/path', 'incTower/save'], function (incTower, ko, _, BigNumber, Phaser, path, saveModule) {
+define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/break_infinity', 'lib/phaser', 'incTower/path', 'incTower/save'], function (incTower, ko, _, Decimal, Phaser, path, saveModule) {
     'use strict';
     var tileSquare = 32;
 
@@ -736,8 +736,8 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             //console.log("Count: " + count);
             if (title.length > 0) { title += "\n"; }
             title += packEntry.title;
-            var packHealth = BigNumber.max(1, difficultyPerPack.div(count));
-            var packGold = BigNumber.max(1, goldPerPack.div(count)).ceil();
+            var packHealth = Decimal.max(1, difficultyPerPack.div(count));
+            var packGold = Decimal.max(1, goldPerPack.div(count)).ceil();
 //            console.log("Pack health: " + incTower.humanizeNumber(packHealth));
             //console.log("Pack gold: " + incTower.humanizeNumber(packGold));
             for (var j = 0; j < count; j++) {
@@ -761,17 +761,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             }
             new Enemy(offset, path.path[0].y * 32 + 16, packEntry);
         }
-        var titleColor = incTower.game.rnd.pick(['#FF6746', '#BACDD4', '#DFC67A', '#63A67F', '#B89384']);
+        var titleColor = incTower.game.rnd.pick([0xFF6746, 0xBACDD4, 0xDFC67A, 0x63A67F, 0xB89384]);
         incTower.createFloatingText({
             noFloat: true,
             x: 400,
             y: 50,
-            font: "Arial",
-            fontSize: "18pt",
+            size: 18,
             color: titleColor,
-            stroke: 'black',
-            strokeThickness: 3,
-            shadowed: true,
             delay: 2500,
             duration: 1000,
             text: title
@@ -809,10 +805,10 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         this.enemy = true;
         this.knockback = false; //Only shows whether we are currently being knocked back orn ot.
         this.statusEffects = {
-            chilled: ko.observable(new BigNumber(0)),
-            sensitivity: ko.observable(new BigNumber(0)),
-            burning: ko.observable(new BigNumber(0)),
-            bleeding: ko.observable(new BigNumber(0))
+            chilled: ko.observable(new Decimal(0)),
+            sensitivity: ko.observable(new Decimal(0)),
+            burning: ko.observable(new Decimal(0)),
+            bleeding: ko.observable(new Decimal(0))
         };
         this.events.onKilled.add(function () {
             try {
@@ -1012,9 +1008,9 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
             incTower.game.world.bringToTop(this.healthbar);
         }, this);
         this.maxHealth = opts.health;
-        this.health(new BigNumber(opts.health));
+        this.health(new Decimal(opts.health));
         //console.log("Health" + incTower.humanizeNumber(this.health()));
-        this.elementalInstability = ko.observable(new BigNumber(0));
+        this.elementalInstability = ko.observable(new Decimal(0));
         this.elementalRunes = [];
         this.elementalRuneCounts = {};
         this.elementalRuneDiminishing = {};
@@ -1064,7 +1060,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
         this.spellCastSprite.animations.add('spell-cast', Phaser.Animation.generateFrameNames('spell-cast-', 1, 30, '.png', 2), 10, false, true);
         this.spellCastSprite.animations.play('spell-cast');
-        incTower.createFloatingText({'color':'purple', 'around':this, 'text':"Casting " + spellName + "!", 'type':'spell-cast'});
+        incTower.createFloatingText({'color':0x800080, 'around':this, 'text':"Casting " + spellName + "!", 'type':'spell-cast'}); //#800080 = Purple
     };
     Enemy.prototype.assignDamage = function (damage, type) {
         var incrementObservable = incTower.incrementObservable;
@@ -1086,7 +1082,7 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
         }
         //Add instability if it's an elemental type
         if (type === 'fire' || type === 'water' || type === 'air' || type === 'earth' || type === 'arcane') {
-            incrementObservable(this.elementalInstability, BigNumber.random().times(damage));
+            incrementObservable(this.elementalInstability, damage.times(Math.random()));
         }
         if (type === 'water') {
             damage = damage.times(1 + 0.1 * incTower.getEffectiveSkillLevel('waterMastery'));
@@ -1110,13 +1106,13 @@ define(['incTower/core', 'lib/knockout', 'lib/lodash', 'lib/bignumber', 'lib/pha
 
 
         if (this.shielded) {
-            damage = BigNumber(0);
+            damage = new Decimal(0);
             this.shieldSprite.visible = false;
             this.shielded = false;
         }
         if (this['mana-bond']) {
             var manaFactor = damage.div(this.maxHealth).div(10).times(this['mana-bond']); //Fractional percentage of mana to damage
-            var manaDamage = BigNumber.min(incTower.maxMana().times(manaFactor), incTower.mana());
+            var manaDamage = Decimal.min(incTower.maxMana().times(manaFactor), incTower.mana());
             incTower.incrementObservable(incTower.mana, manaDamage.neg());
         }
         incTower.damageLastSecond = incTower.damageLastSecond.add(damage);

@@ -94,6 +94,7 @@ define(['incTower/core', 'lib/phaser', 'lib/lodash', 'incTower/path', 'incTower/
         incTower.game.load.atlasJSONHash('incTower', 'assets/sprites/main.png', 'assets/sprites/main.json');
         incTower.game.load.image('tower-defense-tiles', 'assets/maps/tower-defense-tiles.png');
         incTower.game.load.audio('positive', 'assets/audio/sound-effects/positive.ogg');
+        incTower.game.load.bitmapFont('PFTempestaSeven', 'assets/fonts/PFTempestaSeven.png', 'assets/fonts/PFTempestaSeven.xml', undefined, 3);
     }
     incTower.convergeUpdate = function () {
         var lastRealTime = incTower.lastUpdateRealTime;

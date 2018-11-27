@@ -352,6 +352,7 @@
         and colorized for my purposes.</p>
     <p>Spell casting animation by rubberduck found on <a
             href="https://opengameart.org/content/25-special-effects-rendered-with-blender">OpenGameArt</a>.</p>
+    <p>Most fonts are a bitmap version of PF Tempesta Seven by Yusuke Kamiyamane found <a href="https://www.dafont.com/pf-tempesta-seven.font">here</a>. Converted to Bitmap font using <a href="http://kvazars.com/littera/">Littera</a>.</p>
 </div>
 <div id="save" title="Saves">
     <p>Copy and paste the text below to backup your save game.<br>
@@ -461,6 +462,13 @@
 <div id="changelog" title="Changelog">
     <p>Changelog:</p>
     <ul>
+        <li>Version 0.2.7:
+            <ul>
+                <li>2018-11-26: Fixed a bug I introduced which prevented tower blueprinting.</li>
+                <li>2018-11-25: Replaced most floating texts with a new bitmap font which dramatically reduces the number of draws on Chrome and Firefox (and should therefore hopefully be faster).</li>
+                <li>2018-11-25: Replaced BigNumber.js with break_infinity.js which in my testing is many times faster in calculating.</li>
+            </ul>
+        </li>
         <li>Version 0.2.6:
             <ul>
                 <li>2018-11-24: Backend change: I've switched to concatenating all of the game's code again. This should prevent weirdnesses where caching causes parts of new code and parts of old code to load together. Similarly the version number is now in code so you can tell if you've loaded new code based on version number.</li>

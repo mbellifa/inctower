@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber'], function (incTower, ko, BigNumber) {
+define(['incTower/core', 'lib/knockout'], function (incTower, ko) {
     'use strict';
     incTower.availableHelp = ko.observableArray([]); //Stores help files that are available for viewing
     incTower.readHelp = ko.observableArray([]);  //Stores help files that have been read by

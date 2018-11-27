@@ -1,16 +1,16 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'incTower/path', 'incTower/util'], function (incTower, ko, BigNumber, Cursor, pathModule) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'incTower/cursor', 'incTower/path', 'lib/lodash', 'incTower/util'], function (incTower, ko, Decimal, Cursor, pathModule, _) {
     'use strict';
     var tileSquare = 32;
     incTower.deadBullets = {};
     var incrementObservable = incTower.incrementObservable;
-    incTower.gold = ko.observable(new BigNumber(150));
+    incTower.gold = ko.observable(new Decimal(150));
     incTower.gainGold = function (amount, floatAround) {
         //amount = amount.times(1 + 0.1 * incTower.prestigePoints());
         incrementObservable(incTower.gold, amount);
         incTower.goldLastSecond = incTower.goldLastSecond.add(amount);
         if (floatAround !== undefined) {
             incTower.createFloatingText({
-                'color': '#C9960C',
+                'color': 0xC9960C,
                 'duration': 3000,
                 'around': floatAround,
                 'text': '+' + incTower.humanizeNumber(amount) + 'g',
@@ -27,11 +27,11 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
             incTower.maxWave(val);
         }
     });
-    incTower.damageLastSecond = new BigNumber(0);
-    incTower.highestDPS = ko.observable(new BigNumber(0));
-    incTower.goldLastSecond = new BigNumber(0);
-    incTower.avgDPS = ko.observable(new BigNumber(0));
-    incTower.avgGPS = ko.observable(new BigNumber(0));
+    incTower.damageLastSecond = new Decimal(0);
+    incTower.highestDPS = ko.observable(new Decimal(0));
+    incTower.goldLastSecond = new Decimal(0);
+    incTower.avgDPS = ko.observable(new Decimal(0));
+    incTower.avgGPS = ko.observable(new Decimal(0));
 
     incTower.buyBlock = function () {
          var curCursor = incTower.cursor();
@@ -164,12 +164,8 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                 if (incTower.numTowers() === 1) {
                     return false;
                 }
-                _.forEach(incTower.towersGroup.children, function (tower) {
-                    if (tower.tileX === tileX && tower.tileY === tileY) {
-                        tower.sell();
-                        return false;
-                    }
-                });
+                var tower = pathModule.tileForbidden[tileX][tileY]();
+                tower.sell();
                 return;
             }
             if (tileIndex > 0 && tileIndex < 5 && !pathModule.tileForbidden[tileX][tileY]()) {
@@ -223,14 +219,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/cursor', 'in
                     }
                     this.textIndicator.alpha = 1;
                     var cost;
-                    if (pathModule.tileForbidden[tileX][tileY]()) {
-
-                        _.forEach(incTower.towers.children, function (tower) {
-                            if (tower.tileX === tileX && tower.tileY === tileY) {
-                                cost = tower.sellValue();
-                                return false;
-                            }
-                        });
+                    var tower = pathModule.tileForbidden[tileX][tileY]();
+                    if (tower) {
+                        cost = tower.sellValue();
                     }
                     if (cost === undefined) {
                         cost = incTower.prevBlockCost();

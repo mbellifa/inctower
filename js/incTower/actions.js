@@ -1,4 +1,4 @@
-define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incTower/cursor'], function (incTower, ko, BigNumber, pathModule, Cursor) {
+define(['incTower/core', 'lib/knockout', 'lib/break_infinity', 'incTower/path', 'incTower/cursor', 'lib/lodash'], function (incTower, ko, Decimal, pathModule, Cursor, _) {
     'use strict';
     var tileSquare = 32;
     incTower.availableActions = ko.observableArray([]);
@@ -8,7 +8,7 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
                 return 'Spend gold to scrap a tower to gain blueprint points for towers of that type. Blueprint points increase the starting damage for the given tower type by 1 and increase starting gold cost by 5 per point.';
             },
             keybind: 'B',
-            perform: function (pointer, _) {
+            perform: function (pointer) {
                 var tileX = Math.floor(pointer.worldX / tileSquare);
                 var tileY = Math.floor(pointer.worldY / tileSquare);
                 console.log(tileX);
@@ -25,15 +25,10 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
                 if (incTower.numTowers() === 1) {
                     return false;
                 }
-
-                _.forEach(incTower.towersGroup.children, function (tower) {
-                    if (tower.tileX === tileX && tower.tileY === tileY) {
-                        var blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
-                        incTower.incrementObservable(incTower.towerBlueprints[tower.towerType], blueprints);
-                        incTower.destroyTower(tower);
-                        return false;
-                    }
-                });
+                var targetTower = pathModule.tileForbidden[tileX][tileY]();
+                var blueprints = targetTower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
+                incTower.incrementObservable(incTower.towerBlueprints[targetTower.towerType], blueprints);
+                incTower.destroyTower(targetTower);
 
             },
             onMove: function (x, y) {
@@ -67,16 +62,9 @@ define(['incTower/core', 'lib/knockout', 'lib/bignumber', 'incTower/path', 'incT
                             });
                         }
                         this.textIndicator.alpha = 1;
-                        var blueprints = 0;
-                        var totalBlueprints = 0;
-                        _.forEach(incTower.towersGroup.children, function (tower) {
-                            if (tower.tileX === tileX && tower.tileY === tileY) {
-                                blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
-                                totalBlueprints = blueprints.plus(incTower.towerAttributes[tower.towerType].blueprintPoints());
-                                return false;
-                            }
-                        });
-
+                        var tower = pathModule.tileForbidden[tileX][tileY]()
+                        var blueprints = tower.totalDamage().sqrt().times(1 + 0.05 * incTower.getEffectiveSkillLevel('refinedBlueprints'));
+                        var totalBlueprints = blueprints.plus(incTower.towerAttributes[tower.towerType].blueprintPoints());
                         this.textIndicator.text = '+' + incTower.humanizeNumber(blueprints) + ' (' + incTower.humanizeNumber(totalBlueprints) + ')';
 
                     } else {
